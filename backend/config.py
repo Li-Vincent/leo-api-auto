@@ -20,9 +20,13 @@ class Config:
         self._LEO_API_PLATFORM_ENV = env
 
     def get_port(self):
+        if isinstance(self._LEO_API_PLATFORM_PORT, str):
+            self._LEO_API_PLATFORM_PORT = int(self._LEO_API_PLATFORM_PORT)
         return self._LEO_API_PLATFORM_PORT
 
     def set_port(self, port):
+        if isinstance(port, str):
+            port = int(port)
         self._LEO_API_PLATFORM_PORT = port
 
     def get_mongo_host(self):

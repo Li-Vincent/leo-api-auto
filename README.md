@@ -97,6 +97,8 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据DB名（必填）
 
 5.1 安装 Vue 环境，下载 node.js 并配置环境，下载 npm 包管理器
 
+[点击进入node.js教程](https://www.runoob.com/nodejs/nodejs-install-setup.html)
+
 5.2 cmd 进入 frontend 目录下，配置 cnpm :
 
     npm install -g cnpm --registry=https://registry.npm.taobao.org   
@@ -123,11 +125,11 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据DB名（必填）
 
 // 创建平台管理员帐号密码
 
-    python ./backend/createAdminUser.py
+    python ./backend/init_admin_user.py
   
 #### 7. 访问项目
 
-现在就可以访问 http://127.0.0.1:5050/#/login 使用创建的管理员帐号密码进行登录
+现在就可以访问 http://127.0.0.1:8888/ 使用创建的管理员帐号密码进行登录
 
 ![平台登录界面2.png](https://github.com/amazingTest/Taisite-Platform/blob/master/images/平台登录界面2.png)
 
