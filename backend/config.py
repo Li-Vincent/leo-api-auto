@@ -36,9 +36,13 @@ class Config:
         self._LEO_API_PLATFORM_MONGO_HOST = host
 
     def get_mongo_port(self):
+        if isinstance(self._LEO_API_PLATFORM_MONGO_PORT, str):
+            self._LEO_API_PLATFORM_MONGO_PORT = int(self._LEO_API_PLATFORM_MONGO_PORT)
         return self._LEO_API_PLATFORM_MONGO_PORT
 
     def set_mongo_port(self, port):
+        if isinstance(port, str):
+            port = int(port)
         self._LEO_API_PLATFORM_MONGO_PORT = port
 
     def get_mongo_username(self):
