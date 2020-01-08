@@ -68,10 +68,11 @@ class Config:
 
 if __name__ == '__main__':
     config = Config()
-    print('LEO_AUTO_PLATFORM_ENV: ----------> %s' % config.get_env())
-    print('LEO_AUTO_PLATFORM_MONGO_HOST: ----------> %s' % config.get_mongo_host())
-    print('LEO_AUTO_PLATFORM_MONGO_PORT: ----------> %s' % config.get_mongo_port())
-    print('LEO_AUTO_PLATFORM_MONGO_USERNAME: ----------> %s' % config.get_mongo_username())
-    print('LEO_AUTO_PLATFORM_MONGO_PASSWORD: ----------> %s' % config.get_mongo_password())
-    print('LEO_AUTO_PLATFORM_MONGO_DEFAULT_DBNAME: ----------> %s' % config.get_mongo_db_name())
-    print('LEO_AUTO_PLATFORM_SECRET_KEY: ----------> %s' % config.get_secret_key())
+    print('LEO_API_PLATFORM_ENV: ----------> %s' % config.get_env())
+    print('LEO_API_PLATFORM_PORT: ----------> %s' % config.get_port())
+    print('LEO_API_PLATFORM_MONGO_HOST: ----------> %s' % config.get_mongo_host())
+    print('LEO_API_PLATFORM_MONGO_PORT: ----------> %s' % config.get_mongo_port())
+    print('LEO_API_PLATFORM_MONGO_USERNAME: ----------> %s' % config.get_mongo_username())
+    print('LEO_API_PLATFORM_MONGO_PASSWORD: ----------> %s' % config.get_mongo_password())
+    print('LEO_API_PLATFORM_MONGO_DEFAULT_DBNAME: ----------> %s' % config.get_mongo_db_name())
+    print('LEO_API_PLATFORM_SECRET_KEY: ----------> %s' % config.get_secret_key())
