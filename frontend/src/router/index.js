@@ -43,6 +43,16 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/initAdminUser',
+    name: 'InitAdminUser',
+    component: () => import('@/components/user/InitAdminUser'),
+    hidden: true,
+    meta: {
+      title: 'InitAdminUser',
+      firstAccess: true
+    }
+  },
+  {
     path: '/404',
     name: 'notFound',
     component: () => import('@/components/NotFound'),

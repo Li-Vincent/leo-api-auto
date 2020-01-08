@@ -119,7 +119,7 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据DB名（必填）
 
     pip install -r ./backend/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-// 启动后端 ( 默认5050端口 )
+// 启动后端 ( 默认8888端口 )
 
     python ./backend/run.py
 

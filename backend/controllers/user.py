@@ -41,6 +41,8 @@ def login():
     email = request_data.get('email') if request_data else None
     pass_word = request_data.get('password') if request_data else None
     user = user_data_store.find_user(email=email)
+    if not user:
+        return jsonify({'status': 'failed', 'data': '当前用户不存在！'})
     if not user.is_active:
         return jsonify({'status': 'failed', 'data': '当前用户被禁用，请联系管理员！'})
     if user is not None and check_password_hash(user.password, pass_word):
