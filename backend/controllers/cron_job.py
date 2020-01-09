@@ -46,11 +46,11 @@ def add_cron_job(project_id):
         request_data["projectId"] = ObjectId(project_id)
         request_data["testEnvId"] = ObjectId(request_data["testEnvId"])
         request_data["createAt"] = datetime.utcnow()
-        if 'interval' in request_data:
-            request_data['interval'] = float(request_data['interval'])
-
         if 'interval' in request_data and request_data['interval'] < 60:
             return jsonify({'status': 'failed', 'data': '定时任务间隔不可小于60秒！'})
+
+        if 'interval' in request_data:
+            request_data['interval'] = float(request_data['interval'])
 
         if 'runDate' in request_data:
             request_data['runDate'] = common.frontend_date_str2datetime(request_data['runDate'])
@@ -63,7 +63,6 @@ def add_cron_job(project_id):
                         include_forbidden=filtered_data.get('includeForbidden'),
                         alarm_mail_list=filtered_data.get('alarmMailList'),
                         run_date=filtered_data.get('runDate'))
-            pass
         else:
             cron = Cron(test_suite_id_list=filtered_data.get('testSuiteIdList'),
                         project_id=project_id,
