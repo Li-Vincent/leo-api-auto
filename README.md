@@ -69,6 +69,14 @@
 
 [点击进入教程](https://www.runoob.com/mongodb/mongodb-window-install.html)
 
+3.1 需要创建平台所需的MongoDB, 如默认MongoDB Name: leo-api-platform-db
+
+3.2 如果MongoDB配置了安全验证，则需要为平台DB单独添加用户(此为flask_mongoengine限制，不确定是否为bug)
+
+[MongoDB设置用户名和密码](https://www.jianshu.com/p/c5f778adfbb3)
+
+[flask_mongoengine认证问题参照此文档](https://segmentfault.com/q/1010000005769647)
+
 #### 4. 设置系统环境变量
 
     LEO_API_PLATFORM_ENV=production
@@ -85,7 +93,7 @@ LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据�
 
 LEO_API_PLATFORM_MONGO_USERNAME 和 LEO_API_PLATFORM_MONGO_PASSWORD 分别表示数据库的帐号密码（若无可不填）
 
-LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据DB名（必填）
+LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：leo-api-platform-db）
 
 设置完成后可通过下列命令进行测试（CMD切换至项目根目录下）
 
@@ -123,15 +131,20 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据DB名（必填）
 
     python ./backend/run.py
 
-// 创建平台管理员帐号密码
 
-    python ./backend/init_admin_user.py
   
 #### 7. 访问项目
+现在就可以访问 http://127.0.0.1:8888/
 
-现在就可以访问 http://127.0.0.1:8888/ 使用创建的管理员帐号密码进行登录
+7.1 创建平台管理员帐号密码
 
-![平台登录界面2.png](https://github.com/amazingTest/Taisite-Platform/blob/master/images/平台登录界面2.png)
+进入http://127.0.0.1:8888/initAdminUser,进行注册管理员账号，如果db中已经存在管理员账号，此页面无法访问
+    
+7.2 使用创建的管理员帐号密码进行登录
+
+http://127.0.0.1:8888/
+
+![登录页面展示](https://github.com/Li-Vincent/leo-api-auto/blob/master/images/login.png)
 
 ### Linux 环境下 Docker 容器化部署
 
