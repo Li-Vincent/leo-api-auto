@@ -75,7 +75,7 @@
 
     <!--添加/编辑/查看 界面-->
     <el-dialog title="编辑用户" :visible.sync="editFormVisible" :close-on-click-modal="false"
-               style="width: 60%; left: 20%">
+               style="width: 70%; left: 15%">
       <el-form :model="editForm" :rules="editFormRules" ref="editForm" label-width="80px">
         <el-form-item label="邮箱" prop="email">
           <el-input v-model.trim="editForm.email" disabled></el-input>
