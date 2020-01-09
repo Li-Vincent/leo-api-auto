@@ -175,10 +175,8 @@ def change_roles(email):
                 if role and role.name not in current_roles_name:
                     current_roles_name.append(role.name)
             for role in current_roles_name:
-                print('role to be removed.', role)
                 user_data_store.remove_role_from_user(user, role)
             for role_name in data['roleNames']:
-                print('role to be add', role_name)
                 user_data_store.add_role_to_user(user, role_name)
             return jsonify({'status': 'ok', 'data': '变更权限成功'})
         else:

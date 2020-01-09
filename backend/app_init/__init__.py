@@ -35,7 +35,7 @@ conn, db = connect(_config.get_mongo_db_name(),
 # Create User database connection object
 app.config['MONGODB_DB'] = _config.get_mongo_db_name()
 app.config['MONGODB_HOST'] = _config.get_mongo_host()
-app.config['MONGODB_PORT'] = _config.get_mongo_port()
+app.config['MONGODB_PORT'] = int(_config.get_mongo_port())
 app.config['MONGODB_USERNAME'] = _config.get_mongo_username()
 app.config['MONGODB_PASSWORD'] = _config.get_mongo_password()
 user_db = MongoEngine(app)
@@ -58,17 +58,6 @@ class User(user_db.Document, UserMixin):
 # Setup Flask-Security
 user_data_store = MongoEngineUserDatastore(user_db, User, Role)
 security = Security(app, user_data_store)
-
-
-# Create a user to test with
-# @app.before_first_request
-# def create_user():
-#   user_data_store.create_role(name='project', description='项目管理员')
-#   user_data_store.create_role(name='user', description='普通用户')
-#   user_data_store.create_user(email='liwh8@lenovo.com', password='test',
-#                               createAt=datetime.datetime.utcnow())
-#   user = user_data_store.find_user(email='liwh8@lenovo.com')
-#   user_data_store.add_role_to_user(user, 'admin')
 
 
 @app.route('/', defaults={'path': ''})
