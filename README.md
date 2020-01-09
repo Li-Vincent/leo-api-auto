@@ -30,12 +30,12 @@
  
  3. 平台遵循「颜值即正义」原则，操作界面展示如下：
  
- ![操作界面展示](https://github.com/amazingTest/Taisite-Platform/blob/master/images/操作界面展示.png)
+ ![操作界面展示](https://github.com/Li-Vincent/leo-api-auto/blob/dev/images/project-case-list.png)
  
- 4. 平台拥有极佳的定时任务体验，启动定时任务后可随时停用 / 任意编辑任务内容且立即生效，同时拥有丰富的告警策略，
+ 4. 平台拥有极佳的定时任务体验，启动定时任务后可随时停用 / 任意编辑任务内容且立即生效，同时支持执行失败邮件通知，
  页面展示如下：
  
- ![定时任务配置](https://github.com/amazingTest/Taisite-Platform/blob/master/images/定时任务配置.png)
+ ![定时任务配置](https://github.com/Li-Vincent/leo-api-auto/blob/dev/images/cronJob-date.png)
  
  5. 平台拥有较为丰富的测试结果校验体系。
  ([具体内容可参考本篇博文](https://juejin.im/post/5cfe1dd96fb9a07ed7407321))
@@ -144,7 +144,7 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 
 http://127.0.0.1:8888/
 
-![登录页面展示](https://github.com/Li-Vincent/leo-api-auto/blob/master/images/login.png)
+![登录页面展示](https://github.com/Li-Vincent/leo-api-auto/blob/dev/images/login.png)
 
 ### Linux 环境下 Docker 容器化部署
 
@@ -160,11 +160,11 @@ http://127.0.0.1:8888/
 
     sudo -i
     docker pull mongo 
-    docker run  --name autotest-platform-mongo -p 27017:27017 -v /data/db:/data/db -v /data/configdb:/data/configdb ``-d mongo
+    docker run  --name leo-api-platform-db -p 27017:27017 -v /data/db:/data/db -v /data/configdb:/data/configdb ``-d mongo
   
 2.2 创建数据库帐号
 
-    docker exec -it autotest-platform-mongo /bin/bash
+    docker exec -it leo-api-platform-db /bin/bash
 
     mongo
 
@@ -193,16 +193,17 @@ http://127.0.0.1:8888/
 
 3.1 文本末端插入下列数据 (输入 i 则变为 insert 状态)
 
-    export AUTOTEST_PLATFORM_ENV=production
-    export AUTOTEST_PLATFORM_MONGO_HOST=${MONGO_HOST}
-    export AUTOTEST_PLATFORM_MONGO_PORT=${MONGO_PORT}
-    export AUTOTEST_PLATFORM_MONGO_USERNAME=${USERNAME}
-    export AUTOTEST_PLATFORM_MONGO_PASSWORD=${PASSWORD}
-    export AUTOTEST_PLATFORM_MONGO_DEFAULT_DBNAME=${DBNAME}
+    export LEO_API_PLATFORM_ENV=production
+    export LEO_API_PLATFORM_PORT=${PORT}
+    export LEO_API_PLATFORM_MONGO_HOST=${MONGO_HOST}
+    export LEO_API_PLATFORM_MONGO_PORT=${MONGO_PORT}
+    export LEO_API_PLATFORM_MONGO_USERNAME=${USERNAME}
+    export LEO_API_PLATFORM_MONGO_PASSWORD=${PASSWORD}
+    export LEO_API_PLATFORM_MONGO_DBNAME=${DBNAME}
 
 变量为动态值，部署者自行根据实际情况输入，DBNAME 值可任意自定义（数据库表名），其中 MONGO_HOST 值可通过下列命令查询：
 
-    docker inspect autotest-platform-mongo // 若使用了上面的步骤部署数据库
+    docker inspect leo-api-platform-db // 若使用了上面的步骤部署数据库
   
 输出如下图所示：
 
@@ -228,4 +229,4 @@ http://127.0.0.1:8888/
 
 浏览器访问部署服务器地址的 ${PORT}端口即可
 
-![平台登录界面.png](https://github.com/amazingTest/Taisite-Platform/blob/master/images/平台登录界面.png)
+![登录页面展示](https://github.com/Li-Vincent/leo-api-auto/blob/dev/images/login.png)
