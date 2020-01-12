@@ -1,4 +1,5 @@
 import sys
+import os
 import logging
 from logging import handlers
 from datetime import timedelta
@@ -15,9 +16,21 @@ from config import Config
 
 app = Flask(__name__, static_folder='../../dist/static', template_folder='../../dist')
 
+
 # 日志记录
+def make_dir(make_dir_path):
+    path = make_dir_path.strip()
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
+
+
+log_dir_name = "logs"
+log_file_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep + log_dir_name
+make_dir(log_file_folder)
 logging.basicConfig(level=logging.DEBUG)
-fileHandler = handlers.TimedRotatingFileHandler("logs/log.log", "d")
+# 安照日期切割，保留最近10天的日志
+fileHandler = handlers.TimedRotatingFileHandler("logs/flask.log", "D", backupCount=10)
 fileHandler.setLevel('DEBUG')
 logging_format = logging.Formatter(
     '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
