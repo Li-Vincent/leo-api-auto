@@ -5,7 +5,7 @@ from bson import ObjectId
 from flask import jsonify, request
 from flask_security import login_required, roles_accepted
 
-from app_init import app
+from app import app
 from models.mail_sender import MailSender
 from utils import common
 from utils.send_email import send_email

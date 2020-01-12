@@ -4,7 +4,7 @@ from bson import ObjectId
 from flask import jsonify, request
 from flask_security import login_required, roles_accepted
 
-from app_init import app
+from app import app
 from models.mail import Mail
 from utils import common
 

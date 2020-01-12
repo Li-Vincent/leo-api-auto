@@ -1,5 +1,4 @@
 from utils.db.mongo_orm import *
-from app_init import db
 
 
 class LeoUser(Model):

@@ -4,7 +4,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from pytz import timezone
 
-from app_init import db
+from app import db
 from execution_engine.cron_job.cron import Cron
 from utils import common
 

@@ -1,4 +1,6 @@
 import sys
+import logging
+from logging import handlers
 from datetime import timedelta
 
 sys.path.append('..')
@@ -13,6 +15,15 @@ from config import Config
 
 app = Flask(__name__, static_folder='../../dist/static', template_folder='../../dist')
 
+# 日志记录
+logging.basicConfig(level=logging.DEBUG)
+fileHandler = handlers.TimedRotatingFileHandler("logs/log.log", "d")
+fileHandler.setLevel('DEBUG')
+logging_format = logging.Formatter(
+    '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
+fileHandler.setFormatter(logging_format)
+app.logger.addHandler(fileHandler)
+
 _config = Config()
 
 app.config['SECRET_KEY'] = _config.get_secret_key()
@@ -21,6 +32,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)  # 设置session的
 app.config['JSON_AS_ASCII'] = False
 # 禁止jsonify 按照key 自动排序
 app.config['JSON_SORT_KEYS'] = False
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 

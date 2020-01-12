@@ -30,12 +30,12 @@
  
  3. 平台遵循「颜值即正义」原则，操作界面展示如下：
  
- ![操作界面展示](https://github.com/Li-Vincent/leo-api-auto/blob/dev/images/project-case-list.png)
+ ![操作界面展示](images/project-case-list.png)
  
  4. 平台拥有极佳的定时任务体验，启动定时任务后可随时停用 / 任意编辑任务内容且立即生效，同时支持执行失败邮件通知，
  页面展示如下：
  
- ![定时任务配置](https://github.com/Li-Vincent/leo-api-auto/blob/dev/images/cronJob-date.png)
+ ![定时任务配置](images/cronJob-date.png)
  
  5. 平台拥有较为丰富的测试结果校验体系。
  ([具体内容可参考本篇博文](https://juejin.im/post/5cfe1dd96fb9a07ed7407321))
@@ -130,8 +130,6 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 // 启动后端 ( 默认8888端口 )
 
     python ./backend/run.py
-
-
   
 #### 7. 访问项目
 现在就可以访问 http://127.0.0.1:8888/
@@ -144,7 +142,7 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 
 http://127.0.0.1:8888/
 
-![登录页面展示](https://github.com/Li-Vincent/leo-api-auto/blob/dev/images/login.png)
+![登录页面展示](images/login.png)
 
 ### Linux 环境下 Docker 容器化部署
 

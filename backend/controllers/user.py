@@ -5,7 +5,7 @@ from flask_security import login_user, logout_user, login_required, roles_requir
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app_init import app, security, login_manager, user_data_store
+from app import app, security, login_manager, user_data_store
 from models.leo_user import LeoUser
 from models.role import Role
 from utils import common

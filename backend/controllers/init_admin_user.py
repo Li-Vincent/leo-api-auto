@@ -4,7 +4,7 @@ from bson import ObjectId
 from flask import jsonify, request
 from werkzeug.security import generate_password_hash
 
-from app_init import app, user_data_store
+from app import app, user_data_store
 from models.leo_user import LeoUser
 from models.role import Role
 from utils import common

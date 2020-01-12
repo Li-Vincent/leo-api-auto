@@ -4,7 +4,7 @@ from bson import ObjectId
 from flask import jsonify, request
 from flask_security import login_required
 
-from app_init import app
+from app import app
 from models.test_report import TestReport
 from models.test_report_detail import TestReportDetail
 from utils import common
