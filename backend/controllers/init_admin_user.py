@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from bson import ObjectId
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from werkzeug.security import generate_password_hash
 
 from app import app, user_data_store
@@ -26,6 +26,7 @@ def check_admin_user_exist():
         return jsonify({'status': True, 'data': admin_email}) if admin_user and admin_email else jsonify(
             {'status': False})
     except BaseException as e:
+        current_app.logger.error("check_admin_user_exist failed. - %s" % str(e))
         return jsonify({'status': False, 'data': "出错了，请刷新重试 ~ %s" % e})
 
 
@@ -37,7 +38,7 @@ def admin_user_existed():
         admin_email = admin_user['email'] if admin_user else None
         return (True, admin_email) if admin_user and admin_email else (False, None)
     except BaseException as e:
-        print(e)
+        current_app.logger.error("admin_user_existed failed. - %s" % str(e))
         return False, e
 
 
@@ -59,6 +60,7 @@ def add_admin_user():
             user_data_store.add_role_to_user(user, role)
         return jsonify({'status': 'ok', 'data': '添加管理员用户成功'})
     except BaseException as e:
+        current_app.logger.error("add_admin_user failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': "出错了, Error: %s" % e})
 
 

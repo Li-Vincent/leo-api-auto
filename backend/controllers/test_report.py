@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from bson import ObjectId
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_security import login_required
 
 from app import app
@@ -23,6 +23,7 @@ def save_report_detail(report_id, test_suite_id, test_case_id, test_result):
         TestReportDetail.insert(filtered_data)
         return True
     except BaseException as e:
+        current_app.logger.error("save_report_detail failed. - %s" % str(e))
         return False
 
 
@@ -32,6 +33,7 @@ def save_report(test_report):
         TestReport.insert(filtered_data)
         return True
     except BaseException as e:
+        current_app.logger.error("save_report failed. - %s" % str(e))
         return False
 
 

@@ -37,6 +37,7 @@ def add_test_env(project_id):
         TestEnv.insert(filtered_data)
         return jsonify({'status': 'ok', 'data': '新建成功'})
     except BaseException as e:
+        current_app.logger.error("add_test_env failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '新建失败 %s' % e})
 
 
@@ -53,6 +54,7 @@ def update_test_env(project_id, test_env_id):
             return jsonify({'status': 'failed', 'data': '未找到相应的更新数据！'})
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
+        current_app.logger.error("update_test_env failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '更新失败 %s' % e})
 
 
@@ -61,4 +63,5 @@ def get_env_name_and_domain(test_env_id):
         test_env_info = common.format_response_in_dic(TestEnv.find_one({'_id': ObjectId(test_env_id), 'status': True}))
         return test_env_info['name'], test_env_info['domain']
     else:
+        current_app.logger.error("get_env_name_and_domain failed. - test_env_id is empty")
         raise ValueError("test_env_id should not be empty")

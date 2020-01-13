@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from bson import ObjectId
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_security import login_required
 
 from app import app
@@ -33,6 +33,7 @@ def add_test_suite(project_id):
         TestSuite.insert(filtered_data)
         return jsonify({'status': 'ok', 'data': '添加成功'})
     except BaseException as e:
+        current_app.logger.error("add_test_suite failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '添加失败 % s' % e})
 
 
@@ -47,6 +48,7 @@ def update_test_suite(project_id, test_suite_id):
             return jsonify({'status': 'failed', 'data': '未找到相应的更新数据！'})
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
+        current_app.logger.error("update_test_suite failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '更新失败 %s' % e})
 
 
@@ -57,6 +59,7 @@ def copy_test_suite(project_id, test_suite_id):
         # TODO
         return jsonify({'status': 'ok', 'data': '复制成功'})
     except BaseException as e:
+        current_app.logger.error("copy_test_suite failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '复制失败 %s' % e})
 
 
@@ -65,4 +68,5 @@ def get_suite_name(test_suite_id):
         test_suite = common.format_response_in_dic(TestSuite.find_one({'_id': ObjectId(test_suite_id)}))
         return test_suite['name']
     else:
+        current_app.logger.error("get_suite_name failed. - %s" % str("test_suite_id is empty"))
         raise ValueError("test_suite_id should not be empty")

@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from bson import ObjectId
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_security import login_required
 
 from app import app
@@ -36,7 +36,7 @@ def add_case(project_id, test_suite_id):
         TestCase.insert(filtered_data)
         return jsonify({'status': 'ok', 'data': '添加成功'})
     except BaseException as e:
-        app.logger.error(str(e))
+        current_app.logger.error("add_case failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '添加失败 %s' % e})
 
 
@@ -58,7 +58,7 @@ def update_case(project_id, test_suite_id, test_case_id):
                 if not isinstance(request_data['requestBody'], list):
                     return jsonify({'status': 'failed', 'data': '请求参数数据格式不正确!'})
             except BaseException as e:
-                app.logger.error(str(e))
+                current_app.logger.error("update_case failed. - %s" % str(e))
                 return jsonify({'status': 'failed', 'data': '请求参数数据格式不正确!: %s' % e})
     try:
         request_data['lastUpdateTime'] = datetime.utcnow()
@@ -68,7 +68,7 @@ def update_case(project_id, test_suite_id, test_case_id):
             return jsonify({'status': 'failed', 'data': '未找到相应更新数据！'})
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
-        app.logger.error(str(e))
+        current_app.logger.error("update_case failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '更新失败: %s' % e})
 
 
@@ -152,7 +152,7 @@ def start_api_test_by_case():
                             {'$set': {'lastManualResult': test_result}})
         return jsonify({'status': 'ok', 'data': "执行完毕"})
     except BaseException as e:
-        app.logger.error(str(e))
+        current_app.logger.error("start_api_test_by_case failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': "出错了 - %s" % e})
 
 
@@ -201,5 +201,5 @@ def start_api_test_by_suite():
         execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_id_list, domain, global_env_vars)
         return jsonify({'status': 'ok', 'data': "触发执行完毕"})
     except BaseException as e:
-        app.logger.error(str(e))
+        current_app.logger.error("start_api_test_by_suite failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': "出错了 - %s" % e})

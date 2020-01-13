@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from bson import ObjectId
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_security import login_required
 
 from app import app
@@ -29,6 +29,7 @@ def add_test_suite_param(project_id, test_suite_id):
         TestSuiteParam.insert(filtered_data)
         return jsonify({'status': 'ok', 'data': '新建成功'})
     except BaseException as e:
+        current_app.logger.error("add_test_suite_param failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '新建失败 %s' % e})
 
 
@@ -44,4 +45,5 @@ def update_test_suite_param(project_id, test_suite_param_id):
             return jsonify({'status': 'failed', 'data': '未找到相应的更新数据！'})
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
+        current_app.logger.error("update_test_suite_param failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '更新失败 %s' % e})
