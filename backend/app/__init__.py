@@ -30,7 +30,7 @@ log_file_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.par
 make_dir(log_file_folder)
 logging.basicConfig(level=logging.DEBUG)
 # 安照日期切割，保留最近10天的日志
-fileHandler = handlers.TimedRotatingFileHandler("logs/flask.log", "D", backupCount=10)
+fileHandler = handlers.TimedRotatingFileHandler("logs/flask.log", "m", backupCount=10)
 fileHandler.setLevel('DEBUG')
 logging_format = logging.Formatter(
     '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')

@@ -10,6 +10,7 @@ from utils import common
 
 
 @app.route('/api/project/<project_id>/testSuiteList', methods=['GET', 'POST'])
+@login_required
 def test_suite_list(project_id):
     total_num, test_suites = common.get_total_num_and_arranged_data(TestSuite, request.args, fuzzy_fields=['name'])
     return jsonify({'status': 'ok', 'data': {'totalNum': total_num, 'rows': test_suites}})
@@ -23,6 +24,7 @@ def get_project_suite(project_id, test_suite_id):
 
 
 @app.route('/api/project/<project_id>/addTestSuite', methods=['POST'])
+@login_required
 def add_test_suite(project_id):
     request_data = request.get_json()
     request_data['projectId'] = ObjectId(project_id)
@@ -38,6 +40,7 @@ def add_test_suite(project_id):
 
 
 @app.route('/api/project/<project_id>/updateTestSuite/<test_suite_id>', methods=['POST'])
+@login_required
 def update_test_suite(project_id, test_suite_id):
     try:
         request_data = request.get_json()
@@ -52,11 +55,31 @@ def update_test_suite(project_id, test_suite_id):
         return jsonify({'status': 'failed', 'data': '更新失败 %s' % e})
 
 
-@app.route('/api/project/<project_id>/copyTestSuite/<test_suite_id>')
+@app.route('/api/project/<project_id>/copyTestSuite/<test_suite_id>', methods=['POST'])
+@login_required
 def copy_test_suite(project_id, test_suite_id):
     try:
-        test_case_suite = TestSuite.find_one({'_id': ObjectId(test_suite_id)})
-        # TODO
+        request_data = request.get_json()
+        origin_test_suite = TestSuite.find_one({'_id': ObjectId(test_suite_id)})
+        if not origin_test_suite:
+            current_app.logger.error('can not find test_suite by id - %s' % test_suite_id)
+            return jsonify({'status': 'failed', 'data': '未找到要复制的test_suite'})
+        new_suite_name_prefix = 'Copy - '
+        new_test_suite = origin_test_suite
+        new_test_suite.pop('_id')
+        if 'lastUpdateTime' in new_test_suite:
+            new_test_suite.pop('lastUpdateTime')
+        if 'lastUpdateUser' in new_test_suite:
+            new_test_suite.pop('lastUpdateUser')
+        new_suite_name = new_suite_name_prefix + new_test_suite.pop('name') \
+            if 'name' in new_test_suite else new_suite_name_prefix + 'Unknown Test Suite'
+        new_test_suite['name'] = new_suite_name
+        new_test_suite["status"] = True
+        new_test_suite["createAt"] = datetime.utcnow()
+        new_test_suite['createUser'] = request_data['createUser']
+        filtered_data = TestSuite.filter_field(new_test_suite, use_set_default=True)
+        new_test_suite_id = TestSuite.insert(filtered_data)
+        print(new_test_suite_id)
         return jsonify({'status': 'ok', 'data': '复制成功'})
     except BaseException as e:
         current_app.logger.error("copy_test_suite failed. - %s" % str(e))

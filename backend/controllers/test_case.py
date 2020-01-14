@@ -40,11 +40,44 @@ def add_case(project_id, test_suite_id):
         return jsonify({'status': 'failed', 'data': '添加失败 %s' % e})
 
 
+@app.route('/api/project/<project_id>/testSuite/<test_suite_id>/copyCase/<test_case_id>', methods=['POST'])
+def copy_case(project_id, test_suite_id, test_case_id):
+    # 查询 sequence 最大值
+    try:
+        res = TestCase.find_one({'_id': ObjectId(test_case_id)})
+        if not res:
+            current_app.logger.error('can not find test_case by - %s' % test_case_id)
+            return jsonify({'status': 'failed', 'data': '未找到要复制的test_case'})
+        request_data = request.get_json()
+        new_case_data = res
+        # 去除_id
+        new_case_data.pop('_id')
+        if 'lastUpdateTime' in new_case_data:
+            new_case_data.pop('lastUpdateTime')
+        if 'lastUpdateUser' in new_case_data:
+            new_case_data.pop('lastUpdateUser')
+        if 'lastManualResult' in new_case_data:
+            new_case_data.pop('lastManualResult')
+        new_case_name_prefix = 'Copy - '
+        new_case_name = new_case_name_prefix + new_case_data.pop('name') \
+            if 'name' in new_case_data else new_case_name_prefix + 'Unknown Test Case'
+        new_case_data['name'] = new_case_name
+        new_case_data['sequence'] = new_case_data['sequence'] + 1
+        new_case_data["status"] = True
+        new_case_data["createAt"] = datetime.utcnow()
+        new_case_data['createUser'] = request_data['createUser']
+        filtered_data = TestCase.filter_field(new_case_data, use_set_default=True)
+        TestCase.insert(filtered_data)
+        return jsonify({'status': 'ok', 'data': '复制成功'})
+    except BaseException as e:
+        current_app.logger.error("copy_case failed. - %s" % str(e))
+        return jsonify({'status': 'failed', 'data': '复制失败 %s' % e})
+
+
 @app.route('/api/project/<project_id>/testSuite/<test_suite_id>/updateCase/<test_case_id>', methods=['POST'])
 @login_required
 def update_case(project_id, test_suite_id, test_case_id):
     request_data = request.get_json()
-    print(request_data)
     if request_data.get('requestBody') is not None:
         if isinstance(request_data.get('requestBody'), str) and \
                 request_data.get('requestBody').strip() == '':

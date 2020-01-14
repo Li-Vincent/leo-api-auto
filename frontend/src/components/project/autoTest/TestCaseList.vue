@@ -145,8 +145,8 @@
         <template slot-scope="scope">
           <el-button type="primary" size="small" :loading="testLoading" @click="onTest(scope.$index, scope.row)">测试
           </el-button>
-          <!--          <el-button class="copyBtn" size="small" :loading="copyLoading" @click="copyCase(scope.$index, scope.row)">复制-->
-          <!--          </el-button>-->
+          <el-button class="copyBtn" size="small" :loading="copyLoading" @click="copyCase(scope.$index, scope.row)">复制
+          </el-button>
           <el-button type="info" size="small" :loading="statusChangeLoading"
                      @click="handleChangeStatus(scope.$index, scope.row)"> {{scope.row.status===false?'启用':'禁用'}}
           </el-button>
@@ -241,7 +241,7 @@
 </template>
 
 <script>
-    import {getTestCases, updateTestCase, addTestCase} from "../../../api/testCase";
+    import {getTestCases, updateTestCase, addTestCase, copyTestCase} from "../../../api/testCase";
     import {getTestSuiteInfo} from "../../../api/testSuite";
     import {getTestEnvs} from "../../../api/testEnv";
     import {getCookie} from "../../../utils/cookies";
@@ -250,19 +250,6 @@
 
     export default {
         name: "TestCaseList",
-        created() {
-            // this.pageInfoIndex = this.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === this.$route.params.case_suite_id)
-            // this.size = this.pageInfoIndex === -1 ?
-            //     10 : (this.$store.state.apiCasePageInfo[this.pageInfoIndex] && this.$store.state.apiCasePageInfo[this.pageInfoIndex].size) || 10
-            // this.skip = this.pageInfoIndex === -1 ?
-            //     0 : (this.$store.state.apiCasePageInfo[this.pageInfoIndex] && this.$store.state.apiCasePageInfo[this.pageInfoIndex].skip) || 0
-            // this.sortBy = this.pageInfoIndex === -1 ?
-            //     'createAt' : (this.$store.state.apiCasePageInfo[this.pageInfoIndex] && this.$store.state.apiCasePageInfo[this.pageInfoIndex].sortBy) || 'createAt'
-            // this.order = this.pageInfoIndex === -1 ?
-            //     'descending' : (this.$store.state.apiCasePageInfo[this.pageInfoIndex] && this.$store.state.apiCasePageInfo[this.pageInfoIndex].order) || 'descending'
-            // this.currentPage = this.pageInfoIndex === -1 ?
-            //     1 : (this.$store.state.apiCasePageInfo[this.pageInfoIndex] && this.$store.state.apiCasePageInfo[this.pageInfoIndex].currentPage) || 1
-        },
         data() {
             let checkRoute = (rule, value, callback) => {
                 if (value != "" && value != null) {
@@ -291,6 +278,7 @@
                     {label: "HEAD", value: "HEAD"}],
                 caseList: [],
                 listLoading: false,
+                copyLoading: false,
                 testLoading: false,
                 statusChangeLoading: false,
                 delLoading: false,
@@ -760,6 +748,38 @@
                 self.result["testStartTime"] = moment(testResult.testStartTime).format("YYYY年MM月DD日HH时mm分ss秒");
                 self.result["spendTimeInSec"] = testResult.spendTimeInSec;
                 self.testResultStatus = true;
+            },
+            copyCase(index, row) {
+                let self = this;
+                this.$confirm('确认复制吗？', '提示', {}).then(() => {
+                    self.copyLoading = true;
+                    let header = {"Content-Type": "application/json"};
+                    let params = {
+                        createUser: self.$store.getters.email || '未知用户'
+                    };
+                    copyTestCase(self.$route.params.project_id, self.$route.params.test_suite_id, row._id, params, header).then((res) => {
+                        self.copyLoading = false;
+                        let {status, data} = res;
+                        if (status === 'ok') {
+                            self.$message.success({
+                                message: data,
+                                center: true,
+                            })
+                        } else {
+                            self.$message.error({
+                                message: data,
+                                center: true,
+                            })
+                        }
+                        self.getTestCaseList()
+                    }).catch((error) => {
+                        self.$message.error({
+                            message: '用例复制失败，请稍后重试哦~',
+                            center: true,
+                        });
+                        self.copyLoading = false;
+                    })
+                });
             }
         },
         mounted() {

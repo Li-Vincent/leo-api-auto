@@ -66,14 +66,10 @@
       <el-table-column label="操作" min-width="50%">
         <template slot-scope="scope">
           <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button class="copyBtn" size="small" :loading="copyLoading"
-                     @click="copyTestSuite(scope.$index, scope.row)">复制
+          <el-button class="copyBtn" size="small" :loading="copyLoading" @click="copySuite(scope.$index, scope.row)">复制
           </el-button>
-          <el-button
-            type="info"
-            size="small"
-            :loading="statusChangeLoading"
-            @click="handleChangeStatus(scope.$index, scope.row)">
+          <el-button type="info" size="small" :loading="statusChangeLoading"
+                     @click="handleChangeStatus(scope.$index, scope.row)">
             {{scope.row.status===false?'启用':'禁用'}}
           </el-button>
           <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
@@ -115,7 +111,6 @@
 </template>
 
 <script>
-    import {getCookie} from "../../../utils/cookies";
     import {addTestSuite, copyTestSuite, getTestSuites, updateTestSuite} from "../../../api/testSuite";
     import {getTestEnvs} from "../../../api/testEnv";
     import {startAPITestBySuite} from "../../../api/execution";
@@ -362,7 +357,7 @@
                                 let params = {
                                     name: self.form.name,
                                     description: self.form.description,
-                                    createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || '未知用户'
+                                    createUser: self.$store.getters.email || '未知用户'
                                 };
                                 addTestSuite(this.$route.params.project_id, params, headers).then((res) => {
                                     let {status, data} = res;
@@ -391,7 +386,7 @@
                                     project_id: this.$route.params.project_id,
                                     name: self.form.name,
                                     description: self.form.description,
-                                    lastUpdateUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || '未知用户'
+                                    lastUpdateUser: self.$store.getters.email || '未知用户'
                                 };
                                 updateTestSuite(this.$route.params.project_id, self.form._id, params, headers).then(res => {
                                     let {status, data} = res;
@@ -424,33 +419,37 @@
                     }
                 });
             },
-            copyTestSuite(index, row) {
+            copySuite(index, row) {
                 let self = this;
-                self.copyLoading = true;
-                let header = {"Content-Type": "application/json"};
-                let params = {};
-                copyTestSuite(self.$route.params.project_id, row._id, params, header).then((res) => {
-                    self.copyLoading = false;
-                    let {status, data} = res;
-                    if (status === 'ok') {
-                        self.$message.success({
-                            message: data,
-                            center: true,
-                        })
-                    } else {
+                this.$confirm('确认复制吗？', '提示', {}).then(() => {
+                    self.copyLoading = true;
+                    let header = {"Content-Type": "application/json"};
+                    let params = {
+                        createUser: self.$store.getters.email || '未知用户'
+                    };
+                    copyTestSuite(self.$route.params.project_id, row._id, params, header).then((res) => {
+                        self.copyLoading = false;
+                        let {status, data} = res;
+                        if (status === 'ok') {
+                            self.$message.success({
+                                message: data,
+                                center: true,
+                            })
+                        } else {
+                            self.$message.error({
+                                message: data,
+                                center: true,
+                            })
+                        }
+                        self.getTestSuiteList()
+                    }).catch((error) => {
                         self.$message.error({
-                            message: data,
+                            message: '用例组复制失败，请稍后重试哦~',
                             center: true,
-                        })
-                    }
-                    self.getTestSuiteList()
-                }).catch((error) => {
-                    self.$message.error({
-                        message: '用例组复制失败，请稍后重试哦~',
-                        center: true,
-                    });
-                    self.copyLoading = false;
-                })
+                        });
+                        self.copyLoading = false;
+                    })
+                });
             },
             // 修改table tr行的背景色
             reportRowStyle({row, rowIndex}) {
@@ -546,7 +545,6 @@
         }
     }
 </script>
-f
 
 <style lang="scss" scoped>
   .title {
@@ -563,5 +561,11 @@ f
     margin-bottom: 10px;
     margin-left: 20px;
     border-radius: 25px;
+  }
+
+  .copyBtn {
+    color: #fff;
+    background-color: #33CC00;
+    border-color: #33CC00;
   }
 </style>
