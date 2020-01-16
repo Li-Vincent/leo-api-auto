@@ -128,10 +128,10 @@
       <el-table-column prop="result" label="测试结果" min-width="25%" sortable='custom' show-overflow-tooltip>
         <template slot-scope="scope">
           <span
-            v-show="scope.row.lastManualResult.status!='ok'&&scope.row.lastManualResult.status!='failed'">尚无测试结果</span>
-          <span v-show="scope.row.lastManualResult.status==='ok'"
+            v-show="!scope.row.hasOwnProperty('lastManualResult') || scope.row.lastManualResult.status!='ok'&&scope.row.lastManualResult.status!='failed'">尚无测试结果</span>
+          <span v-show="scope.row.lastManualResult && scope.row.lastManualResult.status==='ok'"
                 style="color: #11b95c;cursor:pointer;" @click="showResult(scope.row)">通过,查看详情</span>
-          <span v-show="scope.row.lastManualResult.status==='failed'"
+          <span v-show="scope.row.lastManualResult && scope.row.lastManualResult.status==='failed'"
                 style="color: #cc0000;cursor:pointer;" @click="showResult(scope.row)">失败,查看详情</span>
         </template>
       </el-table-column>

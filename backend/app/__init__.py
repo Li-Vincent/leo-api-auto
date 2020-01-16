@@ -1,7 +1,7 @@
 import sys
 import os
 import logging
-from logging import handlers
+from concurrent_log_handler import ConcurrentRotatingFileHandler
 from datetime import timedelta
 
 sys.path.append('..')
@@ -29,8 +29,8 @@ log_dir_name = "logs"
 log_file_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep + log_dir_name
 make_dir(log_file_folder)
 logging.basicConfig(level=logging.DEBUG)
-# 安照日期切割，保留最近10天的日志
-fileHandler = handlers.TimedRotatingFileHandler("logs/flask.log", "m", backupCount=10)
+# 安照日志文件大小切割，超过1M时切割，最多保留10个日志文件
+fileHandler = ConcurrentRotatingFileHandler("logs/flask.log", maxBytes=1024 * 1024, backupCount=10)
 fileHandler.setLevel('DEBUG')
 logging_format = logging.Formatter(
     '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')

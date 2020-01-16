@@ -6,6 +6,7 @@ from flask_security import login_required
 
 from app import app
 from models.test_suite import TestSuite
+from models.test_case import TestCase
 from utils import common
 
 
@@ -78,8 +79,30 @@ def copy_test_suite(project_id, test_suite_id):
         new_test_suite["createAt"] = datetime.utcnow()
         new_test_suite['createUser'] = request_data['createUser']
         filtered_data = TestSuite.filter_field(new_test_suite, use_set_default=True)
+        # insert new test suite
         new_test_suite_id = TestSuite.insert(filtered_data)
-        print(new_test_suite_id)
+
+        # query test case
+        query = {'testSuiteId': ObjectId(test_suite_id), 'isDeleted': {'$ne': True}}
+        copied_test_cases = list(TestCase.find(query, sort=[('sequence', 1)]))
+
+        def handle_copied_case(test_case):
+            if 'lastUpdateTime' in test_case:
+                test_case.pop('lastUpdateTime')
+            if 'lastUpdateUser' in test_case:
+                test_case.pop('lastUpdateUser')
+            if 'lastManualResult' in test_case:
+                test_case.pop('lastManualResult')
+            test_case.pop('_id')
+            test_case['testSuiteId'] = ObjectId(new_test_suite_id)
+            test_case["createAt"] = datetime.utcnow()
+            test_case['createUser'] = request_data['createUser']
+            return test_case
+
+        handled_test_cases = list(map(handle_copied_case, copied_test_cases))
+        for handled_test_case in handled_test_cases:
+            filtered_test_case = TestCase.filter_field(handled_test_case)
+            TestCase.insert(filtered_test_case)
         return jsonify({'status': 'ok', 'data': '复制成功'})
     except BaseException as e:
         current_app.logger.error("copy_test_suite failed. - %s" % str(e))
