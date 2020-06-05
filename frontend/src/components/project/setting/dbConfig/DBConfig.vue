@@ -259,7 +259,7 @@
                                     name: self.form.name.trim(),
                                     dbType: self.form.dbType,
                                     description: self.form.description.trim(),
-                                    createUser: this.$store.getters.email || '未知用户'
+                                    createUser: this.$store.getters.email || 'anonymous'
                                 };
                                 addDBConfig(this.$route.params.project_id, params, headers).then((res) => {
                                     let {status, data} = res;
@@ -288,7 +288,7 @@
                                     name: self.form.name.trim(),
                                     dbType: self.form.dbType,
                                     description: self.form.description.trim(),
-                                    lastUpdateUser: this.$store.getters.email || '未知用户'
+                                    lastUpdateUser: this.$store.getters.email || 'anonymous'
                                 };
                                 updateDBConfig(this.$route.params.project_id, self.form._id, params, headers).then(res => {
                                     let {status, data} = res;

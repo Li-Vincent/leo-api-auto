@@ -127,7 +127,7 @@
         </el-form-item>
 
         <el-form-item label="任务描述" prop='description'>
-          <el-input type="textarea" :rows="4" v-model.trim="form.description"></el-input>
+          <el-input type="textarea" :rows="4" v-model="form.description"></el-input>
         </el-form-item>
 
       </el-form>
@@ -540,7 +540,7 @@
                                         triggerType: self.form.triggerType,
                                         description: self.form.description.trim(),
                                         alarmMailList: self.form.alarmMailList,
-                                        createUser: self.$store.getters.email || '未知用户',
+                                        createUser: self.$store.getters.email || 'anonymous',
                                     };
                                     if (self.form.runDate && self.form.runDate.toString().trim() !== '') {
                                         params['runDate'] = self.form.runDate
@@ -580,7 +580,7 @@
                                         triggerType: self.form.triggerType,
                                         description: self.form.description.trim(),
                                         alarmMailList: self.form.alarmMailList,
-                                        lastUpdateUser: self.$store.getters.email || '未知用户',
+                                        lastUpdateUser: self.$store.getters.email || 'anonymous',
                                     };
                                     if (self.form.runDate && self.form.runDate.toString().trim() !== '') {
                                         params['runDate'] = self.form.runDate

@@ -8,7 +8,7 @@
         <el-row :gutter="16">
           <el-col :span="18">
             <el-form-item label="用例名称" prop="name">
-              <el-input v-model.trim="addForm.name" auto-complete="off"></el-input>
+              <el-input v-model="addForm.name" auto-complete="off"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -383,9 +383,6 @@
             handleSizeChange(val) {
                 let self = this;
                 self.listLoading = true;
-                // self.$store.commit('setApiCasePageInfo', {size: val, caseSuiteId: self.$route.params.case_suite_id})
-                // self.pageInfoIndex = self.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === self.$route.params.case_suite_id)
-                // self.size = (self.$store.state.apiCasePageInfo[self.pageInfoIndex] && self.$store.state.apiCasePageInfo[self.pageInfoIndex].size) || 10
                 let params = {
                     size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
@@ -431,17 +428,6 @@
             handleCurrentChange(val) {
                 let self = this;
                 self.listLoading = true;
-                // self.$store.commit('setApiCasePageInfo', {
-                //     skip: (val - 1) * self.size,
-                //     caseSuiteId: self.$route.params.case_suite_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === self.$route.params.case_suite_id)
-                // self.skip = (self.$store.state.apiCasePageInfo[self.pageInfoIndex] && self.$store.state.apiCasePageInfo[self.pageInfoIndex].skip) || 0
-                // self.$store.commit('setApiCasePageInfo', {
-                //     currentPage: self.currentPage,
-                //     caseSuiteId: self.$route.params.case_suite_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === self.$route.params.case_suite_id)
                 let params = {
                     size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
@@ -452,18 +438,6 @@
             sortChange(column) {
                 let self = this;
                 self.listLoading = true;
-                // self.$store.commit('setApiCasePageInfo', {
-                //     sortBy: column.prop,
-                //     caseSuiteId: self.$route.params.case_suite_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === self.$route.params.case_suite_id)
-                // self.sortBy = (self.$store.state.apiCasePageInfo[self.pageInfoIndex] && self.$store.state.apiCasePageInfo[self.pageInfoIndex].sortBy) || 'createAt';
-                // self.$store.commit('setApiCasePageInfo', {
-                //     order: column.order,
-                //     caseSuiteId: self.$route.params.case_suite_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === self.$route.params.case_suite_id)
-                // self.order = (self.$store.state.apiCasePageInfo[self.pageInfoIndex] && self.$store.state.apiCasePageInfo[self.pageInfoIndex].order) || 'descending';
                 self.sortBy = column.prop;
                 self.order = column.order;
                 let params = {
@@ -480,13 +454,13 @@
                         this.$confirm('确认提交吗？', '提示', {}).then(() => {
                             self.addLoading = true;
                             let params = {
-                                name: self.addForm.name,
+                                name: self.addForm.name.trim(),
                                 requestProtocol: self.addForm.requestProtocol,
                                 requestMethod: self.addForm.requestMethod,
                                 route: self.addForm.route,
                                 service: self.addForm.service,
-                                description: self.addForm.description,
-                                createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || '未知用户'
+                                description: self.addForm.description.trim(),
+                                createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || 'anonymous'
                             };
                             let header = {};
                             addTestCase(self.$route.params.project_id, self.$route.params.test_suite_id, params, header).then((res) => {
@@ -755,7 +729,7 @@
                     self.copyLoading = true;
                     let header = {"Content-Type": "application/json"};
                     let params = {
-                        createUser: self.$store.getters.email || '未知用户'
+                        createUser: self.$store.getters.email || 'anonymous'
                     };
                     copyTestCase(self.$route.params.project_id, self.$route.params.test_suite_id, row._id, params, header).then((res) => {
                         self.copyLoading = false;

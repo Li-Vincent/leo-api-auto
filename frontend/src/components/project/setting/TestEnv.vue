@@ -96,14 +96,14 @@
                style="width: 60%; left: 20%">
       <el-form :model="form" :rules="formRules" ref="form" label-width="80px">
         <el-form-item label="名称" prop="name">
-          <el-input placeholder="请输入环境名称" v-model.trim="form.name" auto-complete="off"></el-input>
+          <el-input placeholder="请输入环境名称" v-model="form.name" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="域名" prop='domain'>
           <el-input placeholder="www.test.com/www.service-${service}.com" v-model.trim="form.domain"
                     auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="描述" prop='description'>
-          <el-input placeholder="请输入环境描述..." type="textarea" :rows="5" v-model.trim="form.description"></el-input>
+          <el-input placeholder="请输入环境描述..." type="textarea" :rows="5" v-model="form.description"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -339,10 +339,10 @@
                             };
                             if (this.dialogStatus == 'add') {
                                 let params = {
-                                    name: self.form.name,
+                                    name: self.form.name.trim(),
                                     domain: self.form.domain,
-                                    description: self.form.description,
-                                    createUser: this.$store.getters.email || '未知用户'
+                                    description: self.form.description.trim(),
+                                    createUser: this.$store.getters.email || 'anonymous'
                                 };
                                 addTestEnv(this.$route.params.project_id, params, headers).then((res) => {
                                     let {status, data} = res;
@@ -368,10 +368,10 @@
                                 })
                             } else if (this.dialogStatus == 'edit') {
                                 let params = {
-                                    name: self.form.name,
+                                    name: self.form.name.trim(),
                                     domain: self.form.domain,
-                                    description: self.form.description,
-                                    lastUpdateUser: this.$store.getters.email || '未知用户'
+                                    description: self.form.description.trim(),
+                                    lastUpdateUser: this.$store.getters.email || 'anonymous'
                                 };
                                 updateTestEnv(this.$route.params.project_id, self.form._id, params, headers).then(res => {
                                     let {status, data} = res;

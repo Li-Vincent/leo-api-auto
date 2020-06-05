@@ -90,11 +90,11 @@
         <el-form-item label="参数名" prop="name">
           <el-input placeholder="请输入参数名" v-model.trim="form.name" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="参数值" prop='envKeyword'>
-          <el-input placeholder="请输入参数值" v-model.trim="form.paramValue" auto-complete="off"></el-input>
+        <el-form-item label="参数值" prop='paramValue'>
+          <el-input placeholder="请输入参数值" v-model="form.paramValue" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="描述" prop='description'>
-          <el-input placeholder="请输入描述..." type="textarea" :rows="5" v-model.trim="form.description"></el-input>
+          <el-input placeholder="请输入描述..." type="textarea" :rows="5" v-model="form.description"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -340,8 +340,8 @@
                                     project_id: this.$route.params.project_id,
                                     name: self.form.name,
                                     paramValue: self.form.paramValue,
-                                    description: self.form.description,
-                                    lastUpdateUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || '未知用户'
+                                    description: self.form.description.trim(),
+                                    lastUpdateUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || 'anonymous'
                                 };
                                 updateTestEnvParam(this.$route.params.project_id, self.form._id, params, headers).then(res => {
                                     let {status, data} = res;
@@ -367,8 +367,8 @@
                                 let params = {
                                     name: self.form.name,
                                     paramValue: self.form.paramValue,
-                                    description: self.form.description,
-                                    createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || '未知用户',
+                                    description: self.form.description.trim(),
+                                    createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || 'anonymous',
                                 };
                                 addTestEnvParam(this.$route.params.project_id, this.$route.params.test_env_id, params, headers).then((res) => {
                                     let {status, data} = res;

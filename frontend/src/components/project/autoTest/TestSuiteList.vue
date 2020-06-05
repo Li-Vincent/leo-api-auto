@@ -126,10 +126,10 @@
                style="width: 65%; left: 17.5%">
       <el-form :model="form" :rules="formRules" ref="form" label-width="80px">
         <el-form-item label="名称" prop="name">
-          <el-input v-model.trim="form.name" auto-complete="off"></el-input>
+          <el-input v-model="form.name" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="描述" prop='description'>
-          <el-input type="textarea" :rows="4" v-model.trim="form.description"></el-input>
+          <el-input type="textarea" :rows="4" v-model="form.description"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -207,7 +207,7 @@
                 // For import cases.
                 importExtraData: {
                     projectId: this.$route.params.project_id,
-                    user: this.$store.getters.email || '未知用户'
+                    user: this.$store.getters.email || '未知anonymous'
                 }
             }
         },
@@ -251,9 +251,6 @@
             },
             handleSizeChange(val) {
                 let self = this;
-                // self.$store.commit('setApiCaseSuitePageInfo', {size: val, projectId: self.$route.params.project_id})
-                // self.pageInfoIndex = self.$store.state.apiCaseSuitePageInfo.findIndex(i => i.projectId === self.$route.params.project_id)
-                // self.size = (self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex] && self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex].size) || 10
                 let params = {
                     skip: self.skip, size: self.size, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id
@@ -262,17 +259,6 @@
             },
             handleCurrentChange(val) {
                 let self = this;
-                // self.$store.commit('setApiCaseSuitePageInfo', {
-                //     skip: (val - 1) * self.size,
-                //     projectId: self.$route.params.project_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCaseSuitePageInfo.findIndex(i => i.projectId === self.$route.params.project_id)
-                // self.skip = (self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex] && self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex].skip) || 0
-                // self.$store.commit('setApiCaseSuitePageInfo', {
-                //     currentPage: self.currentPage,
-                //     projectId: self.$route.params.project_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCaseSuitePageInfo.findIndex(i => i.projectId === self.$route.params.project_id)
                 let params = {
                     skip: self.skip, size: self.size, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id
@@ -317,11 +303,6 @@
             //排序
             sortChange(column) {
                 let self = this;
-                // self.$store.commit('setApiCaseSuitePageInfo',{sortBy: column.prop, projectId: self.$route.params.project_id})
-                // self.pageInfoIndex = self.$store.state.apiCaseSuitePageInfo.findIndex(i => i.projectId === self.$route.params.project_id)
-                // self.sortBy = (self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex] && self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex].sortBy) || 'createAt'
-                // self.$store.commit('setApiCaseSuitePageInfo',{order: column.order, projectId: self.$route.params.project_id})
-                // self.order = (self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex] && self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex].order) || 'descending'
                 self.sortBy = column.prop;
                 self.order = column.order;
                 let params = {
@@ -400,9 +381,9 @@
                             };
                             if (this.dialogStatus == 'add') {
                                 let params = {
-                                    name: self.form.name,
-                                    description: self.form.description,
-                                    createUser: self.$store.getters.email || '未知用户'
+                                    name: self.form.name.trim(),
+                                    description: self.form.description.trim(),
+                                    createUser: self.$store.getters.email || '未知anonymous'
                                 };
                                 addTestSuite(this.$route.params.project_id, params, headers).then((res) => {
                                     let {status, data} = res;
@@ -429,9 +410,9 @@
                             } else if (this.dialogStatus == 'edit') {
                                 let params = {
                                     project_id: this.$route.params.project_id,
-                                    name: self.form.name,
-                                    description: self.form.description,
-                                    lastUpdateUser: self.$store.getters.email || '未知用户'
+                                    name: self.form.name.trim(),
+                                    description: self.form.description.trim(),
+                                    lastUpdateUser: self.$store.getters.email || '未知anonymous'
                                 };
                                 updateTestSuite(this.$route.params.project_id, self.form._id, params, headers).then(res => {
                                     let {status, data} = res;
@@ -470,7 +451,7 @@
                     self.copyLoading = true;
                     let header = {"Content-Type": "application/json"};
                     let params = {
-                        createUser: self.$store.getters.email || '未知用户'
+                        createUser: self.$store.getters.email || '未知anonymous'
                     };
                     copyTestSuite(self.$route.params.project_id, row._id, params, header).then((res) => {
                         self.copyLoading = false;

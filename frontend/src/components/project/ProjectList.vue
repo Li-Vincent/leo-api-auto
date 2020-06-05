@@ -330,10 +330,10 @@
                             };
                             if (this.dialogStatus == 'edit') {
                                 let params = {
-                                    name: self.form.name,
-                                    version: self.form.version,
-                                    description: self.form.description,
-                                    lastUpdateUser: self.$store.getters.email || '匿名用户'
+                                    name: self.form.name.trim(),
+                                    version: self.form.version.trim(),
+                                    description: self.form.description.trim(),
+                                    lastUpdateUser: self.$store.getters.email || 'anonymous'
                                 };
                                 updateProject(self.form._id, params, header).then(_data => {
                                     let {status, data} = _data;
@@ -356,11 +356,11 @@
                                 });
                             } else if (this.dialogStatus == 'add') {
                                 let params = JSON.stringify({
-                                    name: self.form.name,
+                                    name: self.form.name.trim(),
+                                    version: self.form.version.trim(),
+                                    description: self.form.description.trim(),
                                     projectTestType: self.projectTestType,
-                                    version: self.form.version,
-                                    description: self.form.description,
-                                    createUser: self.$store.getters.email || '匿名用户'
+                                    createUser: self.$store.getters.email || 'anonymous'
                                 });
                                 addProject(params, header).then(res => {
                                     let {status, data} = res;

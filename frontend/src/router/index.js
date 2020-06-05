@@ -107,17 +107,6 @@ export const constantRoutes = [
         ]
       },
       {
-        path: '/project/:project_id/globalHost',
-        component: () => import('@/components/project/setting/GlobalHost'),
-        name: 'Host',
-        nav: 'host',
-        meta: {
-          title: 'Host设置'
-        },
-        leaf: true,  // 只显示一级导航
-        hidden: true
-      },
-      {
         path: '/project/:project_id/globalParam',
         component: () => import('@/components/project/setting/GlobalParam'),
         name: 'GlobalParam',

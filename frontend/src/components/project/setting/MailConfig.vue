@@ -80,7 +80,7 @@
           <el-input v-model.trim="mailForm.email" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="描述" prop='description'>
-          <el-input type="textarea" :rows="3" v-model.trim="mailForm.description"></el-input>
+          <el-input type="textarea" :rows="3" v-model="mailForm.description"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -366,7 +366,7 @@
                                     name: self.mailForm.name.trim(),
                                     email: self.mailForm.email,
                                     description: self.mailForm.description.trim(),
-                                    createUser: self.$store.getters.email || '未知用户'
+                                    createUser: self.$store.getters.email || 'anonymous'
                                 };
                                 addMail(this.$route.params.project_id, params, headers).then((res) => {
                                     let {status, data} = res;
@@ -395,7 +395,7 @@
                                     name: self.mailForm.name.trim(),
                                     email: self.mailForm.email,
                                     description: self.mailForm.description.trim(),
-                                    lastUpdateUser: self.$store.getters.email || '未知用户'
+                                    lastUpdateUser: self.$store.getters.email || 'anonymous'
                                 };
                                 updateMail(this.$route.params.project_id, self.mailForm._id, params, headers).then(res => {
                                     let {status, data} = res;
@@ -506,7 +506,7 @@
                                 "Content-Type": "application/json",
                             };
                             if (this.senderMailExisted) {
-                                params['lastUpdateUser'] = self.$store.getters.email || '匿名用户'
+                                params['lastUpdateUser'] = self.$store.getters.email || 'anonymous'
                                 updateMailSender(this.$route.params.project_id, this.configForm._id, params, header).then((res) => {
                                     let {status, data} = res;
                                     self.configLoading = false;
@@ -530,7 +530,7 @@
                                     }
                                 });
                             } else {
-                                params['createUser'] = self.$store.getters.email || '匿名用户'
+                                params['createUser'] = self.$store.getters.email || 'anonymous'
                                 addMailSender(this.$route.params.project_id, params, header).then((res) => {
                                     let {status, data} = res;
                                     self.configLoading = false;
