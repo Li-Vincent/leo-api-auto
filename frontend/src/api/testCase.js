@@ -45,6 +45,16 @@ export function getCaseDetail(project_id, test_suite_id, test_case_id, header) {
   })
 }
 
+export function exportTestCases(params, header) {
+  return request({
+    url: `/api/exportTestCases`,
+    method: 'POST',
+    headers: header,
+    responseType: 'blob',
+    data: params
+  })
+}
+
 
 
 

@@ -3,13 +3,16 @@ import datetime
 import re
 import time
 import socket
+import ast
 
 from bson import ObjectId
 
-re_escapes = ['\\', '/', '*', '.', '?', '+', '$', '^', '[', ']', '(', ')', '{', '}', '|']
+LIST_SEPARATOR = '#;#'
+
+RE_ESCAPES = ['\\', '/', '*', '.', '?', '+', '$', '^', '[', ']', '(', ')', '{', '}', '|']
 
 
-def format_escapes(input, escapes=re_escapes):
+def format_escapes(input, escapes=RE_ESCAPES):
     if not isinstance(input, str):
         return input
     else:
@@ -413,3 +416,130 @@ def get_host_ip():
     finally:
         s.close()
     return ip
+
+
+# 2013-10-10 15:40:00:98898934545 <str> ---> 1381419600.988990 <timestamp> ---> 2013-10-10 15:40:00.988990 <datetime>
+def str2specific_date_time(time_str, timedelta=None):
+    if time_str is None or time_str == '':
+        return datetime.datetime.utcnow()
+    if timedelta is None:
+        timedelta = get_offset_between_local_and_utc()
+    try:
+        # normal_date_time_str = datetime.datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S.%f")
+        normal_date_time_str, millisecond_str = [time_str[0: time_str.rindex(':')],
+                                                 time_str[time_str.rindex(':') + 1:]] if time_str.count(':') > 2 else [
+            time_str, '']
+        normal_date_time = datetime.datetime.strptime(normal_date_time_str, "%Y-%m-%d %H:%M:%S")
+        millisecond = int(millisecond_str) / pow(10, len(millisecond_str)) if millisecond_str else 0
+        time_stamp = normal_date_time.timestamp() + millisecond
+        specific_date_time = datetime.datetime.utcfromtimestamp(time_stamp) + datetime.timedelta(hours=timedelta)
+        return specific_date_time
+    except BaseException as e:
+        # raise TypeError('字符串转datetime格式失败！ : %s' % e)
+        print('字符串转datetime格式失败！ : %s' % e)
+        return datetime.datetime.utcnow()
+
+
+def is_data_exist(model, info):
+    object_id = None
+    _is_exist = False
+    try:
+        object_id = ObjectId(info.get('_id'))
+    except BaseException as e:
+        print(e)
+        pass
+    try:
+        _is_exist = bool(model.find_one({"_id": object_id})) if object_id is not None else False
+    except BaseException as e:
+        print(e)
+        pass
+    return _is_exist
+
+
+# 判断 pre_validate_data 符不符合给定的 expected_structure
+def is_data_valid(expected_structure, pre_validate_data):
+    if not isinstance(expected_structure, dict) or not expected_structure:
+        raise TypeError('expected_structure must be valid dict')
+    expected_type_range = expected_structure.get('expectedTypeRange')
+    if not expected_type_range:
+        return True
+    expected_value_range = expected_structure.get('expectedValueRange') \
+        if expected_structure.get('expectedValueRange') else []
+    expected_dict = expected_structure.get('expectedDict') if expected_structure.get('expectedDict') else {}
+    if not all(map(lambda x: isinstance(x, type), expected_type_range)) \
+            or not isinstance(expected_value_range, list) or not isinstance(expected_dict, dict):
+        raise TypeError('expectedType、 expectedRange、 expectedDict  must be type_list、 list、dict,'
+                        ' we got expected_type_range: %s 、expected_value_range: %s 、expected_dict: %s'
+                        % (expected_type_range, expected_value_range, expected_dict))
+    if not type(pre_validate_data) in expected_type_range:
+        return False
+    if isinstance(pre_validate_data, list):
+        for list_piece in pre_validate_data:
+            if expected_value_range and not any(map(is_data_valid, expected_value_range,
+                                                    x2list(len(expected_value_range), list_piece))):
+                return False
+    elif isinstance(pre_validate_data, dict):
+        for k, v in expected_dict.items():
+            if k not in pre_validate_data or not is_data_valid(v, pre_validate_data[k]):
+                return False
+    return True
+
+
+def validate_and_pre_process_import_test_case(test_suite_model, test_case_model, case_info,
+                                              test_case_mapping, table_row_index):
+    if not isinstance(case_info, dict):
+        raise TypeError('case_info must be dict!')
+    _case_info = copy.deepcopy(case_info)
+    _is_test_case_exist = is_data_exist(test_case_model, _case_info)
+    _is_test_suite_exist = is_data_exist(test_suite_model, {'_id': _case_info.get('testSuiteId')})
+    _case_info.pop('_id') if '_id' in _case_info and not _is_test_case_exist else None
+    _case_info.pop('testSuiteId') if 'testSuiteId' in _case_info and not _is_test_suite_exist else None
+    for key, value in _case_info.items():
+        if key == 'testSuiteName':
+            _case_info[key] = str(_case_info[key])
+            continue
+        case_attribute = getattr(test_case_model, key)
+        attribute_type = case_attribute.get_type()
+        try:
+            if attribute_type is str:
+                _case_info[key] = str(_case_info[key])
+                continue
+            elif attribute_type is list:
+                # TODO 判断优化
+                is_transfer_ele2dict = case_attribute.expected_structure and \
+                                       isinstance(case_attribute.expected_structure.get('expectedValueRange'), list) \
+                                       and all(map(lambda x: x.get('expectedTypeRange') == [dict],
+                                                   case_attribute.expected_structure.get('expectedValueRange')))
+                if is_transfer_ele2dict:
+                    # TODO 判断优化: (默认值可能不是都存在)
+                    _case_info[key] = case_attribute.default if not _case_info[key] else \
+                        list(map(lambda x: ast.literal_eval(x),
+                                 str(_case_info[key]).strip().split(LIST_SEPARATOR)))
+            elif attribute_type is dict:
+                _case_info[key] = ast.literal_eval(str(_case_info[key]).strip()) \
+                    if _case_info[key] else {}
+            elif attribute_type is bool:
+                _case_info[key] = True if str(_case_info[key]).strip().lower() == 'true' else False
+                continue
+            elif attribute_type == type(ObjectId()) and _is_test_case_exist:
+                _case_info[key] = ObjectId(_case_info[key])
+                continue
+            elif attribute_type == type(datetime.datetime.utcnow()):
+                _case_info[key] = str2specific_date_time(str(_case_info[key].strip()))
+                continue
+            elif attribute_type is int:
+                _case_info[key] = int(_case_info[key])
+                continue
+            elif attribute_type is float:
+                _case_info[key] = float(_case_info[key])
+                continue
+            is_valid = is_data_valid(case_attribute.expected_structure, _case_info[key]) \
+                if case_attribute.expected_structure is not None else True
+            if not is_valid:
+                # raise TypeError('{} 值不满足 {} 结构'.format(_case_info[key], case_attribute.expected_structure))
+                raise TypeError('{} 值不满足 Model 中设定的结构~'.format(_case_info[key]))
+        except BaseException as e:
+            print(e)
+            raise TypeError('表格中第 %s 行的 「%s」 值无法转换为 %s: %s'
+                            % (table_row_index, test_case_mapping[key], str(attribute_type.__name__), e))
+    return _is_test_case_exist, _case_info, _is_test_suite_exist

@@ -560,8 +560,7 @@
                     parameterType: "",
                     parameterRaw: "",
                     isJsonArray: false,
-                    parameterForm: [{name: "", value: ""},
-                        {name: "", value: ""}],
+                    parameterForm: [{name: "", value: ""}, {name: "", value: ""}],
                     setGlobalVars: [{name: "", query: []}],
                     checkResponse: "noCheck",
                     checkResponseCode: "",
@@ -596,7 +595,6 @@
                 showResponseCodeCheck: false,
                 showResponseBodyCheck: false,
                 showResponseNumCheck: false
-
             }
         },
         methods: {

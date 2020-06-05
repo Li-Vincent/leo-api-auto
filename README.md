@@ -91,7 +91,7 @@
 
 LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据库的地址和端口（必填）
 
-LEO_API_PLATFORM_MONGO_USERNAME 和 LEO_API_PLATFORM_MONGO_PASSWORD 分别表示数据库的帐号密码（若无可不填）
+LEO_API_PLATFORM_MONGO_USERNAME 和 LEO_API_PLATFORM_MONGO_PASSWORD 分别表示数据库的帐号密码（若无可不填，如果开启auth，需要注意，此用户必须为admin用户，并开启readWriteAnyDatabase权限）
 
 LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：leo-api-platform-db）
 
@@ -144,7 +144,7 @@ http://127.0.0.1:8888/
 
 ![登录页面展示](images/login.png)
 
-### Linux 环境下 Docker 容器化部署
+### Linux(CentOS7) 环境下 Docker 容器化部署
 
 [点击进入 Docker 教程地址](https://www.runoob.com/docker/ubuntu-docker-install.html)
 
@@ -156,13 +156,11 @@ http://127.0.0.1:8888/
 
 2.1 启动数据库 & 数据挂载至宿主机
 
-    sudo -i
-    docker pull mongo 
-    docker run  --name leo-api-platform-db -p 27017:27017 -v /data/db:/data/db -v /data/configdb:/data/configdb ``-d mongo
-  
+    参照教程 https://www.cnblogs.com/vincent-li666/p/12763723.html
+    
 2.2 创建数据库帐号
 
-    docker exec -it leo-api-platform-db /bin/bash
+    docker exec -it mongodb /bin/bash
 
     mongo
 
@@ -170,14 +168,13 @@ http://127.0.0.1:8888/
 
     switched to db admin
 
-    > db.createUser({user:"${USERNAME}",pwd:"${PASSWORD}",roles:["root"]})
+    > db.createUser({user:"${USERNAME}",pwd:"${PASSWORD}",roles:["root","readWriteAnyDatabase"]})
 
-    Successfully added user: { "user" : "admin", "roles" : [ "root" ] }
+    Successfully added user: { "user" : ${USERNAME}, "roles" : [ "root", "readWriteAnyDatabase" ] }
   
 2.3 数据库内存扩容(建议)
 
-    > db.adminCommand({setParameter:1, internalQueryExecMaxBlockingSortBytes:335544320})
-
+    > db.adminCommand({setParameter:1, internalQueryExecMaxBlockingSortBytes:104857600})
     { "was" : 33554432, "ok" : 1 }
   
 #### 3. 环境变量配置

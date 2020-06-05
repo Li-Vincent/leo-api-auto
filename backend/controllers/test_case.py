@@ -1,8 +1,14 @@
+import xlsxwriter
+import xlrd
+import ast
 import json
+import copy
+
 from datetime import datetime
+from io import BytesIO
 
 from bson import ObjectId
-from flask import jsonify, request, current_app
+from flask import jsonify, request, current_app, send_file
 from flask_security import login_required
 
 from app import app
@@ -10,7 +16,9 @@ from controllers.test_env import get_env_name_and_domain
 from controllers.test_env_param import get_global_env_vars
 from execution_engine.execution import ExecutionEngine, execute_test_by_suite_async
 from models.test_case import TestCase
+from models.test_suite import TestSuite
 from utils import common
+
 
 
 @app.route('/api/project/<project_id>/testSuite/<test_suite_id>/testCaseList', methods=['GET'])
@@ -236,3 +244,270 @@ def start_api_test_by_suite():
     except BaseException as e:
         current_app.logger.error("start_api_test_by_suite failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': "出错了 - %s" % e})
+
+
+test_case_map = {
+    'testSuiteId': '用例组_id',
+    'testSuiteName': '用例组名称',
+    '_id': '用例_id',
+    'name': '用例名称',
+    'description': '用例描述',
+    'sequence': '执行顺序',
+
+    'requestProtocol': '请求协议',
+    'requestMethod': '请求方法',
+    'domain': '请求域名',
+    'service': '服务名',
+    'route': '请求路由',
+    'headers': '请求头部',
+    'isClearCookie': '请求前是否清除Cookie',
+    'dataInitializes': '数据初始化',
+    'requestBody': '请求参数',
+    'setGlobalVars': '设置全局变量',
+
+    'checkResponseCode': '返回状态码校验',
+    'checkResponseBody': '返回结果校验',
+    'checkResponseNumber': '数值计算校验',
+
+    'createAt': '创建时间/UTC',
+    'createUser': '创建人',
+    'lastUpdateTime': '最后更新时间/UTC',
+    'lastUpdateUser': '最后更新人',
+}
+
+# export cases sort by
+_sort_query = [('testSuiteId', 1), ('sequence', 1), ('createAt', 1)]
+
+
+@app.route("/api/importTestCases", methods=['POST'])
+@login_required
+def import_test_cases():
+    file = request.files.get('file')
+    request_data = request.form
+    current_test_suite_id = request_data.get('testSuiteId') if request_data else None
+    project_id = request_data.get('projectId') if request_data else None
+    current_user = request_data.get('user') if request_data else None
+
+    if file is None or project_id is None or current_user is None:
+        return jsonify({'status': 'failed', 'data': '参数不合法！值为: None'})
+
+    if current_test_suite_id == 'undefined' or project_id == 'undefined' or current_user == 'undefined':
+        return jsonify({'status': 'failed', 'data': '参数不合法！值为: undefined'})
+
+    try:
+        file_content = file.read()
+        workbook = xlrd.open_workbook(file_contents=file_content)
+    except BaseException as e:
+        return jsonify({'status': 'failed', 'data': '「Excel」读取失败! %s' % e})
+
+    if '测试用例' not in workbook.sheet_names():
+        return jsonify({'status': 'failed', 'data': '「Excel」缺失「测试用例」Sheet'})
+
+    test_case_table = workbook.sheet_by_name('测试用例')
+    rows_num = test_case_table.nrows  # 获取该sheet中的有效行数
+
+    if rows_num < 2:
+        return jsonify({'status': 'failed', 'data': '「测试用例」Sheet 有效行数小于两行: %s 行' % rows_num})
+
+    # 获取表头
+    test_case_attributes = test_case_table.row_values(0)
+
+    # 获取表头和case_map的差集
+    diff_list = list(set(test_case_map.values()) ^ set(test_case_attributes))
+
+    # 如果表头和case_map不一致则报错
+    if diff_list:
+        missing_attributes = [diff for diff in diff_list if diff in test_case_map.values()]
+        extra_attributes = [diff for diff in diff_list if diff not in test_case_map.values()]
+        fail_msg = ''
+        if missing_attributes:
+            fail_msg += '「测试用例」Sheet 表头缺失字段: %s\n' % missing_attributes
+        if extra_attributes:
+            fail_msg += '「测试用例」Sheet 表头存在多余字段: %s\n' % extra_attributes
+        if fail_msg:
+            return jsonify({'status': 'failed', 'data': fail_msg})
+
+    attributes_indexes = [test_case_attributes.index(v) for v in test_case_map.values()]
+
+    # TODO:
+    def get_pre_import_case_info(case_info, test_case_mapping, table_row_index):
+        _is_test_case_exist, _case_info, _is_test_suite_exist = \
+            common.validate_and_pre_process_import_test_case(TestSuite, TestCase, case_info,
+                                                             test_case_mapping, table_row_index)
+        return _is_test_case_exist, _case_info, _is_test_suite_exist
+
+    results = []
+    import_count = 0
+    update_count = 0
+    test_case_info = copy.deepcopy(test_case_map)
+    for i in range(1, rows_num):
+        for k, v in enumerate(test_case_info.keys()):
+            test_case_info[v] = test_case_table.row_values(i)[attributes_indexes[k]]
+        try:
+            # is_case_exist, pre_import_case_info, is_case_suite_exist \
+            #     = get_pre_import_case_info(test_case_info, test_case_mapping=test_case_map, table_row_index=(i + 2))
+            is_test_case_exist, pre_import_case_info, is_test_suite_exist = common.validate_and_pre_process_import_test_case(
+                TestSuite, TestCase, test_case_info, test_case_map, i + 1)
+        except BaseException as b_e:
+            return jsonify({'status': 'failed', 'data': '导入数据异常: %s' % b_e})
+
+        try:
+            # 在用例列表中导入
+            if current_test_suite_id:
+                if is_test_case_exist and str(pre_import_case_info.get('testSuiteId')) == str(current_test_suite_id):
+                    pre_import_case_info = TestCase.filter_field(pre_import_case_info, use_set_default=False)
+                    result = str(TestCase.update({"_id": ObjectId(pre_import_case_info.get('_id'))},
+                                                 {'$set': pre_import_case_info})) + ' _id: {}'.format(
+                        pre_import_case_info.get('_id'))
+                    update_count += 1
+                else:
+                    try:
+                        pre_import_case_info.pop('_id') if '_id' in pre_import_case_info else None
+                    except BaseException as e:
+                        pass
+                    pre_import_case_info['status'] = True
+                    pre_import_case_info['testSuiteId'] = ObjectId(test_suite_id)
+                    pre_import_case_info['projectId'] = ObjectId(project_id)
+                    pre_import_case_info['createUser'] = current_user
+                    pre_import_case_info['lastUpdateUser'] = current_user
+                    pre_import_case_info['testCaseType'] = 'apiTest'
+                    pre_import_case_info = TestCase.filter_field(pre_import_case_info, use_set_default=True)
+                    result = TestCase.insert(pre_import_case_info)
+                    import_count += 1
+            # 在用例组列表内导入
+            else:
+                inserted_test_suite_id = None
+                test_suite_name = pre_import_case_info.get('testSuiteName') \
+                    if pre_import_case_info.get('testSuiteName') else ''
+                if is_test_suite_exist:
+                    if not test_suite_name == \
+                           TestSuite.find_one({"_id": ObjectId(pre_import_case_info.get('testSuiteId'))})['name']:
+                        TestSuite.update({"_id": ObjectId(pre_import_case_info.get('testSuiteId'))},
+                                         {'$set': {'name': test_suite_name}})
+                    else:
+                        pass
+                else:
+                    insert_data = dict()
+                    insert_data["name"] = test_suite_name
+                    insert_data["status"] = True
+                    insert_data["projectId"] = ObjectId(project_id)
+                    insert_data["lastUpdateTime"] = datetime.utcnow()
+                    insert_data["createAt"] = datetime.utcnow()
+                    insert_data["createUser"] = current_user
+                    insert_data["lastUpdateUser"] = current_user
+                    inserted_test_suite_id = TestSuite.insert(insert_data)
+
+                if inserted_test_suite_id:
+                    pre_import_case_info.pop('_id') if is_case_exist else None
+                    pre_import_case_info["projectId"] = ObjectId(project_id)
+                    pre_import_case_info['testSuiteId'] = ObjectId(inserted_test_suite_id)
+                    pre_import_case_info = TestCase.filter_field(pre_import_case_info, use_set_default=True)
+                    result = TestCase.insert(pre_import_case_info)
+                    import_count += 1
+
+                else:
+                    if is_test_case_exist:
+                        pre_import_case_info = TestCase.filter_field(pre_import_case_info, use_set_default=False)
+                        result = str(TestCase.update({"_id": ObjectId(pre_import_case_info.get('_id'))},
+                                                     {'$set': pre_import_case_info})) + ' _id: {}'.format(
+                            pre_import_case_info.get('_id'))
+                        update_count += 1
+                    else:
+                        pre_import_case_info["projectId"] = ObjectId(project_id)
+                        pre_import_case_info['testSuiteId'] = ObjectId(pre_import_case_info.get('testSuiteId'))
+                        pre_import_case_info = TestCase.filter_field(pre_import_case_info, use_set_default=True)
+                        result = TestCase.insert(pre_import_case_info)
+                        import_count += 1
+
+            results.append(result)
+        except BaseException as e:
+            return jsonify({'status': 'failed', 'data': '数据导入异常: %s' % e})
+
+    def get_returned_data(_results, _import_count, _update_count):
+        _returned_data = dict()
+        _returned_data['status'] = 'ok'
+        if import_count > 0 and update_count == 0:
+            _returned_data['data'] = '操作成功, 共成功导入 %s 条用例' % _import_count
+            # _returned_data['log'] = '导入数据_id: %s' % _results
+        elif update_count > 0 and import_count == 0:
+            _returned_data['data'] = '操作成功, 共成功覆盖 %s 条用例' % _update_count
+            # _returned_data['log'] = '导入数据_id: %s' % _results
+        elif import_count > 0 and update_count > 0:
+            _returned_data['data'] = '操作成功, 共成功导入 %s 条用例、覆盖 %s 条用例' % (import_count, update_count)
+            # _returned_data['log'] = '导入数据_id: %s' % _results
+        else:
+            _returned_data['data'] = '操作成功，但啥都没导入 / 覆盖'
+            # _returned_data['log'] = None
+        return jsonify(_returned_data)
+
+    returned_data = get_returned_data(results, import_count, update_count)
+    return returned_data
+
+
+@app.route('/api/exportTestCases', methods=['POST'])
+@login_required
+def export_test_cases():
+    request_data = request.get_json()
+
+    def is_list_valid(input_data):
+        is_valid = isinstance(input_data, list) and len(input_data) > 0
+        return is_valid
+
+    test_case_ids = request_data.get('testCaseIds') if is_list_valid(request_data.get('testCaseIds')) else []
+    test_suite_ids = request_data.get('testSuiteIds') if is_list_valid(request_data.get('testSuiteIds')) else []
+
+    if not test_case_ids and not test_suite_ids:
+        return jsonify({'status': 'failed', 'data': '参数不合法!'})
+
+    try:
+        test_case_ids = list(map(lambda x: ObjectId(x), test_case_ids))
+        test_suite_ids = list(map(lambda x: ObjectId(x), test_suite_ids))
+    except BaseException as e:
+        return jsonify({'status': 'failed', 'data': '参数不合法: %s' % e})
+
+    query = {
+        '$or': [
+            {'_id': {'$in': test_case_ids}, 'isDeleted': {'$ne': True}},
+            {'testSuiteId': {'$in': test_suite_ids}, 'isDeleted': {'$ne': True}}
+        ]
+    }
+
+    def export_case_format(case):
+        export_case = list()
+        for key in test_case_map.keys():
+            if isinstance(case.get(key), list):
+                case_data = common.LIST_SEPARATOR.join(([str(x) if common.can_convert_to_str(x) else '' for x in case[key]]))
+            elif isinstance(case.get(key), datetime):
+                case_data = str(case.get(key)).replace('.', ':', 1) if common.can_convert_to_str(case.get(key)) and str(
+                    case.get(key)).count('.') < 2 else str(case.get(key))
+            else:
+                case_data = str(case.get(key)) if case.get(key) is not None else ''
+            export_case.append(case_data)
+        return export_case
+
+    def add_test_suite_name(case_info):
+        _case_suite_id = case_info.get('testSuiteId')
+        try:
+            test_suite_name = TestSuite.find_one({'_id': _case_suite_id})['name'] \
+                if TestSuite.find_one({'_id': _case_suite_id}) else ''
+            case_info['testSuiteName'] = test_suite_name if test_suite_name else ''
+        except BaseException as e:
+            print(e)
+        return case_info
+
+    _export_test_cases = list(
+        map(export_case_format, list(map(add_test_suite_name, TestCase.find(query, sort=_sort_query)))))
+    bytes_io = BytesIO()
+    workbook = xlsxwriter.Workbook(bytes_io, {'in_memory': True})
+    sheet = workbook.add_worksheet(u'测试用例')
+
+    for index, value in enumerate(test_case_map.values()):
+        sheet.write(0, index, value)
+    for row_index, values in enumerate(_export_test_cases):
+        for col_index, value in enumerate(values):
+            sheet.write(row_index + 1, col_index, value)
+
+    workbook.close()
+    bytes_io.seek(0)
+    # return .xlsx
+    return send_file(bytes_io, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

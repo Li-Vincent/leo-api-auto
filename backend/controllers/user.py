@@ -10,6 +10,11 @@ from models.leo_user import LeoUser
 from models.role import Role
 from utils import common
 
+# add favicon.ico
+@app.route('/favicon.ico')
+def favicon():
+    return current_app.send_static_file('favicon.ico')
+
 
 def query_user(email):
     try:
