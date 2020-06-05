@@ -4,7 +4,7 @@ env_dict = os.environ
 
 
 class Config:
-    _LEO_API_PLATFORM_ENV = env_dict.get('LEO_API_PLATFORM_ENV', 'dev')
+    _LEO_API_PLATFORM_ENV = env_dict.get('LEO_API_PLATFORM_ENV', 'production')
     _LEO_API_PLATFORM_PORT = env_dict.get('LEO_API_PLATFORM_PORT', 8888)
     _LEO_API_PLATFORM_MONGO_HOST = env_dict.get('LEO_API_PLATFORM_MONGO_HOST', '127.0.0.1')
     _LEO_API_PLATFORM_MONGO_PORT = env_dict.get('LEO_API_PLATFORM_MONGO_PORT', 27017)
