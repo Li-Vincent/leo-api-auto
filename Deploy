@@ -1,12 +1,12 @@
-docker rm leo-auto-platform-frontend;
-docker stop leo-auto-platform-backend;
-docker rm leo-auto-platform-backend;
+docker rm leo-api-platform-frontend;
+docker stop leo-api-platform-backend;
+docker rm leo-api-platform-backend;
 
-docker build -f Dockerfile.frontend -t leo-auto-platform-frontend .;
-docker run --name leo-auto-platform-frontend leo-auto-platform-frontend;
-docker cp leo-auto-platform-frontend:/home/docker/leo-auto-platform/dist ./;
+docker build -f Dockerfile.frontend -t leo-api-platform-frontend .;
+docker run --name leo-api-platform-frontend leo-api-platform-frontend;
+docker cp leo-api-platform-frontend:/home/docker/leo-api-platform/dist ./;
 
-docker build -f Dockerfile.backend -t leo-auto-platform-backend .;
+docker build -f Dockerfile.backend -t leo-api-platform-backend .;
 
 echo "LEO_API_PLATFORM_ENV=${LEO_API_PLATFORM_ENV}
 LEO_API_PLATFORM_MONGO_HOST=${LEO_API_PLATFORM_MONGO_HOST}
@@ -15,8 +15,8 @@ LEO_API_PLATFORM_MONGO_USERNAME=${LEO_API_PLATFORM_MONGO_USERNAME}
 LEO_API_PLATFORM_MONGO_PASSWORD=${LEO_API_PLATFORM_MONGO_PASSWORD}
 LEO_API_PLATFORM_MONGO_DBNAME=${LEO_API_PLATFORM_MONGO_DBNAME}" > Envlist.txt;
 
-docker run --name leo-auto-platform-backend \
+docker run --name leo-api-platform-backend \
            --env-file="./Envlist.txt"  \
            -p $1:5050 \
-           -d leo-auto-platform-backend;
+           -d leo-api-platform-backend;
 
