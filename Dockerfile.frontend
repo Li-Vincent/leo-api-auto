@@ -2,7 +2,7 @@ FROM node:alpine
 
 USER root
 
-ENV WORKING_DIR /home/docker/leo-api-platform
+ENV WORKING_DIR /app/leo-api-platform
 # Provides cached layer for node_modules
 COPY frontend ${WORKING_DIR}/frontend
 
