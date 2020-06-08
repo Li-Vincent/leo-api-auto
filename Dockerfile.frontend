@@ -6,7 +6,7 @@ ENV WORKING_DIR /home/docker/leo-api-platform
 # Provides cached layer for node_modules
 COPY frontend ${WORKING_DIR}/frontend
 
-RUN sh -c "echo 'Aisa/Shanghai' > /etc/timezone" \
+RUN sh -c "echo 'Asia/Shanghai' > /etc/timezone" \
     && cd ${WORKING_DIR}/frontend \
     && npm install -g cnpm --registry=https://registry.npm.taobao.org \
     && cnpm install phantomjs-prebuilt@2.1.16 --ignore-scripts \
