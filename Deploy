@@ -20,4 +20,3 @@ docker run --name leo-api-platform-backend \
            -p $1:8888 \
            -v /home/docker/leo-api-platform/backend/logs:/app/leo-api-platform/backend/logs \
            -d leo-api-platform-backend;
-
