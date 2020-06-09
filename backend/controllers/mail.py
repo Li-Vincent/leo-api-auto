@@ -1,10 +1,10 @@
 from datetime import datetime
 
 from bson import ObjectId
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_security import login_required, roles_accepted
 
-from app_init import app
+from app import app
 from models.mail import Mail
 from utils import common
 
@@ -29,6 +29,7 @@ def add_mail(project_id):
         Mail.insert(filtered_data)
         return jsonify({'status': 'ok', 'data': '新增邮件成功'})
     except BaseException as e:
+        current_app.logger.error("add_mail failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '新增邮件失败 %s' % e})
 
 
@@ -45,4 +46,5 @@ def update_mail(project_id, mail_id):
             return jsonify({'status': 'failed', 'data': '未找到相应的更新数据！'})
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
+        current_app.logger.error("update_mail failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '更新失败 %s' % e})

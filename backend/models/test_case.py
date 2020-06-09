@@ -29,7 +29,26 @@ class TestCase(Model):
     domain = StringField()
     route = StringField()
     # 数据初始化
-    dataInitializes = ListField(field_name='dataInitializes')
+    dataInitializes = ListField(field_name='dataInitializes',
+                                default=[{'dbConfigId': '', 'dbType': '', 'mongoCrud': '', 'collection': '',
+                                          'query': '', 'set': '', 'sql': ''}],
+                                expected_structure={
+                                    'expectedTypeRange': [list],
+                                    'expectedValueRange': [
+                                        {
+                                            'expectedTypeRange': [dict],
+                                            'expectedDict': {
+                                                'dbConfigId': {'expectedTypeRange': []},
+                                                'dbType': {'expectedTypeRange': []},
+                                                'mongoCrud': {'expectedTypeRange': []},
+                                                'collection': {'expectedTypeRange': []},
+                                                'query': {'expectedTypeRange': []},
+                                                'set': {'expectedTypeRange': []},
+                                                'sql': {'expectedTypeRange': []},
+                                            }
+                                        }
+                                    ]
+                                })
     headers = ListField(field_name='headers',
                         default=[
                             {'name': 'Accept', 'value': 'application/json'},
@@ -55,7 +74,15 @@ class TestCase(Model):
                                 }
                             ]
                         })
-    requestBody = ListField(field_name='requestBody', default=[{}])
+    requestBody = ListField(field_name='requestBody', default=[{}],
+                            expected_structure={
+                                'expectedTypeRange': [list],
+                                'expectedValueRange': [{
+                                    'expectedTypeRange': [dict],
+                                    'expectedDict': {
+                                    }
+                                }]
+                            })
     isJsonArray = BooleanField(field_name='isJsonArray', default=False)
     isClearCookie = BooleanField(field_name='isClearCookie', default=False)
     setGlobalVars = ListField(field_name='setGlobalVars',

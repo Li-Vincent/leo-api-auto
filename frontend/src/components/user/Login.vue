@@ -121,6 +121,7 @@
     -moz-background-size: 100% 100%;
     -webkit-background-size: 100% 100%;
     background: url(../../assets/imgs/login-bg.jpeg) no-repeat;
+    background-size: cover;
   }
 
   .leo-login-main {

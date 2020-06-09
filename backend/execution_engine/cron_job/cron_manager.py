@@ -4,7 +4,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from pytz import timezone
 
-from app_init import db
+from app import db
 from execution_engine.cron_job.cron import Cron
 from utils import common
 
@@ -41,7 +41,7 @@ class CronManager:
                                          max_instances=5,
                                          jitter=0)  # 玄学，新增job的时候不用加args，直接加对象调用的func
         elif cron_instance.trigger_type == 'date':
-            run_date = cron_instance.trigger_args.get('runDate')
+            run_date = cron_instance.trigger_args.get('run_date')
             # TODO 判断run_date类型
             job = self.scheduler.add_job(func=cron_instance.cron_mission,
                                          trigger=cron_instance.trigger_type,

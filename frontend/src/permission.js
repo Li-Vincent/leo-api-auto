@@ -86,7 +86,7 @@ router.beforeEach(async (to, from, next) => {
         // determine whether the user has obtained his permission roles through getInfo
         const hasRoles = store.getters.roles && store.getters.roles.length > 0
         if (hasRoles) {
-          next();
+          next()
         } else {
           try {
             // get user info
@@ -104,8 +104,7 @@ router.beforeEach(async (to, from, next) => {
             // set the replace: true, so the navigation will not leave a history record
             // next({...to, replace: true})
             next()
-          } catch
-            (error) {
+          } catch (error) {
             // remove token and go to login page to re-login
             await store.dispatch('user/resetToken')
             Message.error(error || 'Has Error')

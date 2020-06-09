@@ -10,23 +10,54 @@
             <i class="el-icon-d-arrow-left" style="margin-right: 5px"></i>返回
           </el-button>
         </router-link>
-        <el-form-item style="margin-left: 30px;">
+        <el-form-item style="margin-left: 50px;">
           <el-button type="primary" class="el-icon-plus" @click="handleAdd">新增用例组</el-button>
         </el-form-item>
-        <el-form-item style="margin-left: 5px">
-          <el-button type="primary" class="el-icon-caret-right" :disabled="!hasSelected" @click="onTest">执行测试
-          </el-button>
+        <!--        case import-->
+        <el-form-item style="margin-left: 10px">
+          <el-tooltip class="item" effect="dark" content="只接收 xls / xlsx 哦~" placement="top-start">
+            <el-upload
+              :action="getImportUrl"
+              :before-upload="onBeforeUpload"
+              :on-success="onSuccessUpload"
+              :on-error="onErrorUpload"
+              :on-progress="onProgressUpload"
+              :show-file-list="false"
+              :with-credentials="true"
+              :data="importExtraData"
+            >
+              <el-button class="el-icon-upload2" :disabled="importLoading" type="primary"
+                         style="margin-left: 5px">用例导入
+              </el-button>
+            </el-upload>
+          </el-tooltip>
         </el-form-item>
-        <el-select v-model="testEnv" style="margin-right: 20px" @visible-change='checkActiveTestEnv' clearable
-                   placeholder="测试环境">
-          <el-option v-for="(item,index) in testEnvs" :key="index+''" :label="item.name" :value="item._id"></el-option>
-        </el-select>
-        <div style="float: right; margin-right: 100px">
+        <el-form-item style="margin-left: 5px">
+          <el-tooltip class="item" effect="dark" content="导出格式是 xlsx 哦~" placement="top-start">
+            <el-button class="el-icon-download" :loading="exportLoading" :disabled="!hasSelected"
+                       type="primary"
+                       style="margin-right: 3px" @click="exportCases"> 用例导出
+            </el-button>
+          </el-tooltip>
+        </el-form-item>
+
+        <div style="float: right; margin-right: 20px">
           <el-form-item>
             <el-input v-model.trim="filters.name" placeholder="名称" @keyup.enter.native="getTestSuiteList"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" class="el-icon-search" @click="getTestSuiteList"> 查询</el-button>
+          </el-form-item>
+        </div>
+        <div style="float: right; margin-right: 30px">
+          <el-select v-model="testEnv" style="margin-right: 20px" @visible-change='checkActiveTestEnv' clearable
+                     placeholder="测试环境">
+            <el-option v-for="(item,index) in testEnvs" :key="index+''" :label="item.name"
+                       :value="item._id"></el-option>
+          </el-select>
+          <el-form-item>
+            <el-button type="primary" class="el-icon-caret-right" :disabled="!hasSelected" @click="onTest">执行测试
+            </el-button>
           </el-form-item>
         </div>
       </el-form>
@@ -66,14 +97,10 @@
       <el-table-column label="操作" min-width="50%">
         <template slot-scope="scope">
           <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button class="copyBtn" size="small" :loading="copyLoading"
-                     @click="copyTestSuite(scope.$index, scope.row)">复制
+          <el-button class="copyBtn" size="small" :loading="copyLoading" @click="copySuite(scope.$index, scope.row)">复制
           </el-button>
-          <el-button
-            type="info"
-            size="small"
-            :loading="statusChangeLoading"
-            @click="handleChangeStatus(scope.$index, scope.row)">
+          <el-button type="info" size="small" :loading="statusChangeLoading"
+                     @click="handleChangeStatus(scope.$index, scope.row)">
             {{scope.row.status===false?'启用':'禁用'}}
           </el-button>
           <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
@@ -99,10 +126,10 @@
                style="width: 65%; left: 17.5%">
       <el-form :model="form" :rules="formRules" ref="form" label-width="80px">
         <el-form-item label="名称" prop="name">
-          <el-input v-model.trim="form.name" auto-complete="off"></el-input>
+          <el-input v-model="form.name" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="描述" prop='description'>
-          <el-input type="textarea" :rows="4" v-model.trim="form.description"></el-input>
+          <el-input type="textarea" :rows="4" v-model="form.description"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -111,19 +138,24 @@
       </div>
     </el-dialog>
 
+    <!--    for export case download-->
+    <a class="js-download-doc" :href="downloadLink" :download="downloadName" v-show="false"/>
   </section>
 </template>
 
 <script>
-    import {getCookie} from "../../../utils/cookies";
     import {addTestSuite, copyTestSuite, getTestSuites, updateTestSuite} from "../../../api/testSuite";
     import {getTestEnvs} from "../../../api/testEnv";
     import {startAPITestBySuite} from "../../../api/execution";
+    import {exportTestCases} from '../../../api/testCase';
+    import moment from "moment";
 
     export default {
         name: "TestSuiteList",
         data() {
             return {
+                downloadLink: '',
+                downloadName: '',
                 testSuites: [],
                 filters: {
                     name: ""
@@ -137,6 +169,8 @@
                 totalNum: 0,
                 listLoading: false,
                 copyLoading: false,
+                importLoading: false,
+                exportLoading: false,
                 hasSelected: false,
                 selects: [],//列表选中列
                 delLoading: false,
@@ -168,6 +202,12 @@
                 initForm: {
                     name: '',
                     description: ''
+                },
+
+                // For import cases.
+                importExtraData: {
+                    projectId: this.$route.params.project_id,
+                    user: this.$store.getters.email || '未知anonymous'
                 }
             }
         },
@@ -211,9 +251,6 @@
             },
             handleSizeChange(val) {
                 let self = this;
-                // self.$store.commit('setApiCaseSuitePageInfo', {size: val, projectId: self.$route.params.project_id})
-                // self.pageInfoIndex = self.$store.state.apiCaseSuitePageInfo.findIndex(i => i.projectId === self.$route.params.project_id)
-                // self.size = (self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex] && self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex].size) || 10
                 let params = {
                     skip: self.skip, size: self.size, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id
@@ -222,17 +259,6 @@
             },
             handleCurrentChange(val) {
                 let self = this;
-                // self.$store.commit('setApiCaseSuitePageInfo', {
-                //     skip: (val - 1) * self.size,
-                //     projectId: self.$route.params.project_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCaseSuitePageInfo.findIndex(i => i.projectId === self.$route.params.project_id)
-                // self.skip = (self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex] && self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex].skip) || 0
-                // self.$store.commit('setApiCaseSuitePageInfo', {
-                //     currentPage: self.currentPage,
-                //     projectId: self.$route.params.project_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCaseSuitePageInfo.findIndex(i => i.projectId === self.$route.params.project_id)
                 let params = {
                     skip: self.skip, size: self.size, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id
@@ -277,11 +303,6 @@
             //排序
             sortChange(column) {
                 let self = this;
-                // self.$store.commit('setApiCaseSuitePageInfo',{sortBy: column.prop, projectId: self.$route.params.project_id})
-                // self.pageInfoIndex = self.$store.state.apiCaseSuitePageInfo.findIndex(i => i.projectId === self.$route.params.project_id)
-                // self.sortBy = (self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex] && self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex].sortBy) || 'createAt'
-                // self.$store.commit('setApiCaseSuitePageInfo',{order: column.order, projectId: self.$route.params.project_id})
-                // self.order = (self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex] && self.$store.state.apiCaseSuitePageInfo[self.pageInfoIndex].order) || 'descending'
                 self.sortBy = column.prop;
                 self.order = column.order;
                 let params = {
@@ -360,9 +381,9 @@
                             };
                             if (this.dialogStatus == 'add') {
                                 let params = {
-                                    name: self.form.name,
-                                    description: self.form.description,
-                                    createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || '未知用户'
+                                    name: self.form.name.trim(),
+                                    description: self.form.description.trim(),
+                                    createUser: self.$store.getters.email || '未知anonymous'
                                 };
                                 addTestSuite(this.$route.params.project_id, params, headers).then((res) => {
                                     let {status, data} = res;
@@ -389,9 +410,9 @@
                             } else if (this.dialogStatus == 'edit') {
                                 let params = {
                                     project_id: this.$route.params.project_id,
-                                    name: self.form.name,
-                                    description: self.form.description,
-                                    lastUpdateUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || '未知用户'
+                                    name: self.form.name.trim(),
+                                    description: self.form.description.trim(),
+                                    lastUpdateUser: self.$store.getters.email || '未知anonymous'
                                 };
                                 updateTestSuite(this.$route.params.project_id, self.form._id, params, headers).then(res => {
                                     let {status, data} = res;
@@ -424,33 +445,37 @@
                     }
                 });
             },
-            copyTestSuite(index, row) {
+            copySuite(index, row) {
                 let self = this;
-                self.copyLoading = true;
-                let header = {"Content-Type": "application/json"};
-                let params = {};
-                copyTestSuite(self.$route.params.project_id, row._id, params, header).then((res) => {
-                    self.copyLoading = false;
-                    let {status, data} = res;
-                    if (status === 'ok') {
-                        self.$message.success({
-                            message: data,
-                            center: true,
-                        })
-                    } else {
+                this.$confirm('确认复制吗？', '提示', {}).then(() => {
+                    self.copyLoading = true;
+                    let header = {"Content-Type": "application/json"};
+                    let params = {
+                        createUser: self.$store.getters.email || '未知anonymous'
+                    };
+                    copyTestSuite(self.$route.params.project_id, row._id, params, header).then((res) => {
+                        self.copyLoading = false;
+                        let {status, data} = res;
+                        if (status === 'ok') {
+                            self.$message.success({
+                                message: data,
+                                center: true,
+                            })
+                        } else {
+                            self.$message.error({
+                                message: data,
+                                center: true,
+                            })
+                        }
+                        self.getTestSuiteList()
+                    }).catch((error) => {
                         self.$message.error({
-                            message: data,
+                            message: '用例组复制失败，请稍后重试哦~',
                             center: true,
-                        })
-                    }
-                    self.getTestSuiteList()
-                }).catch((error) => {
-                    self.$message.error({
-                        message: '用例组复制失败，请稍后重试哦~',
-                        center: true,
-                    });
-                    self.copyLoading = false;
-                })
+                        });
+                        self.copyLoading = false;
+                    })
+                });
             },
             // 修改table tr行的背景色
             reportRowStyle({row, rowIndex}) {
@@ -538,6 +563,73 @@
                         type: 'warning'
                     })
                 }
+            },
+
+            // For Import Test Cases
+            onBeforeUpload(file) {
+                let fileSuffix = file.name.substring(file.name.lastIndexOf(".") + 1)
+                if (fileSuffix === 'xls' || fileSuffix === 'xlsx') {
+                    return file
+                } else {
+                    this.$message.warning('只接收 .xls / .xlsx 文件哦 ~ ')
+                    return false
+                }
+            },
+            onSuccessUpload(response) {
+                let {status, data} = response
+                if (status === 'ok') {
+                    this.$message.success(data)
+                } else {
+                    this.$message.error(data)
+                }
+                this.getTestSuiteList()
+                this.importLoading = false
+            },
+            onProgressUpload(event) {
+                this.importLoading = true
+            },
+            onErrorUpload(err) {
+                this.importLoading = false
+                this.$message.error(err)
+            },
+
+            // For Export Test Case
+            async exportCases() {
+                let self = this;
+                self.exportLoading = true;
+                let testSuiteIds = self.selects.map(item => item._id);
+                let header = {
+                    "Content-Type": "application/json"
+                };
+                let params = JSON.stringify({
+                    "testSuiteIds": testSuiteIds
+                });
+                exportTestCases(params, header).then((res) => {
+                    const blob = new Blob([res])
+                    self.downloadLink = window.URL.createObjectURL(blob)
+                    self.downloadName = `测试用例_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`
+                    self.$nextTick(() => {
+                        self.$el.querySelector('.js-download-doc').click()
+                        window.URL.revokeObjectURL(this.downloadLink)
+                        self.exportLoading = false;
+                        self.$message.success({
+                            message: '用例导出成功',
+                            center: true,
+                        });
+                    })
+                }).catch((error) => {
+                    console.log("Export Cases error:", error)
+                    self.$message.error({
+                        message: '用例导出失败，请稍后重试哦~',
+                        center: true,
+                    });
+                    self.exportLoading = false;
+                })
+            },
+        },
+        computed: {
+            getImportUrl() {
+                return `${process.env.CASE_IMPORT_URI}`
             }
         },
         mounted() {
@@ -546,7 +638,6 @@
         }
     }
 </script>
-f
 
 <style lang="scss" scoped>
   .title {
@@ -563,5 +654,11 @@ f
     margin-bottom: 10px;
     margin-left: 20px;
     border-radius: 25px;
+  }
+
+  .copyBtn {
+    color: #fff;
+    background-color: #33CC00;
+    border-color: #33CC00;
   }
 </style>

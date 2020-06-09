@@ -8,7 +8,7 @@
         <el-row :gutter="16">
           <el-col :span="18">
             <el-form-item label="用例名称" prop="name">
-              <el-input v-model.trim="addForm.name" auto-complete="off"></el-input>
+              <el-input v-model="addForm.name" auto-complete="off"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -128,10 +128,10 @@
       <el-table-column prop="result" label="测试结果" min-width="25%" sortable='custom' show-overflow-tooltip>
         <template slot-scope="scope">
           <span
-            v-show="scope.row.lastManualResult.status!='ok'&&scope.row.lastManualResult.status!='failed'">尚无测试结果</span>
-          <span v-show="scope.row.lastManualResult.status==='ok'"
+            v-show="!scope.row.hasOwnProperty('lastManualResult') || scope.row.lastManualResult.status!='ok'&&scope.row.lastManualResult.status!='failed'">尚无测试结果</span>
+          <span v-show="scope.row.lastManualResult && scope.row.lastManualResult.status==='ok'"
                 style="color: #11b95c;cursor:pointer;" @click="showResult(scope.row)">通过,查看详情</span>
-          <span v-show="scope.row.lastManualResult.status==='failed'"
+          <span v-show="scope.row.lastManualResult && scope.row.lastManualResult.status==='failed'"
                 style="color: #cc0000;cursor:pointer;" @click="showResult(scope.row)">失败,查看详情</span>
         </template>
       </el-table-column>
@@ -145,8 +145,8 @@
         <template slot-scope="scope">
           <el-button type="primary" size="small" :loading="testLoading" @click="onTest(scope.$index, scope.row)">测试
           </el-button>
-          <!--          <el-button class="copyBtn" size="small" :loading="copyLoading" @click="copyCase(scope.$index, scope.row)">复制-->
-          <!--          </el-button>-->
+          <el-button class="copyBtn" size="small" :loading="copyLoading" @click="copyCase(scope.$index, scope.row)">复制
+          </el-button>
           <el-button type="info" size="small" :loading="statusChangeLoading"
                      @click="handleChangeStatus(scope.$index, scope.row)"> {{scope.row.status===false?'启用':'禁用'}}
           </el-button>
@@ -241,7 +241,7 @@
 </template>
 
 <script>
-    import {getTestCases, updateTestCase, addTestCase} from "../../../api/testCase";
+    import {getTestCases, updateTestCase, addTestCase, copyTestCase} from "../../../api/testCase";
     import {getTestSuiteInfo} from "../../../api/testSuite";
     import {getTestEnvs} from "../../../api/testEnv";
     import {getCookie} from "../../../utils/cookies";
@@ -250,19 +250,6 @@
 
     export default {
         name: "TestCaseList",
-        created() {
-            // this.pageInfoIndex = this.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === this.$route.params.case_suite_id)
-            // this.size = this.pageInfoIndex === -1 ?
-            //     10 : (this.$store.state.apiCasePageInfo[this.pageInfoIndex] && this.$store.state.apiCasePageInfo[this.pageInfoIndex].size) || 10
-            // this.skip = this.pageInfoIndex === -1 ?
-            //     0 : (this.$store.state.apiCasePageInfo[this.pageInfoIndex] && this.$store.state.apiCasePageInfo[this.pageInfoIndex].skip) || 0
-            // this.sortBy = this.pageInfoIndex === -1 ?
-            //     'createAt' : (this.$store.state.apiCasePageInfo[this.pageInfoIndex] && this.$store.state.apiCasePageInfo[this.pageInfoIndex].sortBy) || 'createAt'
-            // this.order = this.pageInfoIndex === -1 ?
-            //     'descending' : (this.$store.state.apiCasePageInfo[this.pageInfoIndex] && this.$store.state.apiCasePageInfo[this.pageInfoIndex].order) || 'descending'
-            // this.currentPage = this.pageInfoIndex === -1 ?
-            //     1 : (this.$store.state.apiCasePageInfo[this.pageInfoIndex] && this.$store.state.apiCasePageInfo[this.pageInfoIndex].currentPage) || 1
-        },
         data() {
             let checkRoute = (rule, value, callback) => {
                 if (value != "" && value != null) {
@@ -291,6 +278,7 @@
                     {label: "HEAD", value: "HEAD"}],
                 caseList: [],
                 listLoading: false,
+                copyLoading: false,
                 testLoading: false,
                 statusChangeLoading: false,
                 delLoading: false,
@@ -395,9 +383,6 @@
             handleSizeChange(val) {
                 let self = this;
                 self.listLoading = true;
-                // self.$store.commit('setApiCasePageInfo', {size: val, caseSuiteId: self.$route.params.case_suite_id})
-                // self.pageInfoIndex = self.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === self.$route.params.case_suite_id)
-                // self.size = (self.$store.state.apiCasePageInfo[self.pageInfoIndex] && self.$store.state.apiCasePageInfo[self.pageInfoIndex].size) || 10
                 let params = {
                     size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
@@ -443,17 +428,6 @@
             handleCurrentChange(val) {
                 let self = this;
                 self.listLoading = true;
-                // self.$store.commit('setApiCasePageInfo', {
-                //     skip: (val - 1) * self.size,
-                //     caseSuiteId: self.$route.params.case_suite_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === self.$route.params.case_suite_id)
-                // self.skip = (self.$store.state.apiCasePageInfo[self.pageInfoIndex] && self.$store.state.apiCasePageInfo[self.pageInfoIndex].skip) || 0
-                // self.$store.commit('setApiCasePageInfo', {
-                //     currentPage: self.currentPage,
-                //     caseSuiteId: self.$route.params.case_suite_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === self.$route.params.case_suite_id)
                 let params = {
                     size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
@@ -464,18 +438,6 @@
             sortChange(column) {
                 let self = this;
                 self.listLoading = true;
-                // self.$store.commit('setApiCasePageInfo', {
-                //     sortBy: column.prop,
-                //     caseSuiteId: self.$route.params.case_suite_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === self.$route.params.case_suite_id)
-                // self.sortBy = (self.$store.state.apiCasePageInfo[self.pageInfoIndex] && self.$store.state.apiCasePageInfo[self.pageInfoIndex].sortBy) || 'createAt';
-                // self.$store.commit('setApiCasePageInfo', {
-                //     order: column.order,
-                //     caseSuiteId: self.$route.params.case_suite_id
-                // })
-                // self.pageInfoIndex = self.$store.state.apiCasePageInfo.findIndex(i => i.caseSuiteId === self.$route.params.case_suite_id)
-                // self.order = (self.$store.state.apiCasePageInfo[self.pageInfoIndex] && self.$store.state.apiCasePageInfo[self.pageInfoIndex].order) || 'descending';
                 self.sortBy = column.prop;
                 self.order = column.order;
                 let params = {
@@ -492,13 +454,13 @@
                         this.$confirm('确认提交吗？', '提示', {}).then(() => {
                             self.addLoading = true;
                             let params = {
-                                name: self.addForm.name,
+                                name: self.addForm.name.trim(),
                                 requestProtocol: self.addForm.requestProtocol,
                                 requestMethod: self.addForm.requestMethod,
                                 route: self.addForm.route,
                                 service: self.addForm.service,
-                                description: self.addForm.description,
-                                createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || '未知用户'
+                                description: self.addForm.description.trim(),
+                                createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || 'anonymous'
                             };
                             let header = {};
                             addTestCase(self.$route.params.project_id, self.$route.params.test_suite_id, params, header).then((res) => {
@@ -760,6 +722,38 @@
                 self.result["testStartTime"] = moment(testResult.testStartTime).format("YYYY年MM月DD日HH时mm分ss秒");
                 self.result["spendTimeInSec"] = testResult.spendTimeInSec;
                 self.testResultStatus = true;
+            },
+            copyCase(index, row) {
+                let self = this;
+                this.$confirm('确认复制吗？', '提示', {}).then(() => {
+                    self.copyLoading = true;
+                    let header = {"Content-Type": "application/json"};
+                    let params = {
+                        createUser: self.$store.getters.email || 'anonymous'
+                    };
+                    copyTestCase(self.$route.params.project_id, self.$route.params.test_suite_id, row._id, params, header).then((res) => {
+                        self.copyLoading = false;
+                        let {status, data} = res;
+                        if (status === 'ok') {
+                            self.$message.success({
+                                message: data,
+                                center: true,
+                            })
+                        } else {
+                            self.$message.error({
+                                message: data,
+                                center: true,
+                            })
+                        }
+                        self.getTestCaseList()
+                    }).catch((error) => {
+                        self.$message.error({
+                            message: '用例复制失败，请稍后重试哦~',
+                            center: true,
+                        });
+                        self.copyLoading = false;
+                    })
+                });
             }
         },
         mounted() {

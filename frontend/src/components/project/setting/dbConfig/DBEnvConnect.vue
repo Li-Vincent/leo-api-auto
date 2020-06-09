@@ -249,8 +249,8 @@
                                 dbHost: self.form.dbHost.trim(),
                                 dbPort: self.form.dbPort,
                                 dbName: self.form.dbName.trim(),
-                                lastUpdateUser: this.$store.getters.email || '未知用户',
-                                createUser: this.$store.getters.email || '未知用户'
+                                lastUpdateUser: this.$store.getters.email || 'anonymous',
+                                createUser: this.$store.getters.email || 'anonymous'
                             };
                             if (self.form.dbUser && self.form.dbPassword) {
                                 params['dbUser'] = self.form.dbUser.trim();

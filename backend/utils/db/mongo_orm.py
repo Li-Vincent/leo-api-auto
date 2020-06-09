@@ -29,8 +29,6 @@ def connect(database, ip='127.0.0.1', port=27017, username=None, password=None):
 
 
 # ****** Fields ******
-
-
 class Field(object):
     _type = object
 
@@ -138,6 +136,7 @@ def cls_method_creater(func_name):
         func_real = getattr(db[cls.Meta.collection], func_name)
         returned = func_real(*args, **kwargs)
         return returned
+
     return func
 
 

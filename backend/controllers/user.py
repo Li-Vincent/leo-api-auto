@@ -1,21 +1,27 @@
 from datetime import datetime
 
-from flask import jsonify, request, abort
+from flask import jsonify, request, abort, current_app
 from flask_security import login_user, logout_user, login_required, roles_required, current_user
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app_init import app, security, login_manager, user_data_store
+from app import app, security, login_manager, user_data_store
 from models.leo_user import LeoUser
 from models.role import Role
 from utils import common
+
+# add favicon.ico
+@app.route('/favicon.ico')
+def favicon():
+    return current_app.send_static_file('favicon.ico')
 
 
 def query_user(email):
     try:
         user = LeoUser.find_one({'email': email})
         return common.format_response_in_dic(user)
-    except BaseException:
+    except BaseException as e:
+        current_app.logger.error("query_user failed. - %s" % str(e))
         return ''
 
 
@@ -52,6 +58,7 @@ def login():
             if role and role.name not in roles_name:
                 roles_name.append(role.name)
         token = generate_auth_token(email, roles_name)
+        current_app.logger.info("login successfully. email: %s" % str(email))
         return jsonify({'status': 'ok', 'data': {'email': email, 'token': token.decode("ascii")}})
     else:
         return jsonify({'status': 'failed', 'data': '用户名 / 密码错误！'})
@@ -72,6 +79,7 @@ def register():
             user_data_store.add_role_to_user(user, role)
         return jsonify({'status': 'ok', 'data': '注册成功'})
     except BaseException as e:
+        current_app.logger.error("register user failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': 'register failed %s' % e})
 
 
@@ -81,6 +89,7 @@ def logout():
         logout_user()
         return jsonify({'status': 'ok', 'data': '退出登录成功'})
     except BaseException as e:
+        current_app.logger.error("logout user failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '退出登录失败! %s' % e})
 
 
@@ -137,6 +146,7 @@ def update_user_status():
             return jsonify({'status': 'failed', 'data': '未找到相应的更新数据！'})
         return jsonify({'status': 'ok', 'data': '变更用户状态成功'})
     except BaseException as e:
+        current_app.logger.error("update_user_status failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '变更用户状态失败! %s' % e})
 
 
@@ -157,6 +167,7 @@ def change_password():
             return jsonify({'status': 'failed', 'data': '未找到要修改的用户！'})
         return jsonify({'status': 'ok', 'data': '修改密码成功,请重新登录'})
     except BaseException as e:
+        current_app.logger.error("change_password failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '修改密码失败! %s' % e})
 
 
@@ -182,6 +193,7 @@ def change_roles(email):
         else:
             return jsonify({'status': 'failed', 'data': '未找到要修改的用户！'})
     except BaseException as e:
+        current_app.logger.error("change_roles failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '变更权限失败! %s' % e})
 
 
@@ -199,4 +211,5 @@ def reset_password(email):
             return jsonify({'status': 'failed', 'data': '未找到要修改的用户！'})
         return jsonify({'status': 'ok', 'data': '重置密码成功: %s' % email})
     except BaseException as e:
+        current_app.logger.error("reset_password failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '重置密码失败! %s' % e})

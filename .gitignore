@@ -31,7 +31,6 @@ eggs/
 lib/
 lib64/
 parts/
-dist/
 sdist/
 var/
 wheels/
@@ -137,3 +136,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+backend/logs

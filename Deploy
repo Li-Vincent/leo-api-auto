@@ -1,0 +1,22 @@
+docker rm leo-api-platform-frontend;
+docker stop leo-api-platform-backend;
+docker rm leo-api-platform-backend;
+
+docker build -f Dockerfile.frontend -t leo-api-platform-frontend .;
+docker run --name leo-api-platform-frontend leo-api-platform-frontend;
+docker cp leo-api-platform-frontend:/app/leo-api-platform/dist ./;
+
+docker build -f Dockerfile.backend -t leo-api-platform-backend .;
+
+echo "LEO_API_PLATFORM_ENV=${LEO_API_PLATFORM_ENV}
+LEO_API_PLATFORM_MONGO_HOST=${LEO_API_PLATFORM_MONGO_HOST}
+LEO_API_PLATFORM_MONGO_PORT=${LEO_API_PLATFORM_MONGO_PORT}
+LEO_API_PLATFORM_MONGO_USERNAME=${LEO_API_PLATFORM_MONGO_USERNAME}
+LEO_API_PLATFORM_MONGO_PASSWORD=${LEO_API_PLATFORM_MONGO_PASSWORD}
+LEO_API_PLATFORM_MONGO_DBNAME=${LEO_API_PLATFORM_MONGO_DBNAME}" > Envlist.txt;
+
+docker run --name leo-api-platform-backend \
+           --env-file="./Envlist.txt"  \
+           -p $1:8888 \
+           -v /home/docker/leo-api-platform/backend/logs:/app/leo-api-platform/backend/logs \
+           -d leo-api-platform-backend;

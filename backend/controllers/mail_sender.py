@@ -2,10 +2,10 @@ from datetime import datetime
 
 import pymongo
 from bson import ObjectId
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_security import login_required, roles_accepted
 
-from app_init import app
+from app import app
 from models.mail_sender import MailSender
 from utils import common
 from utils.send_email import send_email
@@ -31,6 +31,7 @@ def add_mail_sender(project_id):
         MailSender.insert(filtered_data)
         return jsonify({'status': 'ok', 'data': '新增邮件发件人成功'})
     except BaseException as e:
+        current_app.logger.error("add_mail_sender failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '新增邮件发件人失败 %s' % e})
 
 
@@ -47,6 +48,7 @@ def update_mail_sender(project_id, sender_id):
             return jsonify({'status': 'failed', 'data': '未找到相应的更新数据！'})
         return jsonify({'status': 'ok', 'data': '更新发件人成功'})
     except BaseException as e:
+        current_app.logger.error("update_mail_sender failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '更新发件人失败 %s' % e})
 
 
@@ -68,7 +70,7 @@ def test_email_sender(project_id):
 
 
 def send_cron_email(project_id, to_list, subject, content):
-    print('send_cron_mail')
+    current_app.logger.info("send_cron_mail failed. - %s" % str(e))
     mail_sender = list(MailSender.find({'projectId': ObjectId(project_id)})
                        .sort([('createAt', pymongo.DESCENDING)]).limit(1))[0]
     from_email = mail_sender.get('email')
@@ -79,4 +81,5 @@ def send_cron_email(project_id, to_list, subject, content):
     if status:
         return {'status': 'ok', 'data': '邮件发送成功'}
     else:
+        current_app.logger.info("send_cron_mail failed. - %s" % str(msg))
         return {'status': 'failed', 'data': '邮件发送失败', 'message': msg}

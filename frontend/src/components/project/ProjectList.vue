@@ -20,7 +20,7 @@
               highlight-current-row v-loading="listLoading" @selection-change="selectsChange" style="width: 100%;">
       <el-table-column type="selection" min-width="5%">
       </el-table-column>
-      <el-table-column prop="name" label="项目名称" min-width="20%" sortable='custom' show-overflow-tooltip>
+      <el-table-column prop="name" label="项目名称" min-width="30%" sortable='custom' show-overflow-tooltip>
         <template slot-scope="scope">
           <el-icon name="name"></el-icon>
           <router-link :to="{ name: 'TestSuiteList', params: {project_id: scope.row._id}}"
@@ -31,7 +31,7 @@
       </el-table-column>
       <el-table-column prop="version" label="版本号" min-width="12%">
       </el-table-column>
-      <el-table-column prop="description" label="项目描述" min-width="28%">
+      <el-table-column prop="description" label="项目描述" min-width="20%" show-overflow-tooltip>
       </el-table-column>
       <el-table-column prop="createAt" label="创建时间" min-width="20%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
@@ -102,7 +102,6 @@
 
 <script>
     import {addProject, updateProject, getProjects} from "../../api/project";
-    import {getCookie} from "../../utils/cookies";
 
     export default {
         name: "ProjectList",
@@ -331,12 +330,11 @@
                             };
                             if (this.dialogStatus == 'edit') {
                                 let params = {
-                                    name: self.form.name,
-                                    version: self.form.version,
-                                    description: self.form.description,
-                                    lastUpdateUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || '匿名用户'
+                                    name: self.form.name.trim(),
+                                    version: self.form.version.trim(),
+                                    description: self.form.description.trim(),
+                                    lastUpdateUser: self.$store.getters.email || 'anonymous'
                                 };
-
                                 updateProject(self.form._id, params, header).then(_data => {
                                     let {status, data} = _data;
                                     self.loading = false;
@@ -358,11 +356,11 @@
                                 });
                             } else if (this.dialogStatus == 'add') {
                                 let params = JSON.stringify({
-                                    name: self.form.name,
+                                    name: self.form.name.trim(),
+                                    version: self.form.version.trim(),
+                                    description: self.form.description.trim(),
                                     projectTestType: self.projectTestType,
-                                    version: self.form.version,
-                                    description: self.form.description,
-                                    createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || '匿名用户'
+                                    createUser: self.$store.getters.email || 'anonymous'
                                 });
                                 addProject(params, header).then(res => {
                                     let {status, data} = res;

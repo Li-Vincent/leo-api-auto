@@ -30,17 +30,16 @@
  
  3. 平台遵循「颜值即正义」原则，操作界面展示如下：
  
- ![操作界面展示](https://github.com/amazingTest/Taisite-Platform/blob/master/images/操作界面展示.png)
+ ![操作界面展示](images/project-case-list.png)
  
- 4. 平台拥有极佳的定时任务体验，启动定时任务后可随时停用 / 任意编辑任务内容且立即生效，同时拥有丰富的告警策略，
+ 4. 平台拥有极佳的定时任务体验，启动定时任务后可随时停用 / 任意编辑任务内容且立即生效，同时支持执行失败邮件通知，
  页面展示如下：
  
- ![定时任务配置](https://github.com/amazingTest/Taisite-Platform/blob/master/images/定时任务配置.png)
+ ![定时任务配置](images/cronJob-date.png)
  
  5. 平台拥有较为丰富的测试结果校验体系。
- ([具体内容可参考本篇博文](https://juejin.im/post/5cfe1dd96fb9a07ed7407321))
  
- 6. 平台对外提供测试任务调度接口，方便与开发项目集成，实现CI/CD。
+ 6. 平台可对外提供测试任务调度接口，方便与开发项目集成，实现CI/CD。
  
  7. ......
  
@@ -60,6 +59,9 @@
 #### 1. 克隆项目
 
     git clone https://github.com/Li-Vincent/leo-api-auto.git
+如果无法访问github，可使用gitee仓库
+
+    git clone https://git.oschina.net/Li-Vincent/leo-api-auto.git
 
 #### 2. 安装 python 3 环境
 
@@ -87,13 +89,13 @@
     LEO_API_PLATFORM_MONGO_PASSWORD=${PASSWORD}
     LEO_API_PLATFORM_MONGO_DBNAME=leo-api-platform-db
 
-说明：LEO_API_PLATFORM_ENV 默认为 production （必填），LEO_API_PLATFORM_PORT为平台端口，默认为8888
+说明：LEO_API_PLATFORM_ENV 默认为 production（可不填），LEO_API_PLATFORM_PORT为平台端口，默认为8888，可不填
 
 LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据库的地址和端口（必填）
 
-LEO_API_PLATFORM_MONGO_USERNAME 和 LEO_API_PLATFORM_MONGO_PASSWORD 分别表示数据库的帐号密码（若无可不填）
+LEO_API_PLATFORM_MONGO_USERNAME 和 LEO_API_PLATFORM_MONGO_PASSWORD 分别表示数据库的帐号密码（若无可不填，如果开启auth，需要注意，此用户必须为admin用户，并开启readWriteAnyDatabase权限）
 
-LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：leo-api-platform-db）
+LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：leo-api-auto-db）
 
 设置完成后可通过下列命令进行测试（CMD切换至项目根目录下）
 
@@ -125,13 +127,11 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 
 // 切换至项目根目录下执行
 
-    pip install -r ./backend/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+    pip install -r ./backend/requirements_win.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 // 启动后端 ( 默认8888端口 )
 
     python ./backend/run.py
-
-
   
 #### 7. 访问项目
 现在就可以访问 http://127.0.0.1:8888/
@@ -139,32 +139,36 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 7.1 创建平台管理员帐号密码
 
 进入http://127.0.0.1:8888/initAdminUser,进行注册管理员账号，如果db中已经存在管理员账号，此页面无法访问
+
+![初始化管理员账号](images/initAdminUser.png)
     
 7.2 使用创建的管理员帐号密码进行登录
 
 http://127.0.0.1:8888/
 
-![登录页面展示](https://github.com/Li-Vincent/leo-api-auto/blob/master/images/login.png)
+![登录页面展示](images/login.png)
 
-### Linux 环境下 Docker 容器化部署
+### Linux(CentOS7) 环境下 Docker 容器化部署
 
 [点击进入 Docker 教程地址](https://www.runoob.com/docker/ubuntu-docker-install.html)
 
 #### 1. 克隆项目
+在机器中选择一个目录，比如/home/leo-api-auto，执行git命令（需提前准备好git服务）
 
     git clone https://github.com/Li-Vincent/leo-api-auto.git
+如果无法访问github，可使用gitee仓库
+
+    git clone https://git.oschina.net/Li-Vincent/leo-api-auto.git
   
 #### 2. Mongo 数据库部署 (若已有现成数据库可用则可跳过此步)
 
 2.1 启动数据库 & 数据挂载至宿主机
 
-    sudo -i
-    docker pull mongo 
-    docker run  --name autotest-platform-mongo -p 27017:27017 -v /data/db:/data/db -v /data/configdb:/data/configdb ``-d mongo
-  
+[点击进入教程地址](https://www.cnblogs.com/vincent-li666/p/12763723.html)
+    
 2.2 创建数据库帐号
 
-    docker exec -it autotest-platform-mongo /bin/bash
+    docker exec -it mongodb /bin/bash
 
     mongo
 
@@ -172,14 +176,13 @@ http://127.0.0.1:8888/
 
     switched to db admin
 
-    > db.createUser({user:"${USERNAME}",pwd:"${PASSWORD}",roles:["root"]})
+    > db.createUser({user:"${USERNAME}",pwd:"${PASSWORD}",roles:["root","readWriteAnyDatabase"]})
 
-    Successfully added user: { "user" : "admin", "roles" : [ "root" ] }
+    Successfully added user: { "user" : ${USERNAME}, "roles" : [ "root", "readWriteAnyDatabase" ] }
   
 2.3 数据库内存扩容(建议)
 
-    > db.adminCommand({setParameter:1, internalQueryExecMaxBlockingSortBytes:335544320})
-
+    > db.adminCommand({setParameter:1, internalQueryExecMaxBlockingSortBytes:104857600})
     { "was" : 33554432, "ok" : 1 }
   
 #### 3. 环境变量配置
@@ -187,26 +190,28 @@ http://127.0.0.1:8888/
 // 编辑 /etc/profile 文件
 
     sudo -i
-    vi /etc/profile
+    vim /etc/profile
   
 若出现警告则选择 (E)dit anyway (输入 E)
 
 3.1 文本末端插入下列数据 (输入 i 则变为 insert 状态)
 
-    export AUTOTEST_PLATFORM_ENV=production
-    export AUTOTEST_PLATFORM_MONGO_HOST=${MONGO_HOST}
-    export AUTOTEST_PLATFORM_MONGO_PORT=${MONGO_PORT}
-    export AUTOTEST_PLATFORM_MONGO_USERNAME=${USERNAME}
-    export AUTOTEST_PLATFORM_MONGO_PASSWORD=${PASSWORD}
-    export AUTOTEST_PLATFORM_MONGO_DEFAULT_DBNAME=${DBNAME}
+    export LEO_API_PLATFORM_ENV=production
+    export LEO_API_PLATFORM_PORT=${PORT}
+    export LEO_API_PLATFORM_MONGO_HOST=${MONGO_HOST}
+    export LEO_API_PLATFORM_MONGO_PORT=${MONGO_PORT}
+    export LEO_API_PLATFORM_MONGO_USERNAME=${USERNAME}
+    export LEO_API_PLATFORM_MONGO_PASSWORD=${PASSWORD}
+    export LEO_API_PLATFORM_MONGO_DBNAME=${DBNAME}
+    
+说明：LEO_API_PLATFORM_ENV 默认为 production（可不填），LEO_API_PLATFORM_PORT为平台端口，默认为8888，可不填
 
-变量为动态值，部署者自行根据实际情况输入，DBNAME 值可任意自定义（数据库表名），其中 MONGO_HOST 值可通过下列命令查询：
+LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据库的地址和端口（必填,一般为部署mongodb的服务器公网IP和指定的端口）
 
-    docker inspect autotest-platform-mongo // 若使用了上面的步骤部署数据库
+LEO_API_PLATFORM_MONGO_USERNAME 和 LEO_API_PLATFORM_MONGO_PASSWORD 分别表示数据库的帐号密码（若无可不填，如果开启auth，需要注意，此用户必须为admin用户，并开启readWriteAnyDatabase权限）
+
+LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：leo-api-auto-db，需要先在mongodb中手动创建数据库，database name = DBNAME）
   
-输出如下图所示：
-
-![控制台输出1.png](https://github.com/amazingTest/Taisite-Platform/blob/master/images/控制台输出1.png)
 
 3.2 插入完毕后点击 ESC 按钮、输入 :wq 后单击回车保存
 
@@ -220,12 +225,16 @@ http://127.0.0.1:8888/
 
     sh deploy ${PORT} 
   
-其中 ${PORT} 变量填写项目访问端口即可，项目启动的同时也创建了管理员帐号密码，如下图所示：
-
-![控制台输出2.png](https://github.com/amazingTest/Taisite-Platform/blob/master/images/控制台输出2.png)
+其中 ${PORT} 变量填写项目访问端口即可，如果为阿里云等服务器，需要开放该端口
 
 #### 5. 访问项目
 
 浏览器访问部署服务器地址的 ${PORT}端口即可
 
-![平台登录界面.png](https://github.com/amazingTest/Taisite-Platform/blob/master/images/平台登录界面.png)
+首先需要创建管理员账号，访问  HOST:PORT/initAdminUser
+
+![初始化管理员账号](images/initAdminUser.png)
+
+创建账户后访问登录页面，  HOST:PORT/login
+
+![登录页面展示](images/login.png)

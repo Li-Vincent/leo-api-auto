@@ -5,6 +5,7 @@ bottle==0.12.18
 certifi==2019.9.11
 chardet==3.0.4
 Click==7.0
+concurrent-log-handler==0.9.16
 Flask==1.1.1
 Flask-BabelEx==0.9.3
 Flask-Cors==3.0.8
@@ -20,6 +21,7 @@ Jinja2==2.10.3
 MarkupSafe==1.1.1
 mongoengine==0.18.2
 passlib==1.7.2
+portalocker==1.5.2
 pymongo==3.9.0
 python-dateutil==2.8.1
 pytz==2019.3
@@ -30,3 +32,5 @@ tzlocal==2.0.0
 urllib3==1.25.6
 Werkzeug==0.16.0
 WTForms==2.2.1
+xlrd==1.2.0
+xlsxwriter==1.2.8

@@ -18,6 +18,15 @@ export function addTestCase(project_id, test_suite_id, params, header) {
   })
 }
 
+export function copyTestCase(project_id, test_suite_id, test_case_id, params, header) {
+  return request({
+    url: `/api/project/${project_id}/testSuite/${test_suite_id}/copyCase/${test_case_id}`,
+    headers: header,
+    method: 'POST',
+    data: params
+  })
+}
+
 export function updateTestCase(project_id, test_suite_id, test_case_id, params, header) {
   return request({
     url: `/api/project/${project_id}/testSuite/${test_suite_id}/updateCase/${test_case_id}`,
@@ -33,6 +42,16 @@ export function getCaseDetail(project_id, test_suite_id, test_case_id, header) {
     method: 'GET',
     headers: header,
     params: null
+  })
+}
+
+export function exportTestCases(params, header) {
+  return request({
+    url: `/api/exportTestCases`,
+    method: 'POST',
+    headers: header,
+    responseType: 'blob',
+    data: params
   })
 }
 

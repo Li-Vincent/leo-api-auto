@@ -1,10 +1,10 @@
 from datetime import datetime
 
 from bson import ObjectId
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_security import login_required
 
-from app_init import app
+from app import app
 from models.project import Project
 from utils import common
 
@@ -33,6 +33,7 @@ def add_project():
         Project.insert(filtered_data)
         return jsonify({'status': 'ok', 'data': '新建成功'})
     except BaseException as e:
+        current_app.logger.error("add project failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '新建失败 %s' % e})
 
 
@@ -50,9 +51,5 @@ def update_project(project_id):
             return jsonify({'status': 'failed', 'data': '未找到相应更新数据！'})
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
+        current_app.logger.error("update project failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '更新失败: %s' % e})
-
-
-@app.route('/favicon.ico')
-def get_fav():
-    return app.send_static_file('favicon.ico')

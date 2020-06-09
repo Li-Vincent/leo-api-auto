@@ -1,10 +1,10 @@
 from datetime import datetime
 
 from bson import ObjectId
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_security import login_required, roles_accepted
 
-from app_init import app, cron_manager
+from app import app, cron_manager
 from models.cron_job import CronJob
 from utils import common
 from execution_engine.cron_job.cron import Cron
@@ -20,7 +20,8 @@ def cron_job(project_id):
                              alarm_mail_list=["liwh9@lenovo.com"])
         cron_instance.cron_mission()
         return jsonify({'status': 'ok'})
-    except BaseException:
+    except BaseException as e:
+        current_app.logger.error("test cron job failed. - %s" % str(e))
         return jsonify({'status': 'failed'})
 
 
@@ -46,11 +47,11 @@ def add_cron_job(project_id):
         request_data["projectId"] = ObjectId(project_id)
         request_data["testEnvId"] = ObjectId(request_data["testEnvId"])
         request_data["createAt"] = datetime.utcnow()
-        if 'interval' in request_data:
-            request_data['interval'] = float(request_data['interval'])
-
         if 'interval' in request_data and request_data['interval'] < 60:
             return jsonify({'status': 'failed', 'data': '定时任务间隔不可小于60秒！'})
+
+        if 'interval' in request_data:
+            request_data['interval'] = float(request_data['interval'])
 
         if 'runDate' in request_data:
             request_data['runDate'] = common.frontend_date_str2datetime(request_data['runDate'])
@@ -63,7 +64,6 @@ def add_cron_job(project_id):
                         include_forbidden=filtered_data.get('includeForbidden'),
                         alarm_mail_list=filtered_data.get('alarmMailList'),
                         run_date=filtered_data.get('runDate'))
-            pass
         else:
             cron = Cron(test_suite_id_list=filtered_data.get('testSuiteIdList'),
                         project_id=project_id,
@@ -77,8 +77,10 @@ def add_cron_job(project_id):
         update_response = CronJob.update({"_id": cron_id}, {'$set': filtered_data})
         if update_response["n"] == 0:
             return jsonify({'status': 'failed', 'data': '新建成功但未找到相应更新数据！'})
+        app.logger.info(filtered_data)
         return jsonify({'status': 'ok', 'data': '新建成功'})
     except BaseException as e:
+        current_app.logger.error("add cron job failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '新建失败: %s' % e})
 
 
@@ -117,6 +119,7 @@ def update_cron_job(project_id, cron_job_id):
             return jsonify({'status': 'failed', 'data': '未找到相应更新数据！'})
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
+        current_app.logger.error("update cron job failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '更新失败: %s' % e})
 
 
@@ -130,6 +133,7 @@ def pause_cron_job(project_id, cron_job_id):
                        {'$set': {'status': 'PAUSED'}})
         return jsonify({'status': 'ok', 'data': '停用成功'})
     except BaseException as e:
+        current_app.logger.error("pause cron job failed. - %s" % str(e))
         return jsonify({'status': 'ok', 'data': '停用失败: %s' % e})
 
 
@@ -141,6 +145,7 @@ def del_cron_job(project_id, cron_job_id):
         cron_manager.del_cron(cron_id=cron_job_id)
         return jsonify({'status': 'ok', 'data': '删除成功'})
     except BaseException as e:
+        current_app.logger.error("del cron job failed. - %s" % str(e))
         return jsonify({'status': 'ok', 'data': '删除失败: %s' % e})
 
 
@@ -154,6 +159,7 @@ def resume_cron_job(project_id, cron_job_id):
                        {'$set': {'status': 'RESUMED'}})
         return jsonify({'status': 'ok', 'data': '启动成功'})
     except BaseException as e:
+        current_app.logger.error("resume cron job failed. - %s" % str(e))
         return jsonify({'status': 'ok', 'data': '启动失败: %s' % e})
 
 
@@ -170,6 +176,7 @@ def start(project_id):
         cron_manager.start(paused=paused)
         return jsonify({'status': 'ok', 'data': '调度器启动成功'})
     except BaseException as e:
+        current_app.logger.error("start cron job failed. - %s" % str(e))
         return jsonify({'status': 'ok', 'data': '调度器启动失败: %s' % e})
 
 
@@ -183,4 +190,5 @@ def shutdown(project_id):
         cron_manager.shutdown(force_shutdown=force_shutdown)
         return jsonify({'status': 'ok', 'data': '调度器关闭成功'})
     except BaseException as e:
+        current_app.logger.error("shutdown cron job failed. - %s" % str(e))
         return jsonify({'status': 'ok', 'data': '调度器关闭失败: %s' % e})

@@ -1,10 +1,10 @@
 from datetime import datetime
 
 from bson import ObjectId
-from flask import jsonify, request
+from flask import jsonify, request, current_app
 from flask_security import login_required
 
-from app_init import app
+from app import app
 from models.data_source import DBConfig, DBEnvConnect
 from utils import common
 
@@ -24,6 +24,7 @@ def get_db_config(project_id, db_config_id):
         return jsonify({'status': 'ok', 'data': common.format_response_in_dic(res)}) if res else \
             jsonify({'status': 'failed', 'data': '未找到该dbConfig信息'})
     except BaseException as e:
+        current_app.logger.error("get db config failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '出错了 %s' % e})
 
 
@@ -39,6 +40,7 @@ def add_db_config(project_id):
         DBConfig.insert(filtered_data)
         return jsonify({'status': 'ok', 'data': '新增DB配置成功'})
     except BaseException as e:
+        current_app.logger.error("add db config failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '新建失败 %s' % e})
 
 
@@ -54,6 +56,7 @@ def update_db_config(project_id, db_config_id):
             return jsonify({'status': 'failed', 'data': '未找到相应的更新数据！'})
         return jsonify({'status': 'ok', 'data': '更新DB配置成功'})
     except BaseException as e:
+        current_app.logger.error("update db config failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '更新DB配置失败 %s' % e})
 
 
@@ -70,6 +73,7 @@ def get_db_env_connect(project_id):
         return jsonify({'status': 'ok', 'data': common.format_response_in_dic(res)}) if res else \
             jsonify({'status': 'ok', 'data': {'dbHost': ''}})
     except BaseException as e:
+        current_app.logger.error("get db env connect failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '出错了 %s' % e})
 
 
@@ -101,6 +105,7 @@ def update_db_env_connect(project_id):
             DBEnvConnect.insert(filtered_data)
         return jsonify({'status': 'ok', 'data': '更新DB连接配置成功'})
     except BaseException as e:
+        current_app.logger.error("update db env connect failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '变更DB连接配置失败 %s' % e})
 
 
@@ -111,4 +116,5 @@ def get_db_connect(db_config_id, test_env_id):
         res = DBEnvConnect.find_one({'dbConfigId': ObjectId(db_config_id), 'testEnvId': ObjectId(test_env_id)})
         return common.format_response_in_dic(res) if res else None
     except BaseException as e:
+        current_app.logger.error("get db connect failed. - %s" % str(e))
         return e

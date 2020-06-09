@@ -1,0 +1,29 @@
+FROM python:3.7
+
+USER root
+
+ENV WORKING_DIR /app/leo-api-platform
+
+ENV LEO_API_PLATFORM_ENV=${LEO_API_PLATFORM_ENV}
+ENV LEO_API_PLATFORM_MONGO_HOST=${LEO_API_PLATFORM_MONGO_HOST}
+ENV LEO_API_PLATFORM_MONGO_PORT=${LEO_API_PLATFORM_MONGO_PORT}
+ENV LEO_API_PLATFORM_MONGO_USERNAME=${LEO_API_PLATFORM_MONGO_USERNAME}
+ENV LEO_API_PLATFORM_MONGO_PASSWORD=${LEO_API_PLATFORM_MONGO_PASSWORD}
+ENV LEO_API_PLATFORM_MONGO_DBNAME=${LEO_API_PLATFORM_MONGO_DBNAME}
+
+COPY backend ${WORKING_DIR}/backend
+COPY ./dist  ${WORKING_DIR}/dist
+
+RUN sh -c "echo 'Asia/Shanghai' > /etc/timezone" \
+    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && export ENV LEO_API_PLATFORM_ENV=${LEO_API_PLATFORM_ENV} \
+    && export ENV LEO_API_PLATFORM_MONGO_HOST=${LEO_API_PLATFORM_MONGO_HOST} \
+    && export ENV LEO_API_PLATFORM_MONGO_PORT=${LEO_API_PLATFORM_MONGO_PORT} \
+    && export ENV LEO_API_PLATFORM_MONGO_USERNAME=${LEO_API_PLATFORM_MONGO_USERNAME} \
+    && export ENV LEO_API_PLATFORM_MONGO_PASSWORD=${LEO_API_PLATFORM_MONGO_PASSWORD} \
+    && export ENV LEO_API_PLATFORM_MONGO_DBNAME=${LEO_API_PLATFORM_MONGO_DBNAME} \
+    && pip install --upgrade pip -i https://pypi.tuna.tsinghua.edu.cn/simple \
+    && cd ${WORKING_DIR}/backend \
+    && pip install -r ./requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+ENTRYPOINT cd ${WORKING_DIR}/backend; python run.py;

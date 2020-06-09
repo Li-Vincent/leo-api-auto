@@ -38,7 +38,7 @@
           <el-row :gutter="10">
             <el-col :span="18">
               <el-form-item label="接口名称:" label-width="83px" prop="name">
-                <el-input v-model.trim="form.name" placeholder="名称" auto-complete></el-input>
+                <el-input v-model="form.name" placeholder="名称" auto-complete></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="6">
@@ -81,7 +81,7 @@
           </el-row>
           <el-row :gutter="10">
             <el-form-item prop="description">
-              <el-input type="textarea" v-model.trim="form.description" placeholder="请输入用例描述" auto-complete></el-input>
+              <el-input type="textarea" v-model="form.description" placeholder="请输入用例描述" auto-complete></el-input>
             </el-form-item>
           </el-row>
         </div>
@@ -560,8 +560,7 @@
                     parameterType: "",
                     parameterRaw: "",
                     isJsonArray: false,
-                    parameterForm: [{name: "", value: ""},
-                        {name: "", value: ""}],
+                    parameterForm: [{name: "", value: ""}, {name: "", value: ""}],
                     setGlobalVars: [{name: "", query: []}],
                     checkResponse: "noCheck",
                     checkResponseCode: "",
@@ -596,7 +595,6 @@
                 showResponseCodeCheck: false,
                 showResponseBodyCheck: false,
                 showResponseNumCheck: false
-
             }
         },
         methods: {
@@ -856,13 +854,13 @@
                                 })
                             });
                             let params = {
-                                name: self.form.name,
+                                name: self.form.name.trim(),
                                 service: self.form.service,
                                 requestMethod: self.form.requestMethod,
                                 requestProtocol: self.form.requestProtocol,
                                 route: self.form.route,
                                 domain: self.form.domain,
-                                description: self.form.description,
+                                description: self.form.description.trim(),
                                 headers: self.form.headers,
                                 isClearCookie: self.form.isClearCookie,
                                 isJsonArray: self.form.isJsonArray,
@@ -870,7 +868,7 @@
                                 checkResponseBody: self.form.checkResponseBody,
                                 checkResponseNumber: self.form.checkResponseNumber,
                                 requestBody: self.form.parameterRaw,
-                                lastUpdateUser: self.$store.getters.email || '未知用户'
+                                lastUpdateUser: self.$store.getters.email || 'anonymous'
                             };
                             // check dataInitializes
                             if (self.form.dataInitializes && self.form.dataInitializes.length > 0) {
