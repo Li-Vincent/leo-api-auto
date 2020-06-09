@@ -53,8 +53,3 @@ def update_project(project_id):
     except BaseException as e:
         current_app.logger.error("update project failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '更新失败: %s' % e})
-
-
-@app.route('/favicon.ico')
-def get_fav():
-    return app.send_static_file('favicon.ico')
