@@ -204,7 +204,7 @@ http://127.0.0.1:8888/
     export LEO_API_PLATFORM_MONGO_PASSWORD=${PASSWORD}
     export LEO_API_PLATFORM_MONGO_DBNAME=${DBNAME}
     
-说明：LEO_API_PLATFORM_ENV 默认为 production（可不填），LEO_API_PLATFORM_PORT为平台端口，默认为8888，可不填
+说明：LEO_API_PLATFORM_ENV 默认为 production（可不填），LEO_API_PLATFORM_PORT为平台端口，默认为8888，必填
 
 LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据库的地址和端口（必填,一般为部署mongodb的服务器公网IP和指定的端口）
 
