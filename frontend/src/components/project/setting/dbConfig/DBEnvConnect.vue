@@ -10,6 +10,9 @@
             <i class="el-icon-d-arrow-left" style="margin-right: 5px"></i>返回
           </el-button>
         </router-link>
+        <el-form-item style="float: right; margin-right: 95px">
+          <el-button>*请点击列表中元素的空白处以刷新数据*</el-button>
+        </el-form-item>
       </el-form>
     </el-col>
 

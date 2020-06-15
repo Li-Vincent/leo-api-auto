@@ -17,7 +17,7 @@
       <el-dropdown trigger="hover">
 					<span class="el-dropdown-link user-info-inner">
 						{{sysUserName}}
-						<img id="user-photo" src="../../assets/imgs/user-icon2.gif"/>
+						<img id="user-photo" src="../../assets/imgs/user.gif"/>
 					</span>
         <el-dropdown-menu slot="dropdown">
           <router-link :to="{ name: 'ChangePassword'}" style='text-decoration: none;color: #FFFFFF;'>
@@ -111,7 +111,7 @@
     .header {
       height: 60px;
       line-height: 60px;
-      background: #FF9E1B;
+      background: $--color-primary;
       color: #fff;
 
       .user-info {

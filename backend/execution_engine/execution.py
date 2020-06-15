@@ -140,11 +140,11 @@ class ExecutionEngine:
         # 替换domain中的${service} (如果存在)
         if 'service' in test_case and isinstance(test_case["service"], str) \
                 and not test_case["service"].strip() == '':
-            domain = common.replace_global_var(init_var_str=domain,
-                                               global_var_dic={'service': test_case["service"]})
+            domain = common.replace_global_var_for_str(init_var_str=domain,
+                                                       global_var_dic={'service': test_case["service"]})
 
         # 处理url  protocol+domain+route
-        route = common.replace_global_var(init_var_str=test_case['route'], global_var_dic=self.global_vars) \
+        route = common.replace_global_var_for_str(init_var_str=test_case['route'], global_var_dic=self.global_vars) \
             if isinstance(test_case['route'], str) else test_case['route']
         request_url = '%s://%s%s' % (test_case['requestProtocol'].lower(), domain, route)
         returned_data['testCaseDetail']['url'] = request_url
@@ -158,8 +158,9 @@ class ExecutionEngine:
             if isinstance(test_case['headers'], list):
                 for header in test_case['headers']:
                     if not header['name'].strip() == '':
-                        request_headers[header['name']] = common.replace_global_var(init_var_str=header['value'],
-                                                                                    global_var_dic=self.global_vars) \
+                        request_headers[header['name']] = common.replace_global_var_for_str(
+                            init_var_str=header['value'],
+                            global_var_dic=self.global_vars) \
                             if isinstance(header['value'], str) else header['value']
             else:
                 raise TypeError('headers must be list!')
@@ -179,16 +180,23 @@ class ExecutionEngine:
                 for key, value in test_case['requestBody'][0].items():
                     if value is not None:
                         request_url += '%s=%s&' % (key, value)
-                        request_url = common.replace_global_var(init_var_str=request_url,
-                                                                global_var_dic=self.global_vars)
+                        request_url = common.replace_global_var_for_str(init_var_str=request_url,
+                                                                        global_var_dic=self.global_vars)
                 request_url = request_url[0:(len(request_url) - 1)]
                 returned_data['testCaseDetail']['url'] = request_url
             else:
                 # list 先转 str，方便全局变量替换
                 test_case['requestBody'] = str(test_case['requestBody'])
                 # 全局替换
-                request_body_str = common.replace_global_var(init_var_str=test_case['requestBody'],
-                                                             global_var_dic=self.global_vars)
+                request_body_str = common.replace_global_var_for_str(init_var_str=test_case['requestBody'],
+                                                                     global_var_dic=self.global_vars)
+                # 替换requestBody中的Number类型(去除引号)
+                request_body_str = common.replace_global_var_for_str(init_var_str=request_body_str,
+                                                                     global_var_dic=self.global_vars,
+                                                                     global_var_regex=r'\'\$num{.*?}\'',
+                                                                     match2key_sub_string_start_index=6,
+                                                                     match2key_sub_string_end_index=-2
+                                                                     )
                 if 'isJsonArray' not in test_case or not test_case['isJsonArray']:
                     request_body_str = request_body_str[1:-1]
                 # 转回 dict or list
@@ -240,6 +248,9 @@ class ExecutionEngine:
                     if isinstance(set_global_var, dict) and isinstance(set_global_var.get('name'), str):
                         name = set_global_var.get('name')
                         query = set_global_var.get('query')
+                        if query and isinstance(query, list):
+                            query = common.replace_global_var_for_list(init_var_list=query,
+                                                                       global_var_dic=self.global_vars)
                         value = common.dict_get(response.text, query)
                         self.global_vars[name] = str(value) if value else value
 
@@ -294,9 +305,13 @@ class ExecutionEngine:
                         not isinstance(check_item['regex'], str) or not isinstance(check_item['query'], list):
                     raise TypeError('checkResponseBody is not valid!')
                 # TODO 可开启/关闭 全局替换
-                test_case['checkResponseBody'][index]['regex'] = common.replace_global_var(
+                # 对校验结果进行全局替换
+                test_case['checkResponseBody'][index]['regex'] = common.replace_global_var_for_str(
                     init_var_str=check_item['regex'], global_var_dic=self.global_vars) if check_item.get(
                     'regex') and isinstance(check_item.get('regex'), str) else ''  # 警告！python判断空字符串为False
+                if check_item.get('query') and isinstance(check_item.get('query'), list):
+                    test_case['checkResponseBody'][index]['query'] = common.replace_global_var_for_list(
+                        init_var_list=check_item['query'], global_var_dic=self.global_vars)
             check_response_body = test_case['checkResponseBody']
             returned_data['checkResponseBody'] = check_response_body
 
@@ -309,17 +324,17 @@ class ExecutionEngine:
                         check_item['expressions'], dict):
                     raise TypeError('checkResponseNumber is not valid!')
 
-                test_case['checkResponseNumber'][index]['expressions']['firstArg'] = common.replace_global_var(
+                test_case['checkResponseNumber'][index]['expressions']['firstArg'] = common.replace_global_var_for_str(
                     init_var_str=check_item['expressions']['firstArg'],
                     global_var_dic=self.global_vars) if check_item['expressions'].get('firstArg') and isinstance(
                     check_item['expressions'].get('firstArg'), str) else ''
 
-                test_case['checkResponseNumber'][index]['expressions']['secondArg'] = common.replace_global_var(
+                test_case['checkResponseNumber'][index]['expressions']['secondArg'] = common.replace_global_var_for_str(
                     init_var_str=check_item['expressions']['secondArg'],
                     global_var_dic=self.global_vars) if check_item['expressions'].get('secondArg') and isinstance(
                     check_item['expressions'].get('secondArg'), str) else ''
 
-                test_case['checkResponseNumber'][index]['expressions']['expectResult'] = common.replace_global_var(
+                test_case['checkResponseNumber'][index]['expressions']['expectResult'] = common.replace_global_var_for_str(
                     init_var_str=check_item['expressions']['expectResult'],
                     global_var_dic=self.global_vars) if check_item['expressions'].get('expectResult') and isinstance(
                     check_item['expressions'].get('expectResult'), str) else ''
