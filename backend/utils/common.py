@@ -213,8 +213,8 @@ def is_slice_expression(expression):
         return False
 
 
-def replace_global_var(init_var_str, global_var_dic, global_var_regex='\${.*?}',
-                       match2key_sub_string_start_index=2, match2key_sub_string_end_index=-1):
+def replace_global_var_for_str(init_var_str, global_var_dic, global_var_regex='\${.*?}',
+                               match2key_sub_string_start_index=2, match2key_sub_string_end_index=-1):
     """
     :param init_var_str: 准备进行解析的变量<str>
     :param global_var_dic: 全局变量字典<dict>
@@ -250,6 +250,29 @@ def replace_global_var(init_var_str, global_var_dic, global_var_regex='\${.*?}',
         return match_value if match_value else match_obj.group()
 
     replaced_var = re.sub(pattern=regex_pattern, string=init_var_str, repl=global_var_repl)
+    return replaced_var
+
+
+def replace_global_var_for_list(init_var_list, global_var_dic, global_var_regex='\${.*?}',
+                                match2key_sub_string_start_index=2, match2key_sub_string_end_index=-1):
+    """
+    :param init_var_list: 准备进行解析的变量<list>
+    :param global_var_dic: 全局变量字典<dict>
+    :param global_var_regex: 识别全局变量正则表达式<str>
+    :param match2key_sub_string_start_index: 全局变量表达式截取成全局变量字典key值字符串的开始索引<int>
+    :param match2key_sub_string_end_index: 全局变量表达式截取为成局变量字典key值字符串的结束索引<int>
+    :return: 解析后的变量<str>
+    """
+    if not isinstance(init_var_list, list):
+        raise TypeError('init_var_list must be list!')
+
+    if len(init_var_list) < 1:
+        raise ValueError('init_var_list should not be empty!')
+
+    replaced_var = []
+    for init_var_str in init_var_list:
+        replaced_str = replace_global_var_for_str(init_var_str=init_var_str, global_var_dic=global_var_dic)
+        replaced_var.append(replaced_str)
     return replaced_var
 
 

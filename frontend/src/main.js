@@ -2,10 +2,10 @@ import Vue from 'vue'
 
 import Cookies from "js-cookie";
 
+import './assets/css/theme/index.css'
 import ElementUI from 'element-ui'
 import VueClipboard from 'vue-clipboard2'
 import ToggleButton from 'vue-js-toggle-button'
-import './assets/css/element-#FF9E1B/index.css'
 import './assets/css/reset.css'
 import './assets/fonts/iconfont.css'
 import './assets/fonts/icomoon.css'

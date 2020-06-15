@@ -15,7 +15,7 @@
     }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
   .error{
     height: 100%;
     background-color: #f8f8f8;
@@ -44,7 +44,7 @@
     line-height: 40px;
     font-size: 14px;
     color: #fff;
-    background-color: #f8912d;
+    background-color: $--color-primary;
     text-decoration: none;
   }
 

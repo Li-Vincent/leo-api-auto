@@ -10,7 +10,7 @@ class Config:
     _LEO_API_PLATFORM_MONGO_PORT = env_dict.get('LEO_API_PLATFORM_MONGO_PORT', 27017)
     _LEO_API_PLATFORM_MONGO_USERNAME = env_dict.get('LEO_API_PLATFORM_MONGO_USERNAME')
     _LEO_API_PLATFORM_MONGO_PASSWORD = env_dict.get('LEO_API_PLATFORM_MONGO_PASSWORD')
-    _LEO_API_PLATFORM_MONGO_DBNAME = env_dict.get('LEO_API_PLATFORM_MONGO_DBNAME', 'leo-api-auto-db')
+    _LEO_API_PLATFORM_MONGO_DBNAME = env_dict.get('LEO_API_PLATFORM_MONGO_DBNAME', 'leo-api-platform-db')
     _LEO_API_PLATFORM_SECRET_KEY = env_dict.get('LEO_API_PLATFORM_SECRET_KEY', 'leo-platform-secret-key')
 
     def get_env(self):

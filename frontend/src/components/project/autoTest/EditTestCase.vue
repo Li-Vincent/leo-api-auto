@@ -81,7 +81,8 @@
           </el-row>
           <el-row :gutter="10">
             <el-form-item prop="description">
-              <el-input type="textarea" v-model="form.description" placeholder="请输入用例描述" auto-complete></el-input>
+              <el-input type="textarea" :rows="5" v-model="form.description" placeholder="请输入用例描述"
+                        auto-complete></el-input>
             </el-form-item>
           </el-row>
         </div>
@@ -160,7 +161,7 @@
                 </el-table-column>
                 <el-table-column label="" min-width="10%">
                   <template slot-scope="scope">
-                    <el-button v-if="scope.$index===(form.headers.length-1)" size="mini" class="el-icon-plus"
+                    <el-button v-if="scope.$index===(form.dataInitializes.length-1)" size="mini" class="el-icon-plus"
                                @click="addDataInit"></el-button>
                   </template>
                 </el-table-column>
@@ -426,6 +427,7 @@
                             });
                         }
                     } catch (e) {
+                        console.log(value, e)
                         callback(new Error('参数格式不正确!'))
                         this.$message.warning({
                             message: '参数格式不正确!',
@@ -576,7 +578,10 @@
                     }],
                 },
                 formRules: {
-                    name: [{required: true, message: '请输入名称', trigger: 'blur'}],
+                    name: [
+                        {required: true, message: '请输入名称', trigger: 'blur'},
+                        {min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur'}
+                    ],
                     requestProtocol: [
                         {required: true, message: '请选择类型', trigger: 'blur'}
                     ],
@@ -598,23 +603,23 @@
             }
         },
         methods: {
-            checkJsonFormat(json) {
+            checkJsonFormat(json, err_msg) {
                 if (json !== "" && json !== null) {
-                    json = json.replace(/'/g, "\"")
                     try {
                         let obj = JSON.parse(json)
                         if (typeof obj == 'object' && obj) {
                             return true
                         } else {
                             this.$message.warning({
-                                message: 'json参数格式不正确!',
+                                message: err_msg,
                                 center: true,
                             });
                             return false
                         }
                     } catch (e) {
+                        console.log(json, e)
                         this.$message.warning({
-                            message: 'json参数格式不正确!',
+                            message: err_msg,
                             center: true,
                         });
                         return false;
@@ -647,7 +652,7 @@
             checkRequestMethod() {
                 let request = this.form.requestMethod;
                 if (request === "GET" || request === "DELETE") {
-                    this.showRequestBody = falseg
+                    this.showRequestBody = false
                 } else {
                     this.showRequestBody = true
                 }
@@ -754,86 +759,92 @@
             // 获取Case详细信息
             getCaseDetailInfo() {
                 let self = this;
-                getCaseDetail(self.$route.params.project_id, self.$route.params.test_suite_id, self.$route.params.test_case_id,
-                    {}).then((res) => {
-                    let {status, data} = res;
-                    if (status === 'ok') {
-                        self.form.name = data.name;
-                        self.form.service = data.service;
-                        self.form.requestMethod = data.requestMethod;
-                        self.form.requestProtocol = data.requestProtocol;
-                        self.form.route = data.route;
-                        if (data.dataInitializes && data.dataInitializes.length > 0) {
-                            self.form.dataInitializes = data.dataInitializes;
-                        }
-                        self.form.headers = data.headers;
-                        self.form.domain = data.domain;
-                        self.form.isClearCookie = data.isClearCookie;
-                        self.form.description = data.description;
-                        self.form.isJsonArray = data.isJsonArray;
-                        // 加后缀ww
-                        data.setGlobalVars.forEach((setGlobalVar) => {
-                            setGlobalVar.query = this.addSuffix(setGlobalVar.query)
-                        });
-                        self.form.setGlobalVars = data.setGlobalVars;
-                        try {
-                            self.form.parameterRaw = JSON.stringify(data.requestBody);
-                            self.form.parameterRaw = self.form.parameterRaw.replace(/'/g, "\"").replace(/None/g, "null").replace(/True/g, "true").replace(/False/g, "false");
-                            if (self.form.parameterRaw === '{}') {
-                                self.form.parameterRaw = ''
+                getCaseDetail(self.$route.params.project_id, self.$route.params.test_suite_id, self.$route.params.test_case_id, {})
+                    .then((res) => {
+                        let {status, data} = res;
+                        if (status === 'ok') {
+                            self.form.name = data.name;
+                            self.form.service = data.service;
+                            self.form.requestMethod = data.requestMethod;
+                            self.form.requestProtocol = data.requestProtocol;
+                            self.form.route = data.route;
+                            if (data.dataInitializes && data.dataInitializes.length > 0) {
+                                data.dataInitializes.forEach(item => {
+                                    item.set = JSON.stringify(item.set, undefined, 4);
+                                    item.query = JSON.stringify(item.query, undefined, 4);
+                                })
+                                self.form.dataInitializes = data.dataInitializes;
                             }
-                        } catch (e) {
+                            self.form.headers = data.headers;
+                            self.form.domain = data.domain;
+                            self.form.isClearCookie = data.isClearCookie;
+                            self.form.description = data.description;
+                            self.form.isJsonArray = data.isJsonArray;
+                            // 加后缀ww
+                            data.setGlobalVars.forEach((setGlobalVar) => {
+                                setGlobalVar.query = this.addSuffix(setGlobalVar.query)
+                            });
+                            self.form.setGlobalVars = data.setGlobalVars;
+                            try {
+                                self.form.parameterRaw = JSON.stringify(data.requestBody, undefined, 4);
+                                self.form.parameterRaw = self.form.parameterRaw.replace(/'/g, "\"").replace(/None/g, "null").replace(/True/g, "true").replace(/False/g, "false");
+                                if (self.form.parameterRaw === '{}') {
+                                    self.form.parameterRaw = ''
+                                }
+                            } catch (e) {
+                                self.$message.error({
+                                    message: '获取请求参数出现异常！' + e,
+                                    center: true,
+                                });
+                            }
+                            self.form.checkResponseCode = data.checkResponseCode;
+                            if (data.checkResponseCode != null) {
+                                self.form.checkResponse = 'checkResponseCode';
+                            }
+                            if (data.checkResponseBody === null || data.checkResponseBody === undefined) {
+                                self.form.checkResponseBody = [{regex: "", query: []}]
+                            } else {
+                                self.form.checkResponse = 'checkResponseBody';
+                                // 加后缀
+                                data.checkResponseBody.forEach((data) => {
+                                    data.query = this.addSuffix(data.query);
+                                });
+                                self.form.checkResponseBody = data.checkResponseBody;
+                            }
+                            if (data.checkResponseNumber === null || data.checkResponseNumber === undefined) {
+                                self.form.checkResponseNumber = [{
+                                    expressions: {
+                                        'firstArg': '',
+                                        'operator': '',
+                                        'secondArg': '',
+                                        'judgeCharacter': '',
+                                        'expectResult': ''
+                                    }
+                                }]
+                            } else {
+                                self.form.checkResponseNumber = data.checkResponseNumber
+                            }
+                        } else {
                             self.$message.error({
-                                message: '获取请求参数出现异常！' + e,
+                                message: data,
                                 center: true,
                             });
                         }
-                        self.form.checkResponseCode = data.checkResponseCode;
-                        if (data.checkResponseCode != null) {
-                            self.form.checkResponse = 'checkResponseCode';
-                        }
-                        if (data.checkResponseBody === null || data.checkResponseBody === undefined) {
-                            self.form.checkResponseBody = [{regex: "", query: []}]
-                        } else {
-                            self.form.checkResponse = 'checkResponseBody';
-                            // 加后缀
-                            data.checkResponseBody.forEach((data) => {
-                                data.query = this.addSuffix(data.query);
-                            });
-                            self.form.checkResponseBody = data.checkResponseBody;
-                        }
-                        if (data.checkResponseNumber === null || data.checkResponseNumber === undefined) {
-                            self.form.checkResponseNumber = [{
-                                expressions: {
-                                    'firstArg': '',
-                                    'operator': '',
-                                    'secondArg': '',
-                                    'judgeCharacter': '',
-                                    'expectResult': ''
-                                }
-                            }]
-                        } else {
-                            self.form.checkResponseNumber = data.checkResponseNumber
-                        }
-                    } else {
+                    })
+                    .catch((error) => {
                         self.$message.error({
-                            message: data,
+                            message: '接口用例详情获取失败，请稍后刷新重试哦~',
                             center: true,
                         });
-                    }
-                }).catch((error) => {
-                    self.$message.error({
-                        message: '接口用例详情获取失败，请稍后刷新重试哦~',
-                        center: true,
-                    });
-                    self.listLoading = false;
-                })
+                        self.listLoading = false;
+                    })
             },
             // 更新Case信息
             updateCaseInfo() {
                 this.$refs.form.validate((valid) => {
                     if (valid) {
                         let self = this;
+                        let flag = true;
                         this.$confirm('确认提交吗？', '提示', {}).then(() => {
                             if (!self.form.domain && !this.form.service) {
                                 self.$message.error({
@@ -876,12 +887,14 @@
                                         if (item.dbType) {
                                             if (item.dbType == "MongoDB") {
                                                 if (item.mongoCrud && item.collection && item.set) {
-                                                    if (!this.checkJsonFormat(item.set)) {
-                                                        return
+                                                    if (!this.checkJsonFormat(item.set, "MongoDB 参数:set 格式不正确")) {
+                                                        flag = false;
                                                     }
-                                                    if (item.query && !this.checkJsonFormat(item.query)) {
-                                                        return
+                                                    if (item.query && !this.checkJsonFormat(item.query, "MongoDB 参数:query 格式不正确")) {
+                                                        flag = false;
                                                     }
+                                                    item.set = JSON.parse(item.set);
+                                                    item.query = JSON.parse(item.query);
                                                 }
                                             } else {
                                                 if (!item.query) {
@@ -889,7 +902,7 @@
                                                         message: 'SQL不正确!',
                                                         center: true,
                                                     });
-                                                    return
+                                                    flag = false;
                                                 }
                                             }
                                         }
@@ -902,29 +915,33 @@
                             } else {
                                 params["checkResponseCode"] = null
                             }
-                            let header = {};
-                            updateTestCase(self.$route.params.project_id, self.$route.params.test_suite_id, self.$route.params.test_case_id,
-                                params, header).then((res) => {
-                                let {status, data} = res;
-                                if (status === 'ok') {
-                                    self.$router.push({
-                                        name: 'TestCaseList', params: {
-                                            project_id: self.$route.params.project_id,
-                                            test_suite_id: self.$route.params.test_suite_id,
-                                        }
-                                    });
-                                    self.$message({
-                                        message: '修改成功',
-                                        center: true,
-                                        type: 'success'
-                                    })
-                                } else {
-                                    self.$message.error({
-                                        message: data,
-                                        center: true,
-                                    })
-                                }
-                            })
+                            if (flag) {
+                                let header = {};
+                                updateTestCase(self.$route.params.project_id, self.$route.params.test_suite_id, self.$route.params.test_case_id,
+                                    params, header).then((res) => {
+                                    let {status, data} = res;
+                                    if (status === 'ok') {
+                                        self.$router.push({
+                                            name: 'TestCaseList', params: {
+                                                project_id: self.$route.params.project_id,
+                                                test_suite_id: self.$route.params.test_suite_id,
+                                            }
+                                        });
+                                        self.$message({
+                                            message: '修改成功',
+                                            center: true,
+                                            type: 'success'
+                                        })
+                                    } else {
+                                        self.$message.error({
+                                            message: data,
+                                            center: true,
+                                        })
+                                    }
+                                })
+                            } else {
+                                return
+                            }
                         })
                     }
                 })
@@ -955,7 +972,7 @@
                 deep: true
             },
         },
-        mounted() {
+        created() {
             this.getDBConfigList();
             this.getCaseDetailInfo();
         }

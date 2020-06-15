@@ -1,56 +1,18 @@
 # leo API Test Platform
 
-![](https://img.shields.io/badge/-%20marvelous-orange) ![](https://img.shields.io/badge/-%20gorgeous-grey) ![](https://img.shields.io/badge/-%20elegant-blue)   
-
 ## Ⅰ. LEO API测试平台简介
 
-「LEO API测试平台」是一个开源的接口自动化测试平台。
-
-### 愿景
- 本平台致力于提高接口测试效率，实现CI/CD。让平台在保障测试精确性要求的同时更具智能化、泛化能力，
- 同时尽可能 **最优化使用体验** ，目标是成为 **最贴心、最好用、颜值最高** 的开源API测试平台。
- 
-### 技术栈
-
- 平台遵循「前后端分离」思想，技术栈为：「Python + Vue + Mongodb」，后端开发使用的是轻量级 Web 框架 Flask，
-前端 UI 框架则采用的是易上手的 ElementUi。
- 
- [***（隆重感谢该开源项目的启发)***](https://github.com/amazingTest/Taisite-Platform) 
-
-### 使用环境
+「LEO API测试平台」是一个免费开源的接口自动化测试平台。
 
 **推荐使用 Chrome 最新浏览器使用~**
 
-## Ⅱ. LEO API测试平台特点
+## Ⅱ. LEO API测试平台功能介绍
  
- 1. 平台遵循「小而精」的策略，最大化所有功能的开发、使用性价比，可帮助测试团队快速搭建起易于上手 / 维护的接口
- 自动化测试体系。
- 
- 2. 平台遵循「零编码」原则，使用者不需要编程即可完成较为复杂的业务流程接口测试。
- 
- 3. 平台遵循「颜值即正义」原则，操作界面展示如下：
- 
- ![操作界面展示](images/project-case-list.png)
- 
- 4. 平台拥有极佳的定时任务体验，启动定时任务后可随时停用 / 任意编辑任务内容且立即生效，同时支持执行失败邮件通知，
- 页面展示如下：
- 
- ![定时任务配置](images/cronJob-date.png)
- 
- 5. 平台拥有较为丰富的测试结果校验体系。
- 
- 6. 平台可对外提供测试任务调度接口，方便与开发项目集成，实现CI/CD。
- 
- 7. ......
- 
- ***（还有许许多多令人惊喜的小特色等着你去探索 & 挖掘）***
- 
+TODO 
 
-## Ⅲ .LEO API测试平台功能图解
+## Ⅲ .LEO API测试平台操作教程
 
-### V1.0
-
-![泰斯特平台结构图_V1.0](https://github.com/amazingTest/Taisite-Platform/blob/master/images/泰斯特平台结构图_V1.0.png)
+TODO
 
 ## IV . LEO API测试平台部署
 
@@ -87,7 +49,7 @@
     LEO_API_PLATFORM_MONGO_PORT=${MONGO_PORT}
     LEO_API_PLATFORM_MONGO_USERNAME=${USERNAME}
     LEO_API_PLATFORM_MONGO_PASSWORD=${PASSWORD}
-    LEO_API_PLATFORM_MONGO_DBNAME=leo-api-platform-db
+    LEO_API_PLATFORM_MONGO_DBNAME=${DBNAME}
 
 说明：LEO_API_PLATFORM_ENV 默认为 production（可不填），LEO_API_PLATFORM_PORT为平台端口，默认为8888，可不填
 
@@ -95,7 +57,7 @@ LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据�
 
 LEO_API_PLATFORM_MONGO_USERNAME 和 LEO_API_PLATFORM_MONGO_PASSWORD 分别表示数据库的帐号密码（若无可不填，如果开启auth，需要注意，此用户必须为admin用户，并开启readWriteAnyDatabase权限）
 
-LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：leo-api-auto-db）
+LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：leo-api-platform-db）
 
 设置完成后可通过下列命令进行测试（CMD切换至项目根目录下）
 
@@ -105,7 +67,7 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 
 #### 5. 打包前端 dist 文件 （这一步我已为你们做好，若不需二次开发可跳过）
 
-5.1 安装 Vue 环境，下载 node.js 并配置环境，下载 npm 包管理器
+5.1 安装 Vue 环境，下载 node.js 并配置环境
 
 [点击进入node.js教程](https://www.runoob.com/nodejs/nodejs-install-setup.html)
 

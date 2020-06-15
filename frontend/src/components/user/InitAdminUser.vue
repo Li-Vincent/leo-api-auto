@@ -5,7 +5,7 @@
         <el-row type="flex" justify="center" :gutter="10">
           <el-col>
             <el-form-item>
-              <div style="font-size: 24px; color: #FF9E1B">首次使用系统，需注册管理员账号</div>
+              <div class="title">首次使用系统，需注册管理员账号</div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -19,14 +19,14 @@
         <el-row type="flex" justify="center" :gutter="10">
           <el-col>
             <el-form-item label="登录密码:" prop="password" label-width="83px">
-              <el-input v-model="form.password"></el-input>
+              <el-input type="password" v-model="form.password"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row type="flex" justify="center" :gutter="10">
           <el-col>
             <el-form-item label="确认密码:" prop="password2" label-width="83px">
-              <el-input v-model="form.password2"></el-input>
+              <el-input type="password" v-model="form.password2"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -109,7 +109,12 @@
     }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+  .title{
+    font-size: 24px;
+    color: $--color-primary;
+  }
+
   .leo-login {
     display: flex;
     justify-content: center;

@@ -5,7 +5,7 @@
         <el-row type="flex" justify="center" :gutter="10">
           <el-col>
             <el-form-item>
-              <div style="font-size: 24px; color: #FF9E1B">修改密码</div>
+              <div class="title">修改密码</div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -156,7 +156,12 @@
     }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+  .title {
+    font-size: 24px;
+    color: $--color-primary;
+  }
+
   .leo-login {
     display: flex;
     justify-content: center;
