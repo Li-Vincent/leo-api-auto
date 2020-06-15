@@ -9,6 +9,8 @@ from models.test_suite_param import TestSuiteParam
 from utils import common
 
 
+# Not yet used
+
 @app.route('/api/project/<project_id>/testEnv/<test_env_id>/paramList', methods=['GET'])
 @login_required
 def tet_suite_param_list(project_id, test_suite_id):

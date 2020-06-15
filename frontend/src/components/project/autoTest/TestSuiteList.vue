@@ -80,15 +80,19 @@
       </el-table-column>
       <el-table-column prop="description" label="描述" min-width="20%" show-overflow-tooltip>
       </el-table-column>
+      <el-table-column prop="priority" label="优先级" min-width="15%" show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column prop="service" label="服务" min-width="20%" show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column prop="storyId" label="StoryID" min-width="20%" show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column prop="testCaseId" label="TestCaseID" min-width="20%" show-overflow-tooltip>
+      </el-table-column>
       <el-table-column sortable='custom' prop="createAt" label="创建时间" min-width="20%" show-overflow-tooltip>
       </el-table-column>
-      <el-table-column sortable='custom' prop="createUser" label="创建者" min-width="15%" show-overflow-tooltip>
+      <el-table-column sortable='custom' prop="createUser" label="创建者" min-width="20%" show-overflow-tooltip>
       </el-table-column>
-      <el-table-column sortable='custom' prop="lastUpdateTime" label="更新时间" min-width="20%" show-overflow-tooltip>
-      </el-table-column>
-      <el-table-column sortable='custom' prop="lastUpdateUser" label="更新者" min-width="15%" show-overflow-tooltip>
-      </el-table-column>
-      <el-table-column prop="status" label="状态" min-width="10%" sortable='custom'>
+      <el-table-column prop="status" label="状态" min-width="20%" sortable='custom'>
         <template slot-scope="scope">
           <img v-show="scope.row.status" src="../../../assets/imgs/icon-yes.svg"/>
           <img v-show="!scope.row.status" src="../../../assets/imgs/icon-no.svg"/>
@@ -130,6 +134,18 @@
         </el-form-item>
         <el-form-item label="描述" prop='description'>
           <el-input type="textarea" :rows="4" v-model="form.description"></el-input>
+        </el-form-item>
+        <el-form-item label="优先级" prop="priority">
+          <el-input v-model.trim="form.priority" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="所属服务" prop="service">
+          <el-input v-model.trim="form.service" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="storyId" prop="storyId">
+          <el-input v-model.trim="form.storyId" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="testCaseId" prop="testCaseId">
+          <el-input v-model.trim="form.testCaseId" auto-complete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -187,11 +203,27 @@
                 formRules: {
                     name: [
                         {required: true, message: '请输入名称', trigger: 'blur'},
-                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'}
+                        {min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur'}
                     ],
                     description: [
                         {required: false, message: '请输入描述', trigger: 'blur'},
                         {max: 1024, message: '不能超过1024个字符', trigger: 'blur'}
+                    ],
+                    priority: [
+                        {required: false, message: '请输入优先级，P1 or P2', trigger: 'blur'},
+                        {min: 2, max: 2, message: '请输入 P1 or P2', trigger: 'blur'}
+                    ],
+                    service: [
+                        {required: false, message: '请输入服务', trigger: 'blur'},
+                        {max: 20, message: '所属服务', trigger: 'blur'}
+                    ],
+                    storyId: [
+                        {required: false, message: '请输入Story ID', trigger: 'blur'},
+                        {max: 20, message: '用例story ID', trigger: 'blur'}
+                    ],
+                    testCaseId: [
+                        {required: false, message: '请输入Test Case ID', trigger: 'blur'},
+                        {max: 20, message: '用例Test Case ID', trigger: 'blur'}
                     ]
                 },
                 //编辑界面数据
@@ -383,6 +415,10 @@
                                 let params = {
                                     name: self.form.name.trim(),
                                     description: self.form.description.trim(),
+                                    priority: self.form.priority.trim(),
+                                    service: self.form.service.trim(),
+                                    storyId: self.form.storyId.trim(),
+                                    testCaseId: self.form.testCaseId.trim(),
                                     createUser: self.$store.getters.email || '未知anonymous'
                                 };
                                 addTestSuite(this.$route.params.project_id, params, headers).then((res) => {
@@ -411,6 +447,10 @@
                                 let params = {
                                     project_id: this.$route.params.project_id,
                                     name: self.form.name.trim(),
+                                    priority: self.form.priority.trim(),
+                                    service: self.form.service.trim(),
+                                    storyId: self.form.storyId.trim(),
+                                    testCaseId: self.form.testCaseId.trim(),
                                     description: self.form.description.trim(),
                                     lastUpdateUser: self.$store.getters.email || '未知anonymous'
                                 };

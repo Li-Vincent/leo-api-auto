@@ -131,7 +131,7 @@
                 formRules: {
                     name: [
                         {required: true, message: '请输入名称', trigger: 'blur'},
-                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'}
+                        {min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur'}
                     ],
                     version: [
                         {required: true, message: '请输入版本号', trigger: 'blur'},

@@ -78,6 +78,7 @@ class Cron:
             if test_report_returned['totalCount'] > 0:
                 is_send_mail = test_report_returned['totalCount'] > test_report_returned['passCount'] and isinstance(
                     self.alarm_mail_list, list) and len(self.alarm_mail_list) > 0
+                print('========mail==========', is_send_mail)
                 if is_send_mail:
                     subject = 'Leo API Auto Test'
                     content = "Dears:<br/>" \

@@ -185,7 +185,9 @@
         <div>请求所用时间 : {{result.spendTimeInSec}}s</div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">数据初始化:</div>
-        <div v-for="item in result.dataInitResult">{{item}}</div>
+        <div v-for="item in result.dataInitResult">
+          <pre>{{item}}</pre>
+        </div>
         <div v-if="!result.dataInitResult || result.dataInitResult && Object.keys(result.dataInitResult).length <= 0">
           (无需数据初始化)
         </div>
@@ -209,10 +211,12 @@
         <div class="divider-line"></div>
         <div style="font-size: 25px;">预期结果:</div>
         <div>HTTP状态码: {{result.checkResponseCode}}</div>
-        <div>JSON正则校验: {{result.checkResponseBody}}
+        <div>JSON正则校验:
+          <pre>{{result.checkResponseBody}}</pre>
           <span v-show="!result.checkResponseBody">(无)</span>
         </div>
-        <div>数值校验: {{result.checkResponseNumber}}
+        <div>数值校验:
+          <pre>{{result.checkResponseNumber}}</pre>
           <span v-show="!result.checkResponseNumber">(无)</span>
         </div>
         <div class="divider-line"></div>
@@ -316,7 +320,7 @@
                 addFormRules: {
                     name: [
                         {required: true, message: '请输入名称', trigger: 'blur'},
-                        {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'}
+                        {min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur'}
                     ],
                     requestProtocol: [
                         {required: true, message: '请选择类型', trigger: 'blur'}
@@ -690,6 +694,20 @@
                 self.result["env"] = testResult.env;
                 self.result["url"] = testResult.testCaseDetail.url;
                 self.result["requestMethod"] = testResult.testCaseDetail.requestMethod;
+                if (testResult.dataInitResult && testResult.dataInitResult.length > 0) {
+                    testResult.dataInitResult.forEach(item => {
+                        try {
+                            if (item.query && typeof (item.query) == "string") {
+                                item.query = JSON.parse(item.query);
+                            }
+                            if (item.set && typeof (item.set) == "string") {
+                                item.set = JSON.parse(item.set);
+                            }
+                        } catch (e) {
+                            console.log(e)
+                        }
+                    })
+                }
                 self.result["dataInitResult"] = testResult.dataInitResult;
                 self.result["headers"] = testResult.headers;
                 self.result["cookies"] = testResult.testCaseDetail.cookies;
@@ -795,7 +813,7 @@
     box-sizing: border-box;
     color: #fff;
     font-size: 15px;
-    background-color: #FF9E1B;
+    background-color: $--color-primary;
     text-align: center;
     margin-right: 10px;
   }

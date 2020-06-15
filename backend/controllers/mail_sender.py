@@ -70,15 +70,17 @@ def test_email_sender(project_id):
 
 
 def send_cron_email(project_id, to_list, subject, content):
-    current_app.logger.info("send_cron_mail failed. - %s" % str(e))
+    print('send_cron_email', to_list)
     mail_sender = list(MailSender.find({'projectId': ObjectId(project_id)})
                        .sort([('createAt', pymongo.DESCENDING)]).limit(1))[0]
     from_email = mail_sender.get('email')
     password = mail_sender.get('password')
     smtp_server = mail_sender.get('SMTPServer')
     smtp_port = mail_sender.get('SMTPPort')
+    print('send_cron_email 2', from_email, password, smtp_server, smtp_port)
     status, msg = send_email(smtp_server, smtp_port, from_email, password, to_list, subject, content)
     if status:
+        current_app.logger.info("send_cron_mail to %s" % str(to_list))
         return {'status': 'ok', 'data': '邮件发送成功'}
     else:
         current_app.logger.info("send_cron_mail failed. - %s" % str(msg))
