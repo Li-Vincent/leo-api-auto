@@ -100,7 +100,8 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 
 7.1 创建平台管理员帐号密码
 
-进入http://127.0.0.1:8888/initAdminUser,进行注册管理员账号，如果db中已经存在管理员账号，此页面无法访问
+进入http://127.0.0.1:8888/initAdminUser
+进行注册管理员账号，如果db中已经存在管理员账号，此页面无法访问
 
 ![初始化管理员账号](images/initAdminUser.png)
     

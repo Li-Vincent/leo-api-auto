@@ -28,7 +28,7 @@
           </tr>
           <tr class="info">
             <td class="label">测试用时</td>
-            <td class="text-center">{{testReport.spendTimeInSec}}</td>
+            <td class="text-center">{{testReport.spendTimeInSec}} s</td>
           </tr>
           <tr class="info">
             <td class="label">总用例数</td>
@@ -100,14 +100,14 @@
               <el-table-column prop="resultDetail.testCaseDetail.requestMethod" label="Method" min-width="8%"
                                show-overflow-tooltip>
               </el-table-column>
-              <el-table-column prop="resultDetail.testCaseDetail.url" label="URL" min-width="15%" show-overflow-tooltip>
+              <el-table-column prop="resultDetail.testCaseDetail.url" label="URL" min-width="25%" show-overflow-tooltip>
               </el-table-column>
-              <el-table-column prop="headers" label="Headers" min-width="15%" show-overflow-tooltip>
+              <el-table-column prop="headers" label="Headers" min-width="8%" show-overflow-tooltip>
                 <template slot-scope="scope">
                   {{scope.row.resultDetail.headers}}
                 </template>
               </el-table-column>
-              <el-table-column prop="requestBody" label="请求参数" min-width="15%" show-overflow-tooltip>
+              <el-table-column prop="requestBody" label="请求参数" min-width="8%" show-overflow-tooltip>
                 <template slot-scope="scope">
                   {{scope.row.resultDetail.testCaseDetail.requestBody}}
                 </template>
@@ -116,7 +116,7 @@
               </el-table-column>
               <el-table-column prop="resultDetail.responseData" label="返回值" min-width="8%" show-overflow-tooltip>
               </el-table-column>
-              <el-table-column prop="status" label="结果" min-width="10%">
+              <el-table-column prop="status" label="结果" min-width="5%">
                 <template slot-scope="scope">
                   <img v-show="scope.row.resultDetail.status==='ok'" src="../../../assets/imgs/icon-yes.svg"/>
                   <img v-show="scope.row.resultDetail.status==='failed'" src="../../../assets/imgs/icon-no.svg"/>
@@ -162,7 +162,9 @@
         </div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">数据初始化:</div>
-        <div v-for="item in result.dataInitResult"><pre>{{item}}</pre></div>
+        <div v-for="item in result.dataInitResult">
+          <pre>{{item}}</pre>
+        </div>
         <div v-if="!result.dataInitResult || result.dataInitResult && Object.keys(result.dataInitResult).length <= 0">
           (无需数据初始化)
         </div>
@@ -186,7 +188,8 @@
         <div class="divider-line"></div>
         <div style="font-size: 25px;">预期结果:</div>
         <div>HTTP状态码: {{result.checkResponseCode}}</div>
-        <div>JSON正则校验: <pre>{{result.checkResponseBody}}</pre>
+        <div>JSON正则校验:
+          <pre>{{result.checkResponseBody}}</pre>
           <span v-show="!result.checkResponseBody">(无)</span>
         </div>
         <div class="divider-line"></div>

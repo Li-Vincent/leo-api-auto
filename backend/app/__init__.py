@@ -99,7 +99,7 @@ cron_manager.start()
 from models import project, test_case, test_suite, test_suite_param, test_report, test_report_detail, test_env, \
     test_env_param, cron_job, data_source, leo_user, mail, mail_sender
 from controllers import project, test_case, test_suite, test_suite_param, test_env, test_env_param, test_report, user, \
-    cron_job, data_source, mail, mail_sender, init_admin_user
+    cron_job, data_source, mail, mail_sender, init_admin_user, functional_api
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=_config.get_port())
