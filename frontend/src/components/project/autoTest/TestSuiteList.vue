@@ -84,6 +84,8 @@
       </el-table-column>
       <el-table-column prop="service" label="服务" min-width="10%" show-overflow-tooltip>
       </el-table-column>
+      <el-table-column prop="sprint" label="Sprint" min-width="10%" show-overflow-tooltip>
+      </el-table-column>
       <el-table-column prop="storyId" label="StoryID" min-width="10%" show-overflow-tooltip>
       </el-table-column>
       <el-table-column prop="testCaseId" label="TestCaseID" min-width="10%" show-overflow-tooltip>
@@ -140,6 +142,9 @@
         </el-form-item>
         <el-form-item label="所属服务" prop="service">
           <el-input v-model.trim="form.service" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="Sprint" prop="sprint">
+          <el-input v-model.trim="form.sprint" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="storyId" prop="storyId">
           <el-input v-model.trim="form.storyId" auto-complete="off"></el-input>
@@ -215,15 +220,19 @@
                     ],
                     service: [
                         {required: false, message: '请输入服务', trigger: 'blur'},
-                        {max: 20, message: '所属服务', trigger: 'blur'}
+                        {max: 30, message: '所属服务', trigger: 'blur'}
+                    ],
+                    sprint: [
+                        {required: false, message: '请输入Sprint', trigger: 'blur'},
+                        {max: 30, message: '用例所属Sprint，30字符以内', trigger: 'blur'}
                     ],
                     storyId: [
                         {required: false, message: '请输入Story ID', trigger: 'blur'},
-                        {max: 20, message: '用例story ID', trigger: 'blur'}
+                        {max: 30, message: '用例story ID，30字符以内', trigger: 'blur'}
                     ],
                     testCaseId: [
                         {required: false, message: '请输入Test Case ID', trigger: 'blur'},
-                        {max: 20, message: '用例Test Case ID', trigger: 'blur'}
+                        {max: 30, message: '用例Test Case ID，30字符以内', trigger: 'blur'}
                     ]
                 },
                 //编辑界面数据
@@ -416,6 +425,7 @@
                                     name: self.form.name.trim(),
                                     priority: self.form.priority,
                                     service: self.form.service,
+                                    sprint: self.form.sprint,
                                     storyId: self.form.storyId,
                                     testCaseId: self.form.testCaseId,
                                     createUser: self.$store.getters.email || '未知anonymous'
@@ -450,9 +460,10 @@
                                     project_id: this.$route.params.project_id,
                                     name: self.form.name.trim(),
                                     priority: self.form.priority.trim(),
-                                    service: self.form.service.trim(),
-                                    storyId: self.form.storyId.trim(),
-                                    testCaseId: self.form.testCaseId.trim(),
+                                    service: self.form.service,
+                                    sprint: self.form.sprint,
+                                    storyId: self.form.storyId,
+                                    testCaseId: self.form.testCaseId,
                                     description: self.form.description.trim(),
                                     lastUpdateUser: self.$store.getters.email || '未知anonymous'
                                 };

@@ -184,7 +184,7 @@ def format_response_in_dic(dic, is_format_object_id=True, is_format_datetime=Tru
 def get_object_id(from_datetime=None, span_days=0, span_hours=0, span_minutes=0, span_weeks=0):
     '''根据时间手动生成一个objectid，此id不作为存储使用'''
     if not from_datetime:
-        from_datetime = datetime.datetime.now()
+        from_datetime = datetime.datetime.utcnow()
     from_datetime = from_datetime + datetime.timedelta(days=span_days,
                                                        hours=span_hours,
                                                        minutes=span_minutes,
@@ -316,12 +316,17 @@ def dict_get(dic, locators, default=None):
     :return: 返回根据参数locators找出的值
     """
     if not isinstance(dic, dict):
-        if isinstance(dic, str) and len(locators) == 1 and is_slice_expression(locators[0]):
-            slice_indexes = locators[0].split(':')
-            start_index = int(slice_indexes[0]) if slice_indexes[0] else None
-            end_index = int(slice_indexes[-1]) if slice_indexes[-1] else None
-            value = dic[start_index:end_index]
-            return value
+        if isinstance(dic, str) and len(locators) == 1:
+            if is_slice_expression(locators[0]):
+                slice_indexes = locators[0].split(':')
+                start_index = int(slice_indexes[0]) if slice_indexes[0] else None
+                end_index = int(slice_indexes[-1]) if slice_indexes[-1] else None
+                value = dic[start_index:end_index]
+                return value
+            else:
+                # 如果不满足切片规则，就直接进行正则匹配
+                match_obj = re.search(locators[0], dic)
+                return match_obj.group() if match_obj else None
         return default
 
     if dic == {} or len(locators) < 1:

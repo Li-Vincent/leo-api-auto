@@ -1,3 +1,4 @@
+import pytz
 from bson import ObjectId
 from flask import jsonify
 
@@ -87,9 +88,11 @@ class Cron:
                               "&nbsp;&nbsp;&nbsp;<a href=\"http://{}:{}/project/{}/testReport/{}\">Click here to see " \
                               "report detail!</a><br/>" \
                               "&nbsp;&nbsp;&nbsp;Report ID: {}<br/>" \
-                              "&nbsp;&nbsp;&nbsp;Generated At: {}" \
+                              "&nbsp;&nbsp;&nbsp;Generated At: {} CST" \
                         .format(host_ip, host_port, self.project_id, report_id, report_id,
-                                test_report_returned['createAt'].strftime('%Y-%m-%d %H:%M:%S'))
+                                test_report_returned['createAt'].replace(tzinfo=pytz.utc).astimezone(
+                                    pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
+                    print(test_report_returned['createAt'])
                     mail_result = send_cron_email(self.project_id, self.alarm_mail_list, subject, content)
                     if mail_result.get('status') == 'failed':
                         raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))

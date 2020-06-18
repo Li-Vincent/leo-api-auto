@@ -238,11 +238,16 @@ class ExecutionEngine:
         returned_data["responseStatusCode"] = response_status_code
         returned_data["responseData"] = response.text
 
+        # checkResponseCode 校验处理
+        if 'checkResponseCode' in test_case and test_case['checkResponseCode'] not in ["", None]:
+            check_response_code = test_case['checkResponseCode']
+            returned_data['checkResponseCode'] = check_response_code
+
         try:
             response_json = json.loads(response.text) if isinstance(response.text,
                                                                     str) and response.text.strip() else {}
         except BaseException as e:
-            # 如果出现异常，表明服务器返回格式不是json
+            # 如果出现异常，表名接口返回格式不是json
             if set_global_vars and isinstance(set_global_vars, list):
                 for set_global_var in set_global_vars:
                     if isinstance(set_global_var, dict) and isinstance(set_global_var.get('name'), str):
@@ -254,10 +259,6 @@ class ExecutionEngine:
                         value = common.dict_get(response.text, query)
                         self.global_vars[name] = str(value) if value else value
 
-            if 'checkResponseCode' in test_case and test_case['checkResponseCode'] not in ["", None]:
-                check_response_code = test_case['checkResponseCode']
-                returned_data['checkResponseCode'] = check_response_code
-
             if check_response_code and not str(response_status_code) == str(check_response_code):
                 returned_data["status"] = 'failed'
                 returned_data["testConclusion"].append(
@@ -265,18 +266,53 @@ class ExecutionEngine:
                      'reason': '响应状态码错误, 期待值: <%s>, 实际值: <%s>。\t' % (check_response_code, response_status_code)})
                 return returned_data
 
-            is_check_res_body_valid = isinstance(test_case.get('checkResponseBody'), list) and len(
-                list(filter(lambda x: str(x.get('regex')).strip() == '', test_case.get('checkResponseBody')))) < 1
-            is_check_res_num_valid = isinstance(test_case.get('checkResponseNumber'), list) and len(
+            # check response number
+            need_check_res_num = isinstance(test_case.get('checkResponseNumber'), list) and len(
                 list(filter(lambda x: str(x.get('expressions').get('expectResult')).strip() == '',
                             test_case.get('checkResponseNumber')))) < 1
-            is_test_failed = is_check_res_body_valid or is_check_res_num_valid
-
-            returned_data['status'] = 'failed' if is_test_failed else 'ok'
+            returned_data['status'] = 'failed' if need_check_res_num else 'ok'
             returned_data["testConclusion"].append(
                 {'resultType': test_conclusion.get(1),
-                 'reason': '服务器返回格式不是json, 错误信息: %s, 服务器返回为: %s ' % (e, response.text)}) \
+                 'reason': '接口返回格式不是json,无法进行数值校验, 错误信息: %s, 接口返回为: %s ' % (e, response.text)}) \
                 if returned_data.get('status') and returned_data.get('status') == 'failed' else None
+
+            # checkResponseBody 校验处理
+            if 'checkResponseBody' in test_case and test_case['checkResponseBody'] not in [[], {}, "", None]:
+                if not isinstance(test_case['checkResponseBody'], list):
+                    raise TypeError('checkResponseBody must be list！')
+                for index, check_item in enumerate(test_case['checkResponseBody']):
+                    if not isinstance(check_item, dict) or 'regex' not in check_item or 'query' not in check_item or \
+                            not isinstance(check_item['regex'], str) or not isinstance(check_item['query'], list):
+                        raise TypeError('checkResponseBody is not valid!')
+                    # TODO 可开启/关闭 全局替换
+                    # 对校验结果进行全局替换
+                    test_case['checkResponseBody'][index]['regex'] = common.replace_global_var_for_str(
+                        init_var_str=check_item['regex'], global_var_dic=self.global_vars) if check_item.get(
+                        'regex') and isinstance(check_item.get('regex'), str) else ''  # 警告！python判断空字符串为False
+                    if check_item.get('query') and isinstance(check_item.get('query'), list):
+                        test_case['checkResponseBody'][index]['query'] = common.replace_global_var_for_list(
+                            init_var_list=check_item['query'], global_var_dic=self.global_vars)
+                check_response_body = test_case['checkResponseBody']
+                returned_data['checkResponseBody'] = check_response_body
+
+            if check_response_body:
+                for check_item in check_response_body:
+                    regex = check_item['regex']
+                    query = check_item['query']
+                    real_value = common.dict_get(response.text, query)
+                    if real_value is None:
+                        returned_data["status"] = 'failed'
+                        returned_data["testConclusion"].append(
+                            {'resultType': test_conclusion.get(1),
+                             'reason': '未找到匹配的正则校验的值(查询语句为: %s), 服务器响应为: %s' % (query, response.text)})
+                        return returned_data
+                    result = re.search(regex, str(real_value))  # python 将regex字符串取了r''(原生字符串)
+                    if not result:
+                        returned_data["status"] = 'failed'
+                        returned_data["testConclusion"].append(
+                            {'resultType': test_conclusion.get(1),
+                             'reason': '判断响应值错误(查询语句为: %s),响应值应满足正则: <%s>, 实际值: <%s> (%s)。(正则匹配时会将数据转化成string)\t'
+                                       % (query, regex, real_value, type(real_value))})
 
             if returned_data['status'] == 'ok':
                 returned_data["testConclusion"].append({'resultType': test_conclusion.get(0), 'reason': '测试通过'})
@@ -290,13 +326,7 @@ class ExecutionEngine:
                     value = common.dict_get(response_json, query)
                     self.global_vars[name] = str(value) if value else value
 
-        # 校验处理
-        # checkResponseCode
-        if 'checkResponseCode' in test_case and test_case['checkResponseCode'] not in ["", None]:
-            check_response_code = test_case['checkResponseCode']
-            returned_data['checkResponseCode'] = check_response_code
-
-        # checkResponseBody
+        # checkResponseBody 校验处理
         if 'checkResponseBody' in test_case and test_case['checkResponseBody'] not in [[], {}, "", None]:
             if not isinstance(test_case['checkResponseBody'], list):
                 raise TypeError('checkResponseBody must be list！')
@@ -334,7 +364,8 @@ class ExecutionEngine:
                     global_var_dic=self.global_vars) if check_item['expressions'].get('secondArg') and isinstance(
                     check_item['expressions'].get('secondArg'), str) else ''
 
-                test_case['checkResponseNumber'][index]['expressions']['expectResult'] = common.replace_global_var_for_str(
+                test_case['checkResponseNumber'][index]['expressions'][
+                    'expectResult'] = common.replace_global_var_for_str(
                     init_var_str=check_item['expressions']['expectResult'],
                     global_var_dic=self.global_vars) if check_item['expressions'].get('expectResult') and isinstance(
                     check_item['expressions'].get('expectResult'), str) else ''
