@@ -218,7 +218,7 @@
                 </el-row>
                 <template>
                   <el-form-item label="" prop="parameterRaw">
-                    <el-input type="textarea" :rows="5" placeholder="请输入参数内容({'username': 'test'})"
+                    <el-input type="textarea" :rows="8" placeholder="请输入参数内容({'username': 'test'})"
                               v-model.trim="form.parameterRaw"></el-input>
                   </el-form-item>
                 </template>

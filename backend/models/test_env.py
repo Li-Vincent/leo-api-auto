@@ -8,7 +8,7 @@ class TestEnv(Model):
 
     # Fields
     _id = ObjectIdField()
-    name = StringField(field_name='name', unique=True)
+    name = StringField(field_name='name')
     domain = StringField(field_name='domain')
     description = StringField()
     status = BooleanField(field_name='status', default=False)

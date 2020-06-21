@@ -240,7 +240,7 @@ def start_api_test_by_suite():
         test_report['projectId'] = ObjectId(project_id)
     try:
         execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_id_list, domain, global_env_vars)
-        return jsonify({'status': 'ok', 'data': "触发执行完毕"})
+        return jsonify({'status': 'ok', 'data': "测试已成功启动，请稍后前往「测试报告」查看报告"})
     except BaseException as e:
         current_app.logger.error("start_api_test_by_suite failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': "出错了 - %s" % e})
