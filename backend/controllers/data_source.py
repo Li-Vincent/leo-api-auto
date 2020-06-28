@@ -9,16 +9,16 @@ from models.data_source import DBConfig, DBEnvConnect
 from utils import common
 
 
-@app.route('/api/project/<project_id>/dbConfigList', methods=['GET'])
+@app.route('/api/dbConfig/dbConfigList', methods=['GET'])
 @login_required
-def db_config_list(project_id):
+def db_config_list():
     total_num, dbs = common.get_total_num_and_arranged_data(DBConfig, request.args)
     return jsonify({'status': 'ok', 'data': {'totalNum': total_num, 'rows': dbs}})
 
 
-@app.route('/api/project/<project_id>/dbConfig/<db_config_id>', methods=['GET'])
+@app.route('/api/dbConfig/<db_config_id>', methods=['GET'])
 @login_required
-def get_db_config(project_id, db_config_id):
+def get_db_config(db_config_id):
     try:
         res = DBConfig.find_one({'_id': ObjectId(db_config_id)})
         return jsonify({'status': 'ok', 'data': common.format_response_in_dic(res)}) if res else \
@@ -28,13 +28,12 @@ def get_db_config(project_id, db_config_id):
         return jsonify({'status': 'failed', 'data': '出错了 %s' % e})
 
 
-@app.route('/api/project/<project_id>/addDBConfig', methods=['POST'])
+@app.route('/api/dbConfig/addDBConfig', methods=['POST'])
 @login_required
-def add_db_config(project_id):
+def add_db_config():
     try:
         request_data = request.get_json()
         request_data['status'] = True
-        request_data['projectId'] = ObjectId(project_id)
         request_data['createAt'] = datetime.utcnow()
         filtered_data = DBConfig.filter_field(request_data, use_set_default=True)
         DBConfig.insert(filtered_data)
@@ -44,9 +43,9 @@ def add_db_config(project_id):
         return jsonify({'status': 'failed', 'data': '新建失败 %s' % e})
 
 
-@app.route('/api/project/<project_id>/updateDBConfig/<db_config_id>', methods=['POST'])
+@app.route('/api/dbConfig/updateDBConfig/<db_config_id>', methods=['POST'])
 @login_required
-def update_db_config(project_id, db_config_id):
+def update_db_config(db_config_id):
     try:
         request_data = request.get_json()
         request_data['lastUpdateTime'] = datetime.utcnow()
@@ -60,9 +59,9 @@ def update_db_config(project_id, db_config_id):
         return jsonify({'status': 'failed', 'data': '更新DB配置失败 %s' % e})
 
 
-@app.route('/api/project/<project_id>/getDBEnvConnect', methods=['POST'])
+@app.route('/api/dbConfig/getDBEnvConnect', methods=['POST'])
 @login_required
-def get_db_env_connect(project_id):
+def get_db_env_connect():
     try:
         request_data = request.get_json()
         db_config_id = request_data['dbConfigId']
@@ -77,9 +76,9 @@ def get_db_env_connect(project_id):
         return jsonify({'status': 'failed', 'data': '出错了 %s' % e})
 
 
-@app.route('/api/project/<project_id>/updateDBEnvConnect', methods=['POST'])
+@app.route('/api/dbConfig/updateDBEnvConnect', methods=['POST'])
 @login_required
-def update_db_env_connect(project_id):
+def update_db_env_connect():
     try:
         request_data = request.get_json()
         print(request_data)
@@ -101,6 +100,8 @@ def update_db_env_connect(project_id):
             return jsonify({'status': 'ok', 'data': '更新DB连接配置成功'})
         else:
             request_data['createAt'] = datetime.utcnow()
+            request_data['createUser'] = request_data['lastUpdateUser']
+            request_data['lastUpdateTime'] = datetime.utcnow()
             filtered_data = DBEnvConnect.filter_field(request_data, use_set_default=True)
             DBEnvConnect.insert(filtered_data)
         return jsonify({'status': 'ok', 'data': '更新DB连接配置成功'})

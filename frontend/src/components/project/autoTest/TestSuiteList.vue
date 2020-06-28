@@ -166,7 +166,7 @@
 
 <script>
     import {addTestSuite, copyTestSuite, getTestSuites, updateTestSuite} from "../../../api/testSuite";
-    import {getTestEnvs} from "../../../api/testEnv";
+    import {getEnvConfigs} from "../../../api/envConfig";
     import {startAPITestBySuite} from "../../../api/execution";
     import {exportTestCases} from '../../../api/testCase';
     import moment from "moment";
@@ -544,8 +544,8 @@
             getTestEnvList() {
                 let self = this;
                 let header = {};
-                let params = {status: true, projectId: self.$route.params.project_id};
-                getTestEnvs(self.$route.params.project_id, params, header).then((res) => {
+                let params = {status: true};
+                getEnvConfigs(params, header).then((res) => {
                     let {status, data} = res
                     if (status === 'ok') {
                         this.testEnvs = data.rows

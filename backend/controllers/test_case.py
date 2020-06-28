@@ -12,7 +12,7 @@ from flask import jsonify, request, current_app, send_file
 from flask_security import login_required
 
 from app import app
-from controllers.test_env import get_env_name_and_domain
+from controllers.env_config import get_env_name_and_domain
 from controllers.test_env_param import get_global_env_vars
 from execution_engine.execution import ExecutionEngine, execute_test_by_suite_async
 from models.test_case import TestCase

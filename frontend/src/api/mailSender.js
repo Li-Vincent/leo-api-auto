@@ -1,34 +1,34 @@
 import request from '../utils/axios'
 
-export function getMailSender(project_id, params) {
+export function getMailSender(params) {
   return request({
-    url: `/api/project/${project_id}/mailSenderList`,
+    url: `/api/mailConfig/mailSenderList`,
     params: params,
     method: 'GET'
   })
 }
 
-export function addMailSender(project_id, params, header) {
+export function addMailSender(params, header) {
   return request({
-    url: `/api/project/${project_id}/addMailSender`,
+    url: `/api/mailConfig/addMailSender`,
     method: 'POST',
     headers: header,
     data: params
   })
 }
 
-export function updateMailSender(project_id, sender_id, params, header) {
+export function updateMailSender(sender_id, params, header) {
   return request({
-    url: `/api/project/${project_id}/updateMailSender/${sender_id}`,
+    url: `/api/mailConfig/updateMailSender/${sender_id}`,
     method: 'POST',
     headers: header,
     data: params
   })
 }
 
-export function mailSenderTest(project_id, params) {
+export function mailSenderTest(params) {
   return request({
-    url: `/api/project/${project_id}/mailSenderTest`,
+    url: `/api/mailConfig/mailSenderTest`,
     method: 'POST',
     data: params
   })

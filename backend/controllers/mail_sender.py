@@ -6,26 +6,25 @@ from flask import jsonify, request, current_app
 from flask_security import login_required, roles_accepted
 
 from app import app
-from models.mail_sender import MailSender
+from models.mail import MailSender
 from utils import common
 from utils.send_email import send_email
 
 
-@app.route('/api/project/<project_id>/mailSenderList', methods=['GET'])
+@app.route('/api/mailConfig/mailSenderList', methods=['GET'])
 @login_required
-def mail_sender_list(project_id):
+def mail_sender_list():
     total_num, mail_senders = common.get_total_num_and_arranged_data(MailSender, request.args)
     return jsonify({'status': 'ok', 'data': {'totalNum': total_num, 'rows': mail_senders}})
 
 
-@app.route('/api/project/<project_id>/addMailSender', methods=['POST'])
+@app.route('/api/mailConfig/addMailSender', methods=['POST'])
 @login_required
 @roles_accepted('admin', 'project')
-def add_mail_sender(project_id):
+def add_mail_sender():
     try:
         request_data = request.get_json()
         request_data["status"] = True
-        request_data["projectId"] = ObjectId(project_id)
         request_data["createAt"] = datetime.utcnow()
         filtered_data = MailSender.filter_field(request.get_json(), use_set_default=True)
         MailSender.insert(filtered_data)
@@ -35,10 +34,10 @@ def add_mail_sender(project_id):
         return jsonify({'status': 'failed', 'data': '新增邮件发件人失败 %s' % e})
 
 
-@app.route('/api/project/<project_id>/updateMailSender/<sender_id>', methods=['POST'])
+@app.route('/api/mailConfig/updateMailSender/<sender_id>', methods=['POST'])
 @login_required
 @roles_accepted('admin', 'project')
-def update_mail_sender(project_id, sender_id):
+def update_mail_sender(sender_id):
     try:
         request_data = request.get_json()
         request_data['lastUpdateTime'] = datetime.utcnow()
@@ -52,10 +51,10 @@ def update_mail_sender(project_id, sender_id):
         return jsonify({'status': 'failed', 'data': '更新发件人失败 %s' % e})
 
 
-@app.route('/api/project/<project_id>/mailSenderTest', methods=['POST'])
+@app.route('/api/mailConfig/mailSenderTest', methods=['POST'])
 @login_required
 @roles_accepted('admin', 'project')
-def test_email_sender(project_id):
+def test_email_sender():
     request_data = request.get_json()
     from_email = request_data.get('email')
     password = request_data.get('password')
@@ -69,10 +68,9 @@ def test_email_sender(project_id):
         return jsonify({'status': 'failed', 'data': '验证失败 o(╥﹏╥)o', 'message': msg})
 
 
-def send_cron_email(project_id, to_list, subject, content):
+def send_cron_email(to_list, subject, content):
     print('send_cron_email', to_list)
-    mail_sender = list(MailSender.find({'projectId': ObjectId(project_id)})
-                       .sort([('createAt', pymongo.DESCENDING)]).limit(1))[0]
+    mail_sender = list(MailSender.find({}).sort([('createAt', pymongo.DESCENDING)]).limit(1))[0]
     from_email = mail_sender.get('email')
     password = mail_sender.get('password')
     smtp_server = mail_sender.get('SMTPServer')

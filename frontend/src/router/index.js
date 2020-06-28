@@ -136,34 +136,24 @@ export const constantRoutes = [
             }
           },
           {
-            path: '/project/:project_id/globalParam/DBConfig/',
-            component: () => import('@/components/project/setting/dbConfig/DBConfig'),
-            name: 'DBConfig',
+            path: '/project/:project_id/globalParam/ShowDBConfig',
+            component: () => import('@/components/project/setting/dbConfig/ShowDBConfig'),
+            name: 'ShowDBConfig',
             nav: 'env',
             meta: {
               title: 'DB配置'
             }
           },
           {
-            path: '/project/:project_id/globalParam/DBConfig/:db_config_id/DBEnvConnect',
-            component: () => import('@/components/project/setting/dbConfig/DBEnvConnect'),
-            name: 'DBEnvConnect',
+            path: '/project/:project_id/globalParam/DBConfig/:db_config_id/ShowDBEnvConnect',
+            component: () => import('@/components/project/setting/dbConfig/ShowDBEnvConnect'),
+            name: 'ShowDBEnvConnect',
             nav: 'env',
             meta: {
               title: 'DB环境连接配置'
             }
-          },
+          }
         ]
-      },
-      {
-        path: '/project/:project_id/mailConfig',
-        component: () => import('@/components/project/setting/MailConfig'),
-        name: 'MailConfig',
-        nav: 'mail',
-        meta: {
-          title: '邮件配置'
-        },
-        leaf: true  // 只显示一级导航
       },
       {
         path: '/project/:project_id/cronJob',
@@ -214,7 +204,7 @@ export const constantRoutes = [
             },
           }
         ]
-      },
+      }
     ]
   },
 ]
@@ -238,6 +228,55 @@ export const asyncRoutes = [
           title: '接口测试',
           icon: 'fa fa-meetup'
         }
+      },
+      {
+        path: '/envConfig',
+        component: () => import('@/components/config/EnvConfig'),
+        name: 'EnvConfig',
+        meta: {
+          title: '环境配置',
+          icon: 'fa fa-meetup',
+          roles: ['admin'] // you can set roles in root nav
+        }
+      },
+      {
+        path: '/DBConfig',
+        component: () => import('@/components/config/dbConfig/DBConfig'),
+        name: 'DBConfig',
+        meta: {
+          title: 'DB配置'
+        },
+        hidden: true
+      },
+      {
+        path: '/DBConfig/:db_config_id/DBEnvConnect',
+        component: () => import('@/components/config/dbConfig/DBEnvConnect'),
+        name: 'DBEnvConnect',
+        meta: {
+          title: 'DB环境连接配置'
+        },
+        hidden: true
+      },
+      {
+        path: '/mailConfig',
+        component: () => import('@/components/config/mailConfig/MailConfig'),
+        name: 'MailConfig',
+        meta: {
+          title: '邮件配置',
+          icon: 'fa fa-id-card-o',
+          roles: ['admin', 'project'] // you can set roles in root nav
+        }
+      },
+      {
+        path: '/mailGroupConfig/:mail_group_id',
+        component: () => import('@/components/config/mailConfig/MailGroupConfig'),
+        name: 'MailGroupConfig',
+        meta: {
+          title: '收件人配置',
+          icon: 'fa fa-id-card-o',
+          roles: ['admin', 'project'] // you can set roles in root nav
+        },
+        hidden: true
       },
       {
         path: '/users',

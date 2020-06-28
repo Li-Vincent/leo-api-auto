@@ -70,7 +70,7 @@
     <!--编辑-->
     <el-dialog :title="titleMap[dialogStatus]" :visible.sync="formVisible" width="70%" :close-on-click-modal="false"
                style="width: 65%; left: 17.5%">
-      <el-form :model="form" :rules="formRules" ref="form" label-width="80px">
+      <el-form :model="form" :rules="formRules" ref="form" label-width="100px">
         <el-form-item label="任务名称" prop="name">
           <el-input v-model="form.name" auto-complete="off"></el-input>
         </el-form-item>
@@ -103,11 +103,11 @@
         <transition name="el-zoom-in-top">
           <div class="form-item-sub form-item-short"
                v-if="form.triggerType.toString()==='interval' || form.triggerType.toString()==='date'">
-            <el-form-item v-show="form.triggerType.toString()==='interval'" label="间隔/秒" prop="interval">
+            <el-form-item v-if="form.triggerType.toString()==='interval'" label="间隔/秒" prop="interval">
               <el-input style="width:50%" v-model.trim="form.interval" type="number" auto-complete="off"></el-input>
             </el-form-item>
 
-            <el-form-item v-show="form.triggerType.toString()==='date'" label="具体日期" prop="runDate">
+            <el-form-item v-if="form.triggerType.toString()==='date'" label="具体日期" prop="runDate">
               <el-date-picker
                 :picker-options="pickerOptions"
                 v-model.trim="form.runDate"
@@ -118,11 +118,11 @@
           </div>
         </transition>
 
-        <el-form-item label="告警邮箱" prop="alarmMailList">
-          <el-select style="width: 60%;" v-model="form['alarmMailList']" @visible-change="checkActiveMail"
+        <el-form-item label="告警邮件组" prop="alarmMailGroupList">
+          <el-select style="width: 60%;" v-model="form['alarmMailGroupList']" @visible-change="checkActiveMail"
                      clearable multiple placeholder="请选择告警报告接受者(可多选)">
-            <el-option v-for="(item,index) in mailList" :key="index" :label="item.name"
-                       :value="item.email"></el-option>
+            <el-option v-for="(item,index) in mailGroupList" :key="index" :label="item.name"
+                       :value="item._id"></el-option>
           </el-select>
         </el-form-item>
 
@@ -156,9 +156,9 @@
     import {
         getCronJobs, addCronJob, updateCronJob, deleteCronJob, pauseCronJob, resumeCronJob
     } from "../../../api/cronJob";
-    import {getTestEnvs} from "../../../api/testEnv";
+    import {getEnvConfigs} from "../../../api/envConfig";
     import {getTestSuites} from "../../../api/testSuite";
-    import {getMails} from "../../../api/mail";
+    import {getMailGroups} from "../../../api/mail";
 
     export default {
         name: "CronJobList",
@@ -183,7 +183,7 @@
                     name: ''
                 },
                 testSuites: [],
-                mailList: [],
+                mailGroupList: [],
                 TriggerTypes: [{name: '触发间隔', value: 'interval'},
                     {name: '具体日期', value: 'date'}],
                 size: 10,
@@ -219,8 +219,8 @@
                     testEnvId: [
                         {required: true, message: '请选择测试环境', trigger: 'blur'}
                     ],
-                    alarmMailList: [
-                        {required: false, message: '请选择告警邮箱', trigger: 'blur'}
+                    alarmMailGroupList: [
+                        {required: false, message: '请选择告警邮件组', trigger: 'blur'}
                     ],
                     triggerType: [
                         {required: true, message: '请选择触发类型', trigger: 'blur'}
@@ -243,7 +243,7 @@
                     testSuiteIdList: [],
                     includeForbidden: false,
                     testEnvId: '',
-                    alarmMailList: [],
+                    alarmMailGroupList: [],
                     triggerType: '',
                     interval: 0,
                     runDate: '',
@@ -254,7 +254,7 @@
                     testSuiteIdList: [],
                     includeForbidden: false,
                     testDomain: '',
-                    alarmMailList: [],
+                    alarmMailGroupList: [],
                     triggerType: '',
                     interval: 0,
                     runDate: '',
@@ -271,8 +271,8 @@
             getTestEnvList() {
                 let self = this;
                 let header = {};
-                let params = {status: true, projectId: self.$route.params.project_id};
-                getTestEnvs(self.$route.params.project_id, params, header).then((res) => {
+                let params = {status: true};
+                getEnvConfigs(params, header).then((res) => {
                     let {status, data} = res
                     if (status === 'ok') {
                         this.testEnvs = data.rows
@@ -298,22 +298,16 @@
                     })
                 }
             },
-            getMailList() {
+            getMailGroupList() {
                 this.listLoading = true;
                 let self = this;
-                let params = {
-                    size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
-                    projectId: self.$route.params.project_id
-                };
-                if (self.filters.name.trim() !== '') {
-                    params['name'] = self.filters.name.trim()
-                }
-                getMails(this.$route.params.project_id, params).then((res) => {
+                let params = {status: true}
+                getMailGroups(params).then((res) => {
                     let {status, data} = res;
                     self.listLoading = false;
                     if (status === 'ok') {
                         self.totalNum = data.totalNum;
-                        self.mailList = data.rows
+                        self.mailGroupList = data.rows
                     } else {
                         self.$message.error({
                             message: data,
@@ -322,7 +316,7 @@
                     }
                 }).catch((error) => {
                     self.$message.error({
-                        message: '邮箱列表获取失败，请稍后刷新重试哦~',
+                        message: '邮件组列表获取失败，请稍后刷新重试哦~',
                         center: true,
                     });
                     self.listLoading = false;
@@ -330,9 +324,9 @@
             },
             checkActiveMail: function () {
                 let self = this;
-                if (self.mailList.length < 1) {
+                if (self.mailGroupList.length < 1) {
                     self.$message.warning({
-                        message: '未找到「启用的邮箱」哦, 请前往「邮箱配置」进行设置',
+                        message: '未找到「启用的邮件组」哦, 请通知管理员前往「邮件配置」进行设置',
                         center: true,
                     })
                 }
@@ -341,14 +335,10 @@
             getTestSuiteList() {
                 let self = this;
                 let params = {
-                    skip: self.skip, size: self.size, sortBy: self.sortBy, order: self.order,
+                    status: true,
                     projectId: self.$route.params.project_id
                 }
                 this.listLoading = true;
-                if (self.filters.name.trim() !== '') {
-                    params['name'] = self.filters.name.trim()
-                }
-                ;
                 let header = {};
                 getTestSuites(self.$route.params.project_id, params, header).then((res) => {
                     self.listLoading = false;
@@ -493,7 +483,7 @@
                 if (row['runDate'] && row['runDate'].constructor === String) {
                     row['runDate'] = this.stringToDate(row['runDate'])
                 }
-                this.form = Object.assign({}, this.form, row); // 新字段上线，需要使用this.editForm添加
+                this.form = Object.assign({}, this.form, row);
                 this.dialogStatus = 'edit'
             },
             //显示新增界面
@@ -539,7 +529,7 @@
                                         includeForbidden: self.form.includeForbidden,
                                         triggerType: self.form.triggerType,
                                         description: self.form.description.trim(),
-                                        alarmMailList: self.form.alarmMailList,
+                                        alarmMailGroupList: self.form.alarmMailGroupList,
                                         createUser: self.$store.getters.email || 'anonymous',
                                     };
                                     if (self.form.runDate && self.form.runDate.toString().trim() !== '') {
@@ -579,7 +569,7 @@
                                         includeForbidden: self.form.includeForbidden,
                                         triggerType: self.form.triggerType,
                                         description: self.form.description.trim(),
-                                        alarmMailList: self.form.alarmMailList,
+                                        alarmMailGroupList: self.form.alarmMailGroupList,
                                         lastUpdateUser: self.$store.getters.email || 'anonymous',
                                     };
                                     if (self.form.runDate && self.form.runDate.toString().trim() !== '') {
@@ -709,7 +699,7 @@
         created() {
             this.getTestEnvList();
             this.getCronJobList();
-            this.getMailList();
+            this.getMailGroupList();
             this.getTestSuiteList();
         }
     }
