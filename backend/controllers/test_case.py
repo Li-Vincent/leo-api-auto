@@ -20,7 +20,6 @@ from models.test_suite import TestSuite
 from utils import common
 
 
-
 @app.route('/api/project/<project_id>/testSuite/<test_suite_id>/testCaseList', methods=['GET'])
 @login_required
 def case_list(project_id, test_suite_id):
@@ -30,18 +29,19 @@ def case_list(project_id, test_suite_id):
 
 @app.route('/api/project/<project_id>/testSuite/<test_suite_id>/addCase', methods=['POST'])
 def add_case(project_id, test_suite_id):
-    # 查询 sequence 最大值
-    res = TestCase.find_one({'testSuiteId': ObjectId(test_suite_id)}, sort=[('sequence', -1)])
-    request_data = request.get_json()
-    request_data['sequence'] = 1 if (res is None) else res['sequence'] + 1
-    request_data["status"] = True
-    request_data["testSuiteId"] = ObjectId(test_suite_id)
-    request_data["projectId"] = ObjectId(project_id)
-    request_data["testCaseType"] = 'apiTest'
-    request_data["createAt"] = datetime.utcnow()
-    filtered_data = TestCase.filter_field(request_data, use_set_default=True)
     try:
+        # 查询 sequence 最大值
+        res = TestCase.find_one({'testSuiteId': ObjectId(test_suite_id)}, sort=[('sequence', -1)])
+        request_data = request.get_json()
+        request_data['sequence'] = 1 if (res is None) else res['sequence'] + 1
+        request_data["status"] = True
+        request_data["testSuiteId"] = ObjectId(test_suite_id)
+        request_data["projectId"] = ObjectId(project_id)
+        request_data["testCaseType"] = 'apiTest'
+        request_data["createAt"] = datetime.utcnow()
+        filtered_data = TestCase.filter_field(request_data, use_set_default=True)
         TestCase.insert(filtered_data)
+        current_app.logger.info("add test case successfully. case name: %s" % str(filtered_data['name']))
         return jsonify({'status': 'ok', 'data': '添加成功'})
     except BaseException as e:
         current_app.logger.error("add_case failed. - %s" % str(e))
@@ -54,7 +54,7 @@ def copy_case(project_id, test_suite_id, test_case_id):
     try:
         res = TestCase.find_one({'_id': ObjectId(test_case_id)})
         if not res:
-            current_app.logger.error('can not find test_case by - %s' % test_case_id)
+            current_app.logger.error('can not find test_case by id: %s' % test_case_id)
             return jsonify({'status': 'failed', 'data': '未找到要复制的test_case'})
         request_data = request.get_json()
         new_case_data = res
@@ -76,6 +76,7 @@ def copy_case(project_id, test_suite_id, test_case_id):
         new_case_data['createUser'] = request_data['createUser']
         filtered_data = TestCase.filter_field(new_case_data, use_set_default=True)
         TestCase.insert(filtered_data)
+        current_app.logger.info("copy test case successfully. new case name: %s" % str(new_case_name))
         return jsonify({'status': 'ok', 'data': '复制成功'})
     except BaseException as e:
         current_app.logger.error("copy_case failed. - %s" % str(e))
@@ -107,6 +108,7 @@ def update_case(project_id, test_suite_id, test_case_id):
         update_response = TestCase.update({'_id': ObjectId(test_case_id)}, {'$set': filtered_data})
         if update_response["n"] == 0:
             return jsonify({'status': 'failed', 'data': '未找到相应更新数据！'})
+        current_app.logger.info("update test case successfully. case name: %s" % str(filtered_data['name']))
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
         current_app.logger.error("update_case failed. - %s" % str(e))
@@ -476,7 +478,8 @@ def export_test_cases():
         export_case = list()
         for key in test_case_map.keys():
             if isinstance(case.get(key), list):
-                case_data = common.LIST_SEPARATOR.join(([str(x) if common.can_convert_to_str(x) else '' for x in case[key]]))
+                case_data = common.LIST_SEPARATOR.join(
+                    ([str(x) if common.can_convert_to_str(x) else '' for x in case[key]]))
             elif isinstance(case.get(key), datetime):
                 case_data = str(case.get(key)).replace('.', ':', 1) if common.can_convert_to_str(case.get(key)) and str(
                     case.get(key)).count('.') < 2 else str(case.get(key))

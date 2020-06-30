@@ -77,6 +77,7 @@ def register():
         user = user_data_store.find_user(email=request_data['email'])
         for role in request_data['roles']:
             user_data_store.add_role_to_user(user, role)
+        current_app.logger.info("register user successfully. email: %s" % str(email))
         return jsonify({'status': 'ok', 'data': '注册成功'})
     except BaseException as e:
         current_app.logger.error("register user failed. - %s" % str(e))

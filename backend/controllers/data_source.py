@@ -2,7 +2,7 @@ from datetime import datetime
 
 from bson import ObjectId
 from flask import jsonify, request, current_app
-from flask_security import login_required
+from flask_security import login_required, roles_required
 
 from app import app
 from models.data_source import DBConfig, DBEnvConnect
@@ -30,6 +30,7 @@ def get_db_config(db_config_id):
 
 @app.route('/api/dbConfig/addDBConfig', methods=['POST'])
 @login_required
+@roles_required('admin')
 def add_db_config():
     try:
         request_data = request.get_json()
@@ -37,6 +38,7 @@ def add_db_config():
         request_data['createAt'] = datetime.utcnow()
         filtered_data = DBConfig.filter_field(request_data, use_set_default=True)
         DBConfig.insert(filtered_data)
+        current_app.logger.info("add db config successfully. DB Config Name: %s" % str(filtered_data['name']))
         return jsonify({'status': 'ok', 'data': '新增DB配置成功'})
     except BaseException as e:
         current_app.logger.error("add db config failed. - %s" % str(e))
@@ -45,6 +47,7 @@ def add_db_config():
 
 @app.route('/api/dbConfig/updateDBConfig/<db_config_id>', methods=['POST'])
 @login_required
+@roles_required('admin')
 def update_db_config(db_config_id):
     try:
         request_data = request.get_json()
@@ -53,6 +56,7 @@ def update_db_config(db_config_id):
         update_response = DBConfig.update({'_id': ObjectId(db_config_id)}, {'$set': filtered_data})
         if update_response['n'] == 0:
             return jsonify({'status': 'failed', 'data': '未找到相应的更新数据！'})
+        current_app.logger.info("update db config successfully. DB Config Name: %s" % str(filtered_data['name']))
         return jsonify({'status': 'ok', 'data': '更新DB配置成功'})
     except BaseException as e:
         current_app.logger.error("update db config failed. - %s" % str(e))
@@ -78,6 +82,7 @@ def get_db_env_connect():
 
 @app.route('/api/dbConfig/updateDBEnvConnect', methods=['POST'])
 @login_required
+@roles_required('admin')
 def update_db_env_connect():
     try:
         request_data = request.get_json()

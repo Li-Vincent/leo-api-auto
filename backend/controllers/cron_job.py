@@ -80,7 +80,7 @@ def add_cron_job(project_id):
         update_response = CronJob.update({"_id": cron_id}, {'$set': filtered_data})
         if update_response["n"] == 0:
             return jsonify({'status': 'failed', 'data': '新建成功但未找到相应更新数据！'})
-        app.logger.info(filtered_data)
+        current_app.logger.info("add cron job successfully. New Cron Id: %s" % str(cron_id))
         return jsonify({'status': 'ok', 'data': '新建成功'})
     except BaseException as e:
         current_app.logger.error("add cron job failed. - %s" % str(e))
@@ -123,6 +123,7 @@ def update_cron_job(project_id, cron_job_id):
                                          {'$set': filtered_data})
         if update_response["n"] == 0:
             return jsonify({'status': 'failed', 'data': '未找到相应更新数据！'})
+        current_app.logger.info("update cron job successfully. Cron Job Id: %s" % str(cron_job_id))
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
         current_app.logger.error("update cron job failed. - %s" % str(e))
@@ -137,6 +138,7 @@ def pause_cron_job(project_id, cron_job_id):
         cron_manager.pause_cron(cron_id=cron_job_id)
         CronJob.update({"_id": cron_job_id},
                        {'$set': {'status': 'PAUSED'}})
+        current_app.logger.info("pause cron job successfully. Cron Job Id: %s" % str(cron_job_id))
         return jsonify({'status': 'ok', 'data': '停用成功'})
     except BaseException as e:
         current_app.logger.error("pause cron job failed. - %s" % str(e))
@@ -149,6 +151,7 @@ def pause_cron_job(project_id, cron_job_id):
 def del_cron_job(project_id, cron_job_id):
     try:
         cron_manager.del_cron(cron_id=cron_job_id)
+        current_app.logger.info("del cron job successfully. Cron Job Id: %s" % str(cron_job_id))
         return jsonify({'status': 'ok', 'data': '删除成功'})
     except BaseException as e:
         current_app.logger.error("del cron job failed. - %s" % str(e))
@@ -163,6 +166,7 @@ def resume_cron_job(project_id, cron_job_id):
         cron_manager.resume_cron(cron_id=cron_job_id)
         CronJob.update({"_id": cron_job_id},
                        {'$set': {'status': 'RESUMED'}})
+        current_app.logger.info("resume cron job successfully. Cron Job Id: %s" % str(cron_job_id))
         return jsonify({'status': 'ok', 'data': '启动成功'})
     except BaseException as e:
         current_app.logger.error("resume cron job failed. - %s" % str(e))

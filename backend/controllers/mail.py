@@ -35,10 +35,10 @@ def add_mail():
         request_data["createAt"] = datetime.utcnow()
         filtered_data = MailRecipient.filter_field(request.get_json(), use_set_default=True)
         MailRecipient.insert(filtered_data)
-        return jsonify({'status': 'ok', 'data': '新增邮件成功'})
+        return jsonify({'status': 'ok', 'data': '新增收件人成功'})
     except BaseException as e:
         current_app.logger.error("add_mail failed. - %s" % str(e))
-        return jsonify({'status': 'failed', 'data': '新增邮件失败 %s' % e})
+        return jsonify({'status': 'failed', 'data': '新增收件人失败 %s' % e})
 
 
 @app.route('/api/mailConfig/addMailGroup', methods=['POST'])

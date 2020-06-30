@@ -3,7 +3,7 @@ from datetime import datetime
 import pymongo
 from bson import ObjectId
 from flask import jsonify, request, current_app
-from flask_security import login_required, roles_accepted
+from flask_security import login_required, roles_required
 
 from app import app
 from models.mail import MailSender
@@ -20,7 +20,7 @@ def mail_sender_list():
 
 @app.route('/api/mailConfig/addMailSender', methods=['POST'])
 @login_required
-@roles_accepted('admin', 'project')
+@roles_required('admin')
 def add_mail_sender():
     try:
         request_data = request.get_json()
@@ -36,7 +36,7 @@ def add_mail_sender():
 
 @app.route('/api/mailConfig/updateMailSender/<sender_id>', methods=['POST'])
 @login_required
-@roles_accepted('admin', 'project')
+@roles_required('admin')
 def update_mail_sender(sender_id):
     try:
         request_data = request.get_json()
@@ -53,7 +53,7 @@ def update_mail_sender(sender_id):
 
 @app.route('/api/mailConfig/mailSenderTest', methods=['POST'])
 @login_required
-@roles_accepted('admin', 'project')
+@roles_required('admin')
 def test_email_sender():
     request_data = request.get_json()
     from_email = request_data.get('email')
@@ -69,17 +69,19 @@ def test_email_sender():
 
 
 def send_cron_email(to_list, subject, content):
-    print('send_cron_email', to_list)
-    mail_sender = list(MailSender.find({}).sort([('createAt', pymongo.DESCENDING)]).limit(1))[0]
-    from_email = mail_sender.get('email')
-    password = mail_sender.get('password')
-    smtp_server = mail_sender.get('SMTPServer')
-    smtp_port = mail_sender.get('SMTPPort')
-    print('send_cron_email 2', from_email, password, smtp_server, smtp_port)
-    status, msg = send_email(smtp_server, smtp_port, from_email, password, to_list, subject, content)
-    if status:
-        current_app.logger.info("send_cron_mail to %s" % str(to_list))
-        return {'status': 'ok', 'data': '邮件发送成功'}
-    else:
-        current_app.logger.info("send_cron_mail failed. - %s" % str(msg))
-        return {'status': 'failed', 'data': '邮件发送失败', 'message': msg}
+    try:
+        mail_sender = list(MailSender.find({}).sort([('createAt', pymongo.DESCENDING)]).limit(1))[0]
+        from_email = mail_sender.get('email')
+        password = mail_sender.get('password')
+        smtp_server = mail_sender.get('SMTPServer')
+        smtp_port = mail_sender.get('SMTPPort')
+        status, msg = send_email(smtp_server, smtp_port, from_email, password, to_list, subject, content)
+        if status:
+            current_app.logger.info("send_cron_mail to %s" % str(to_list))
+            return {'status': 'ok', 'data': '邮件发送成功'}
+        else:
+            current_app.logger.error("send_cron_mail failed. - %s" % str(msg))
+            return {'status': 'failed', 'data': '邮件发送失败', 'message': msg}
+    except BaseException as e:
+        current_app.logger.error("send_cron_mail failed. - %s" % str(e))
+        return {'status': 'failed', 'data': '邮件发送失败', 'error': str(e)}
