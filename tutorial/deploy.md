@@ -87,13 +87,13 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 进入http://127.0.0.1:8888/initAdminUser
 进行注册管理员账号，如果db中已经存在管理员账号，此页面无法访问
 
-![初始化管理员账号](../images/initAdminUser.png)
+![初始化管理员账号](images/initAdminUser.png)
     
 7.2 使用创建的管理员帐号密码进行登录
 
 http://127.0.0.1:8888/
 
-![登录页面展示](../images/login.png)
+![登录页面展示](images/login.png)
 
 ### Linux(CentOS7) 环境下 Docker 容器化部署
 
@@ -180,8 +180,8 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 
 首先需要创建管理员账号，访问  HOST:PORT/initAdminUser
 
-![初始化管理员账号](../images/initAdminUser.png)
+![初始化管理员账号](images/initAdminUser.png)
 
 创建账户后访问登录页面，  HOST:PORT/login
 
-![登录页面展示](../images/login.png)
+![登录页面展示](images/login.png)

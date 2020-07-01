@@ -235,7 +235,7 @@ export const asyncRoutes = [
         name: 'EnvConfig',
         meta: {
           title: '环境配置',
-          icon: 'fa fa-meetup',
+          icon: 'fa fa-cog',
           roles: ['admin'] // you can set roles in root nav
         }
       },
@@ -263,7 +263,7 @@ export const asyncRoutes = [
         name: 'MailConfig',
         meta: {
           title: '邮件配置',
-          icon: 'fa fa-id-card-o',
+          icon: 'fa fa-envelope-o',
           roles: ['admin', 'project'] // you can set roles in root nav
         }
       },
