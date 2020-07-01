@@ -8,7 +8,7 @@
 
 ## Ⅱ. LEO API测试平台功能结构
  
-![平台结构图](tutorial/introduction.png)
+![平台结构图](https://gitee.com/Li-Vincent/res/raw/master/leo_api/images/introduction.png "平台结构图.png")
 
 ## Ⅲ .LEO API测试平台操作教程
 
