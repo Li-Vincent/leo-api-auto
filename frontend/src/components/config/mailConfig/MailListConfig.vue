@@ -16,7 +16,7 @@
         </el-form-item>
         <div style="float: right; margin-right: 95px">
           <el-form-item>
-            <el-input v-model.trim="filters.name" placeholder="名称" @keyup.enter.native="getMailList"></el-input>
+            <el-input v-model.trim="filters.email" placeholder="邮箱地址" @keyup.enter.native="getMailList"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" class="el-icon-search" @click="getMailList">查询</el-button>
@@ -93,11 +93,11 @@
     import {getMails, addMail, updateMail} from "../../../api/mail";
 
     export default {
-        name: "mailGroupConfig",
+        name: "mailListConfig",
         data() {
             return {
                 filters: {
-                    name: ''
+                    email: ''
                 },
                 mailList: [],
                 size: 10,
@@ -176,8 +176,8 @@
                     size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
                     mailGroupId: self.$route.params.mail_group_id
                 };
-                if (self.filters.name.trim() !== '') {
-                    params['name'] = self.filters.name.trim()
+                if (self.filters.email.trim() !== '') {
+                    params['email'] = self.filters.email.trim()
                 }
                 self.queryMailList(params);
             },
