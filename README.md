@@ -12,7 +12,7 @@
 
 ## Ⅲ .LEO API测试平台操作教程
 
-TODO
+[点击进入操作教程](tutorial/tutorial.md)
 
 ## IV . LEO API测试平台部署
 [点击进入部署教程](tutorial/deploy.md)
