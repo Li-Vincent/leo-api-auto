@@ -11,6 +11,7 @@ class TestSuite(Model):
     description = StringField()
     service = StringField()
     priority = StringField()
+    sprint = StringField()
     storyId = StringField()
     testCaseId = StringField()
     projectId = ObjectIdField()

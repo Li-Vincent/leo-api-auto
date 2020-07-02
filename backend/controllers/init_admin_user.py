@@ -58,9 +58,10 @@ def add_admin_user():
         user = user_data_store.find_user(email=email)
         for role in roles:
             user_data_store.add_role_to_user(user, role)
+        current_app.logger.info("add admin user successfully. email: %s" % str(email))
         return jsonify({'status': 'ok', 'data': '添加管理员用户成功'})
     except BaseException as e:
-        current_app.logger.error("add_admin_user failed. - %s" % str(e))
+        current_app.logger.error("add admin user failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': "出错了, Error: %s" % e})
 
 

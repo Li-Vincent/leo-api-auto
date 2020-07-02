@@ -1,0 +1,2 @@
+webpackJsonp([29],{c27y:function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var s={render:function(){this.$createElement;this._self._c;return this._m(0)},staticRenderFns:[function(){var e=this.$createElement,t=this._self._c||e;return t("section",[t("div",{staticStyle:{"font-size":"20px","text-align":"center"}},[this._v("\n    Leo API 自动化测试平台\n  ")])])}]},i=n("VU/8")({name:"About",methods:{}},s,!1,null,null,null);t.default=i.exports}});
+//# sourceMappingURL=29.bb8f3fdc31bfeb0fdec1.js.map

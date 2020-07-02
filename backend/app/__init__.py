@@ -30,10 +30,10 @@ log_file_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.par
 make_dir(log_file_folder)
 logging.basicConfig(level=logging.DEBUG)
 # 安照日志文件大小切割，超过1M时切割，最多保留10个日志文件
-fileHandler = ConcurrentRotatingFileHandler("logs/flask.log", maxBytes=1024 * 1024, backupCount=10)
+fileHandler = ConcurrentRotatingFileHandler("logs/leo-api-auto.log", maxBytes=1024 * 1024, backupCount=10)
 fileHandler.setLevel('DEBUG')
 logging_format = logging.Formatter(
-    '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
+    "[%(asctime)s][%(levelname)s][%(filename)s:%(funcName)s:%(lineno)s] - %(message)s")
 fileHandler.setFormatter(logging_format)
 app.logger.addHandler(fileHandler)
 
@@ -96,10 +96,10 @@ from execution_engine.cron_job.cron_manager import CronManager
 cron_manager = CronManager()
 cron_manager.start()
 
-from models import project, test_case, test_suite, test_suite_param, test_report, test_report_detail, test_env, \
-    test_env_param, cron_job, data_source, leo_user, mail, mail_sender
-from controllers import project, test_case, test_suite, test_suite_param, test_env, test_env_param, test_report, user, \
-    cron_job, data_source, mail, mail_sender, init_admin_user
+from models import project, test_case, test_suite, test_suite_param, test_report, test_report_detail, \
+    test_env_param, env_config, cron_job, data_source, leo_user, mail
+from controllers import project, test_case, test_suite, test_suite_param, env_config, test_env_param, \
+    test_report, user, cron_job, data_source, mail, mail_sender, init_admin_user, functional_api
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=_config.get_port())

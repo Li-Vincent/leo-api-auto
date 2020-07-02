@@ -12,7 +12,6 @@ class DBConfig(Model):
     dbType = StringField()
     description = StringField()
     status = BooleanField(field_name='status', default=True)
-    projectId = ObjectIdField()
     isDeleted = BooleanField(field_name='isDeleted', default=False)
     createAt = DateField()
     lastUpdateTime = DateField()
@@ -20,8 +19,8 @@ class DBConfig(Model):
     lastUpdateUser = StringField()
 
     def __str__(self):
-        return "name:{} - dbType:{} - description:{} - status:{} - projectId:{}" \
-            .format(self.name, self.description, self.description, self.status, self.projectId)
+        return "name:{} - dbType:{} - description:{} - status:{}" \
+            .format(self.name, self.dbType, self.description, self.status)
 
 
 class DBEnvConnect(Model):

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from bson import ObjectId
 from flask import jsonify, request, current_app
-from flask_security import login_required
+from flask_security import login_required, roles_accepted
 
 from app import app
 from models.project import Project
@@ -25,12 +25,14 @@ def get_project(project_id):
 
 @app.route('/api/project/addProject', methods=['POST'])
 @login_required
+@roles_accepted('admin', 'project')
 def add_project():
     try:
         params = request.get_json()
         params['createAt'] = datetime.utcnow()
         filtered_data = Project.filter_field(params, use_set_default=True)
         Project.insert(filtered_data)
+        current_app.logger.info("add project successfully. Project: %s" % str(filtered_data['name']))
         return jsonify({'status': 'ok', 'data': '新建成功'})
     except BaseException as e:
         current_app.logger.error("add project failed. - %s" % str(e))
@@ -39,6 +41,7 @@ def add_project():
 
 @app.route('/api/project/<project_id>/updateProject', methods=['POST'])
 @login_required
+@roles_accepted('admin', 'project')
 def update_project(project_id):
     try:
         filtered_data = Project.filter_field(request.get_json())
@@ -49,6 +52,7 @@ def update_project(project_id):
                                          {'$set': {'lastUpdateTime': datetime.utcnow()}}, )
         if update_response["n"] == 0:
             return jsonify({'status': 'failed', 'data': '未找到相应更新数据！'})
+        current_app.logger.info("update project successfully. Project: %s" % str(filtered_data['name']))
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
         current_app.logger.error("update project failed. - %s" % str(e))

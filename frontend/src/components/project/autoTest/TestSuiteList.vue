@@ -68,7 +68,7 @@
               highlight-current-row v-loading="listLoading" @selection-change="selectsChange" style="width: 100%;">
       <el-table-column type="selection" min-width="5%">
       </el-table-column>
-      <el-table-column sortable='custom' prop="name" label="用例名称" min-width="40%" show-overflow-tooltip>
+      <el-table-column sortable='custom' prop="name" label="用例名称" min-width="50%" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-icon name="name"></el-icon>
           <router-link :to="{ name: 'TestCaseList', params: {
@@ -80,25 +80,27 @@
       </el-table-column>
       <el-table-column prop="description" label="描述" min-width="20%" show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="priority" label="优先级" min-width="15%" show-overflow-tooltip>
+      <el-table-column prop="priority" label="优先级" min-width="10%" show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="service" label="服务" min-width="20%" show-overflow-tooltip>
+      <el-table-column prop="service" label="服务" min-width="10%" show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="storyId" label="StoryID" min-width="20%" show-overflow-tooltip>
+      <el-table-column prop="sprint" label="Sprint" min-width="10%" show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="testCaseId" label="TestCaseID" min-width="20%" show-overflow-tooltip>
+      <el-table-column prop="storyId" label="StoryID" min-width="10%" show-overflow-tooltip>
       </el-table-column>
-      <el-table-column sortable='custom' prop="createAt" label="创建时间" min-width="20%" show-overflow-tooltip>
+      <el-table-column prop="testCaseId" label="TestCaseID" min-width="10%" show-overflow-tooltip>
       </el-table-column>
-      <el-table-column sortable='custom' prop="createUser" label="创建者" min-width="20%" show-overflow-tooltip>
+      <el-table-column sortable='custom' prop="createAt" label="创建时间" min-width="15%" show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="status" label="状态" min-width="20%" sortable='custom'>
+      <el-table-column sortable='custom' prop="createUser" label="创建者" min-width="15%" show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column prop="status" label="状态" min-width="10%" sortable='custom'>
         <template slot-scope="scope">
           <img v-show="scope.row.status" src="../../../assets/imgs/icon-yes.svg"/>
           <img v-show="!scope.row.status" src="../../../assets/imgs/icon-no.svg"/>
         </template>
       </el-table-column>
-      <el-table-column label="操作" min-width="50%">
+      <el-table-column label="操作" min-width="40%">
         <template slot-scope="scope">
           <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
           <el-button class="copyBtn" size="small" :loading="copyLoading" @click="copySuite(scope.$index, scope.row)">复制
@@ -141,6 +143,9 @@
         <el-form-item label="所属服务" prop="service">
           <el-input v-model.trim="form.service" auto-complete="off"></el-input>
         </el-form-item>
+        <el-form-item label="Sprint" prop="sprint">
+          <el-input v-model.trim="form.sprint" auto-complete="off"></el-input>
+        </el-form-item>
         <el-form-item label="storyId" prop="storyId">
           <el-input v-model.trim="form.storyId" auto-complete="off"></el-input>
         </el-form-item>
@@ -161,7 +166,7 @@
 
 <script>
     import {addTestSuite, copyTestSuite, getTestSuites, updateTestSuite} from "../../../api/testSuite";
-    import {getTestEnvs} from "../../../api/testEnv";
+    import {getEnvConfigs} from "../../../api/envConfig";
     import {startAPITestBySuite} from "../../../api/execution";
     import {exportTestCases} from '../../../api/testCase';
     import moment from "moment";
@@ -215,15 +220,19 @@
                     ],
                     service: [
                         {required: false, message: '请输入服务', trigger: 'blur'},
-                        {max: 20, message: '所属服务', trigger: 'blur'}
+                        {max: 30, message: '所属服务', trigger: 'blur'}
+                    ],
+                    sprint: [
+                        {required: false, message: '请输入Sprint', trigger: 'blur'},
+                        {max: 30, message: '用例所属Sprint，30字符以内', trigger: 'blur'}
                     ],
                     storyId: [
                         {required: false, message: '请输入Story ID', trigger: 'blur'},
-                        {max: 20, message: '用例story ID', trigger: 'blur'}
+                        {max: 30, message: '用例story ID，30字符以内', trigger: 'blur'}
                     ],
                     testCaseId: [
                         {required: false, message: '请输入Test Case ID', trigger: 'blur'},
-                        {max: 20, message: '用例Test Case ID', trigger: 'blur'}
+                        {max: 30, message: '用例Test Case ID，30字符以内', trigger: 'blur'}
                     ]
                 },
                 //编辑界面数据
@@ -414,13 +423,16 @@
                             if (this.dialogStatus == 'add') {
                                 let params = {
                                     name: self.form.name.trim(),
-                                    description: self.form.description.trim(),
-                                    priority: self.form.priority.trim(),
-                                    service: self.form.service.trim(),
-                                    storyId: self.form.storyId.trim(),
-                                    testCaseId: self.form.testCaseId.trim(),
+                                    priority: self.form.priority,
+                                    service: self.form.service,
+                                    sprint: self.form.sprint,
+                                    storyId: self.form.storyId,
+                                    testCaseId: self.form.testCaseId,
                                     createUser: self.$store.getters.email || '未知anonymous'
                                 };
+                                if (self.form.description) {
+                                    params['description'] = self.form.description.trim();
+                                }
                                 addTestSuite(this.$route.params.project_id, params, headers).then((res) => {
                                     let {status, data} = res;
                                     self.loading = false;
@@ -448,9 +460,10 @@
                                     project_id: this.$route.params.project_id,
                                     name: self.form.name.trim(),
                                     priority: self.form.priority.trim(),
-                                    service: self.form.service.trim(),
-                                    storyId: self.form.storyId.trim(),
-                                    testCaseId: self.form.testCaseId.trim(),
+                                    service: self.form.service,
+                                    sprint: self.form.sprint,
+                                    storyId: self.form.storyId,
+                                    testCaseId: self.form.testCaseId,
                                     description: self.form.description.trim(),
                                     lastUpdateUser: self.$store.getters.email || '未知anonymous'
                                 };
@@ -531,8 +544,8 @@
             getTestEnvList() {
                 let self = this;
                 let header = {};
-                let params = {status: true, projectId: self.$route.params.project_id};
-                getTestEnvs(self.$route.params.project_id, params, header).then((res) => {
+                let params = {status: true};
+                getEnvConfigs(params, header).then((res) => {
                     let {status, data} = res
                     if (status === 'ok') {
                         this.testEnvs = data.rows
@@ -578,7 +591,7 @@
                         let {status, data} = res;
                         if (status === 'ok') {
                             self.$message.success({
-                                message: '测试已成功启动，请稍后前往「测试报告」查看报告',
+                                message: data,
                                 center: true,
                             });
                         } else {

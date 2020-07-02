@@ -91,7 +91,7 @@ class CronManager:
         test_suite_id_list = cron_info.get('testSuiteIdList')
         include_forbidden = cron_info.get('includeForbidden')
         test_env_id = cron_info.get('testEnvId')
-        alarm_mail_list = cron_info.get('alarmMailList')
+        alarm_mail_group_list = cron_info.get('alarmMailGroupList')
         try:
             if trigger_type == 'interval' and int(interval) > 0:
                 self.scheduler.modify_job(job_id=cron_job_id, trigger=IntervalTrigger(seconds=interval))
@@ -103,9 +103,9 @@ class CronManager:
             if run_date:
                 cron = Cron(test_suite_id_list=test_suite_id_list,
                             project_id=project_id,
-                            include_forbidden=include_forbidden,
                             test_env_id=test_env_id,
-                            alarm_mail_list=alarm_mail_list,
+                            include_forbidden=include_forbidden,
+                            alarm_mail_group_list=alarm_mail_group_list,
                             trigger_type=trigger_type,  # 更新定时器时，此参数并没有真正起到作用, 仅修改展示字段
                             run_date=run_date)  # 更新定时器时，此参数并没有起到作用, 仅修改展示字段
             else:
@@ -113,7 +113,7 @@ class CronManager:
                             project_id=project_id,
                             include_forbidden=include_forbidden,
                             test_env_id=test_env_id,
-                            alarm_mail_list=alarm_mail_list,
+                            alarm_mail_group_list=alarm_mail_group_list,
                             trigger_type=trigger_type,  # 更新定时器时，此参数并没有起到作用, 仅修改展示字段
                             seconds=interval)  # 更新定时器时，此参数并没有起到作用, 仅修改展示字段
             # 玄学，更改job的时候必须改args，不能改func

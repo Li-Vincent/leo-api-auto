@@ -1,25 +1,51 @@
 import request from '../utils/axios'
 
-export function getMails(project_id, params) {
+export function getMails(params) {
   return request({
-    url: `/api/project/${project_id}/mailList`,
+    url: `/api/mailConfig/mailList`,
     params: params,
     method: 'GET'
   })
 }
 
-export function addMail(project_id, params, headers) {
+export function addMail(params, headers) {
   return request({
-    url: `/api/project/${project_id}/addMail`,
+    url: `/api/mailConfig/addMail`,
     method: 'POST',
     headers: headers,
     data: params
   })
 }
 
-export function updateMail(project_id, mail_id, params, headers) {
+export function updateMail(mail_id, params, headers) {
   return request({
-    url: `/api/project/${project_id}/updateMail/${mail_id}`,
+    url: `/api/mailConfig/updateMail/${mail_id}`,
+    method: 'POST',
+    headers: headers,
+    data: params
+  })
+}
+
+export function getMailGroups(params) {
+  return request({
+    url: `/api/mailConfig/mailGroupList`,
+    params: params,
+    method: 'GET'
+  })
+}
+
+export function addMailGroup(params, headers) {
+  return request({
+    url: `/api/mailConfig/addMailGroup`,
+    method: 'POST',
+    headers: headers,
+    data: params
+  })
+}
+
+export function updateMailGroup(mail_group_id, params, headers) {
+  return request({
+    url: `/api/mailConfig/updateMailGroup/${mail_group_id}`,
     method: 'POST',
     headers: headers,
     data: params
