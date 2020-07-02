@@ -12,7 +12,7 @@ from utils import common
 @app.route('/api/mailConfig/mailList', methods=['GET'])
 @login_required
 def mail_list():
-    total_num, mails = common.get_total_num_and_arranged_data(MailRecipient, request.args, fuzzy_fields=['name'])
+    total_num, mails = common.get_total_num_and_arranged_data(MailRecipient, request.args, fuzzy_fields=['email'])
     return jsonify({'status': 'ok', 'data': {'totalNum': total_num, 'rows': mails}})
 
 
@@ -64,8 +64,6 @@ def update_mail(mail_id):
     try:
         request_data = request.get_json()
         request_data['lastUpdateTime'] = datetime.utcnow()
-        if request_data["mailGroupId"]:
-            request_data["mailGroupId"] = ObjectId(request_data["mailGroupId"])
         filtered_data = MailRecipient.filter_field(request_data)
         update_response = MailRecipient.update({'_id': ObjectId(mail_id)}, {'$set': filtered_data})
         if update_response['n'] == 0:
@@ -98,8 +96,13 @@ def get_mails_by_group(mail_group_id_list):
         returned_mail_list = []
         if not mail_group_id_list or not isinstance(mail_group_id_list, list):
             raise TypeError('mail group id list参数不正确')
+        active_mail_group_id_list = []
         for mail_group_id in mail_group_id_list:
-            cursor = MailRecipient.find({'mailGroupId': ObjectId(mail_group_id)})
+            result = MailGroup.find_one({'_id': ObjectId(mail_group_id), 'status': True})
+            if result:
+                active_mail_group_id_list.append(common.format_response_in_dic(result).get('_id'))
+        for mail_group_id in active_mail_group_id_list:
+            cursor = MailRecipient.find({'mailGroupId': ObjectId(mail_group_id), 'status': True})
             for item in cursor:
                 returned_mail_list.append(common.format_response_in_dic(item).get('email'))
         returned_mail_list = list(set(returned_mail_list))

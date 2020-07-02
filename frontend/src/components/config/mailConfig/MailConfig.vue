@@ -35,7 +35,7 @@
       </el-table-column>
       <el-table-column prop="name" label="名称" min-width="30%" sortable='custom' show-overflow-tooltip>
         <template slot-scope="scope">
-          <router-link :to="{name:'MailGroupConfig',params:{mail_group_id: scope.row._id}}">
+          <router-link :to="{name:'MailListConfig',params:{mail_group_id: scope.row._id}}">
             {{scope.row.name}}
           </router-link>
         </template>
