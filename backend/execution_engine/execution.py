@@ -7,10 +7,12 @@ from datetime import datetime
 from threading import Thread
 
 import requests
+from requests.cookies import RequestsCookieJar
 from bson import ObjectId
 
 from controllers.test_report import save_report_detail, save_report
 from controllers.test_suite import get_suite_name
+from controllers.cookies import save_cookies_for_suite, get_cookies_by_suite
 from models.test_case import TestCase
 from utils import common
 from execution_engine.data_initialize.handler import execute_data_init
@@ -98,7 +100,7 @@ class ExecutionEngine:
                 raise ValueError('global_suite_vars must be a dict!')
             self.global_vars.update(global_suite_vars)
 
-    def execute_single_case_test(self, test_case):
+    def execute_single_case_test(self, test_case, is_debug=False):
         returned_data = dict()
         returned_data["_id"] = ObjectId(test_case["_id"])
         returned_data["testConclusion"] = []
@@ -216,7 +218,7 @@ class ExecutionEngine:
                         returned_data["dataInitResult"].append(
                             execute_data_init(self.test_env_id, dataInitialize, self.global_vars))
 
-        # 处理 cookies
+        # 处理 cookies  for 用例组执行
         test_case['cookies'] = []
         for key, value in session.cookies.items():
             cookie_dic = dict()
@@ -225,9 +227,29 @@ class ExecutionEngine:
             test_case['cookies'].append(cookie_dic)
         returned_data['testCaseDetail']['cookies'] = test_case['cookies']
 
+        # 获取debug时保存的临时 cookies  for 调试用例
+        if is_debug and not test_case.get('isClearCookie'):
+            request_cookies = get_cookies_by_suite(test_case.get("testSuiteId"))
+            returned_data['testCaseDetail']['cookies'] = request_cookies
+            if request_cookies:
+                cookie_jar = RequestsCookieJar()
+                for cookie in request_cookies:
+                    cookie_jar.set(cookie['name'], cookie['value'])
+                session.cookies.update(cookie_jar)
         try:
             response = session.request(url=request_url, method=request_method, json=request_body,
                                        headers=request_headers, verify=False)
+            if is_debug:
+                # 保存的临时 cookies  for 调试用例
+                response_cookies = []
+                for key, value in session.cookies.items():
+                    cookie_dic = dict()
+                    cookie_dic['name'] = key
+                    cookie_dic['value'] = value
+                    response_cookies.append(cookie_dic)
+                if len(response_cookies) > 0:
+                    save_cookies_for_suite(test_case.get("testSuiteId"), response_cookies)
+
         except BaseException as e:
             returned_data["status"] = 'failed'
             returned_data["testConclusion"].append(
@@ -431,7 +453,7 @@ class ExecutionEngine:
         for test_case in test_case_list:
             test_start_time = time.time()
             test_start_datetime = datetime.utcnow()
-            test_result = self.execute_single_case_test(test_case)
+            test_result = self.execute_single_case_test(test_case, is_debug=True)
             test_end_time = time.time()
             test_result["testStartTime"] = test_start_datetime
             test_result["spendTimeInSec"] = round(test_end_time - test_start_time, 3)
