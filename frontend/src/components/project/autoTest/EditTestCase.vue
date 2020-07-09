@@ -470,7 +470,7 @@
                 ],
                 DBTypeOptions: [
                     {value: 'MongoDB', label: 'MongoDB'},
-                    {value: 'MySQL', label: 'MySQL'}
+                    // {value: 'MySQL', label: 'MySQL'}
                 ],
                 MongoCRUDOptions: [
                     {value: 'insert_one', label: 'Insert One'},
@@ -630,9 +630,9 @@
             getDBConfigList() {
                 let header = {};
                 let params = {
-                    projectId: this.$route.params.project_id
+                    "status": true
                 };
-                getDBConfigs(this.$route.params.project_id, params, header).then((res) => {
+                getDBConfigs(params, header).then((res) => {
                     let {status, data} = res;
                     if (status === 'ok') {
                         this.dbConfigs = data.rows
