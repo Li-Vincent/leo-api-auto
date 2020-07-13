@@ -36,25 +36,25 @@
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column prop="paramValue" label="参数值" min-width="20%" sortable='custom' show-overflow-tooltip>
+      <el-table-column prop="paramValue" label="参数值" min-width="40%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
       <el-table-column prop="description" label="描述" min-width="35" show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="createAt" label="创建时间" min-width="20%" sortable='custom' show-overflow-tooltip>
+      <el-table-column prop="createAt" label="创建时间" min-width="15%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="createUser" label="创建者" min-width="20%" sortable='custom' show-overflow-tooltip>
+      <el-table-column prop="createUser" label="创建者" min-width="15%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="lastUpdateTime" label="更新时间" min-width="20%" sortable='custom' show-overflow-tooltip>
+      <el-table-column prop="lastUpdateTime" label="更新时间" min-width="15%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="lastUpdateUser" label="更新者" min-width="20%" sortable='custom' show-overflow-tooltip>
+      <el-table-column prop="lastUpdateUser" label="更新者" min-width="15%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="status" label="状态" min-width="20%" sortable='custom'>
+      <el-table-column prop="status" label="状态" min-width="10%" sortable='custom'>
         <template slot-scope="scope">
           <img v-show="scope.row.status" src="../../../assets/imgs/icon-yes.svg"/>
           <img v-show="!scope.row.status" src="../../../assets/imgs/icon-no.svg"/>
         </template>
       </el-table-column>
-      <el-table-column label="操作" min-width="50%">
+      <el-table-column label="操作" min-width="30%">
         <template slot-scope="scope">
           <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
           <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>

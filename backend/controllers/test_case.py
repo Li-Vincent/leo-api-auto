@@ -108,7 +108,7 @@ def update_case(project_id, test_suite_id, test_case_id):
         update_response = TestCase.update({'_id': ObjectId(test_case_id)}, {'$set': filtered_data})
         if update_response["n"] == 0:
             return jsonify({'status': 'failed', 'data': '未找到相应更新数据！'})
-        current_app.logger.info("update test case successfully. case name: %s" % str(filtered_data['name']))
+        current_app.logger.info("update test case successfully. case ID: %s" % str(test_case_id))
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
         current_app.logger.error("update_case failed. - %s" % str(e))

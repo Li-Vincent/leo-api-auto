@@ -635,7 +635,7 @@
                 let showPrompt = self.$router.history.current.params.showWarmPrompt;
                 if (showPrompt) {
                     self.$message.info({
-                        message: '测试用例默认按照「Sequence」和 [创建时间] 正序执行~',
+                        message: '测试用例默认按照「Sequence」和「创建时间」正序执行~',
                         center: true,
                     })
                 }

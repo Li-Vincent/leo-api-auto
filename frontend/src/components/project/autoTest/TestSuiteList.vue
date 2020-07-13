@@ -68,7 +68,7 @@
               highlight-current-row v-loading="listLoading" @selection-change="selectsChange" style="width: 100%;">
       <el-table-column type="selection" min-width="5%">
       </el-table-column>
-      <el-table-column sortable='custom' prop="name" label="用例名称" min-width="50%" show-overflow-tooltip>
+      <el-table-column sortable='custom' prop="name" label="用例组名称" min-width="40%" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-icon name="name"></el-icon>
           <router-link :to="{ name: 'TestCaseList', params: {
@@ -78,9 +78,9 @@
           </router-link>
         </template>
       </el-table-column>
-      <el-table-column prop="description" label="描述" min-width="20%" show-overflow-tooltip>
-      </el-table-column>
       <el-table-column prop="priority" label="优先级" min-width="10%" show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column prop="description" label="描述" min-width="20%" show-overflow-tooltip>
       </el-table-column>
       <el-table-column prop="service" label="服务" min-width="10%" show-overflow-tooltip>
       </el-table-column>
