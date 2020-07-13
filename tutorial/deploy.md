@@ -170,7 +170,7 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 
 //在项目根目录下执行部署文件
 
-    sh deploy ${PORT} 
+    sh Deploy ${PORT} 
   
 其中 ${PORT} 变量填写项目访问端口即可，如果为阿里云等服务器，需要开放该端口
 
