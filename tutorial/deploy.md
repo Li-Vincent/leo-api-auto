@@ -153,7 +153,11 @@ http://127.0.0.1:8888/
     
 说明：LEO_API_PLATFORM_ENV 默认为 production（可不填），LEO_API_PLATFORM_PORT为平台端口，默认为8888，必填
 
-LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据库的地址和端口（必填,一般为部署mongodb的服务器公网IP和指定的端口）
+LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据库的地址和端口（必填,一般为部署mongodb的服务器局域网/公网IP和指定的端口）
+
+**踩坑记录**
+> 如果MongoDB和平台部署在同一台服务器里，Mongo_HOST 不可使用127.0.0.1, 应该使用docker宿主机IP。  
+> 在机器中 执行 ifconfig 查看宿主机IP，一般为： 172.18.0.1 或 172.17.0.1
 
 LEO_API_PLATFORM_MONGO_USERNAME 和 LEO_API_PLATFORM_MONGO_PASSWORD 分别表示数据库的帐号密码（若无可不填，如果开启auth，需要注意，此用户必须为admin用户，并开启readWriteAnyDatabase权限）
 
