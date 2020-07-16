@@ -11,8 +11,9 @@ from controllers.test_report import save_report
 from execution_engine.execution import execute_test_by_suite
 from utils import common
 
-host_ip = common.get_host_ip()
-host_port = Config().get_port()
+config = Config()
+host_ip = config.get_host()
+host_port = config.get_port()
 
 
 class Cron:
