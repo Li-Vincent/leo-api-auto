@@ -215,7 +215,7 @@
                         {max: 1024, message: '不能超过1024个字符', trigger: 'blur'}
                     ],
                     priority: [
-                        {required: false, message: '请输入优先级，P1 or P2', trigger: 'blur'},
+                        {required: true, message: '请输入优先级，P1 or P2', trigger: 'blur'},
                         {min: 2, max: 2, message: '请输入 P1 or P2', trigger: 'blur'}
                     ],
                     service: [
@@ -423,7 +423,7 @@
                             if (this.dialogStatus == 'add') {
                                 let params = {
                                     name: self.form.name.trim(),
-                                    priority: self.form.priority,
+                                    priority: self.form.priority.trim(),
                                     service: self.form.service,
                                     sprint: self.form.sprint,
                                     storyId: self.form.storyId,

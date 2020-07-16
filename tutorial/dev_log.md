@@ -126,7 +126,13 @@ FIX BUG 编辑用例页面，数据初始化，无法获取DB信息
 ### 2020-07-14
 FIX BUG 部署时，无法使用环境变量:LEO_API_PLATFORM_PORT，使用了固定值8888
 
+### 2020-07-16
+1. 将TestSuite的Priority字段设为必填
+2. 数据初始化支持 Mysql
+
 ### TODO
 调试用例，拿到前序接口设置的变量
+
+将HTTP字段去掉，直接在domain里写明http
 
 多语言，支持中英文

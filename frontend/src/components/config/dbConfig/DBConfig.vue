@@ -92,7 +92,7 @@
                 dbConfigs: [],
                 dbTypeOptions: [
                     {name: 'MongoDB', value: 'MongoDB'},
-                    // {name: 'MySQL', value: 'MySQL'}
+                    {name: 'MySQL', value: 'MySQL'}
                 ],
                 listLoading: false,
                 statusChangeLoading: false,
