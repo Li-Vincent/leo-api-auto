@@ -470,7 +470,7 @@
                 ],
                 DBTypeOptions: [
                     {value: 'MongoDB', label: 'MongoDB'},
-                    // {value: 'MySQL', label: 'MySQL'}
+                    {value: 'MySQL', label: 'MySQL'}
                 ],
                 MongoCRUDOptions: [
                     {value: 'insert_one', label: 'Insert One'},

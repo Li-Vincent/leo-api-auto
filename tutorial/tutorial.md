@@ -89,19 +89,19 @@
 #### 2.2 DB配置管理
 DB配置 用于数据初始化，设置接口DB的连接信息  
 由于不同接口可能使用不同的DB，所以可能需要多个DB配置  
-**数据初始化 目前只支持 接口服务数据库为MongoDB， 其他 数据库待实现**  
+**数据初始化 目前支持 接口服务数据库为 MongoDB 或 MySQL， 其他 数据库待实现**  
 *进行DB配置前，需先配置好环境信息*  
 只有超级管理员有 **DB配置** 权限  
 管理员账号登录后，点击左侧 Menu **环境配置** 进入环境配置页面  
 点击上方 **DB配置** 进入DB配置页面
 ##### 2.2.1 添加DB配置
 1. 进入DB配置页面后，点击 **新增DB配置**
-2. 输入 DB名称、选择DB类型（目前只支持MongoDB)、输入描述 信息
+2. 输入 DB名称、选择DB类型（目前只支持MongoDB 和 MySQL)、输入描述 信息
 3. 点击 **提交** 保存DB配置
 ##### 2.2.2 编辑DB配置
 1. 进入DB配置页面后，页面会展示 **DB配置列表**
 2. 选择要编辑的 DB配置，点击右侧 **编辑** 按钮
-2. 输入 DB名称、选择DB类型（目前只支持MongoDB)、输入描述 信息
+2. 输入 DB名称、选择DB类型（目前只支持MongoDB 和 MySQL)、输入描述 信息
 3. 点击 **提交** 保存DB配置
 ##### 2.2.3 禁用/启用DB配置
 1. 进入DB配置页面后，页面会展示 **DB配置列表**
@@ -257,7 +257,7 @@ DB配置 用于数据初始化，设置接口DB的连接信息
 接口用例信息包括  
 
        必填项: 用例名称、Request Method、URL、Protocol、Headers、请求参数
-       非必填项: 描述、 所属服务、数据初始化(直接修改接口DB，目前只支持MongoDB)、Headers、
+       非必填项: 描述、 所属服务、数据初始化(直接修改接口DB，目前只支持MongoDB 和 MySQL)、Headers、
             返回结果设置全局变量(用例组级别的变量，用于结果校验和下个接口使用)、
             结果校验：支持HTTP响应状态校验、返回结果Json校验、数值计算校验(加减乘除)
             
@@ -303,14 +303,20 @@ DB配置 用于数据初始化，设置接口DB的连接信息
         当domain字段为空时，并且环境配置中 domain字段的值 包含 参数 ${service}，则执行时环境配置domain的参数${service}会被替换成接口中的service值。
     关于Route字段：Route支持参数替换，格式为 ${paramName}，参数值来源为 Project全局变量 和 前序接口设置的 用例组变量
 ##### 4.4.2 数据初始化
-数据初始化功能 用于重置测试数据（通过直接操作接口数据库的方式），目前只支持MongoDB。  
+数据初始化功能 用于重置测试数据（通过直接操作接口数据库的方式），目前只支持MongoDB 和 MySQL。  
 使用数据初始化功能的前提： 在环境配置->DB配置中成功配置DB连接信息，参照[2.2 DB配置管理](#22-db配置管理)
 
 MongoDB
 
 选择DB类型为 MongoDB, 选择DB, 选择方法(Insert One、Update One、Update Many)   
-输入 查询条件（Json格式） 和 变更内容（Json格式），注意：引号需使用双引号
-![数据初始化](images/dataInit.png)
+输入 查询条件（Json格式） 和 变更内容（Json格式）  
+*注意：引号需使用双引号，支持参数替换，字符串参数类型格式为${strParamName}，数值类型参数格式为$num{numParamName}*
+![数据初始化MongoDB](images/dataInitMongoDB.png)
+
+MySQL
+
+选择DB类型为 MySQL, 选择DB, 输入SQL（支持参数替换, 格式为${strParamName})
+![数据初始化MySQL](images/dataInitMySQL.png)
 ##### 4.4.3 请求头部
 可以设置多个Header
 ![Headers](images/headers.png)
