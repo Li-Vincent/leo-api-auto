@@ -31,8 +31,6 @@ class Config:
         self._LEO_API_PLATFORM_PORT = port
 
     def get_host(self):
-        if isinstance(self._LEO_API_PLATFORM_HOST, str):
-            self._LEO_API_PLATFORM_HOST = int(self._LEO_API_PLATFORM_HOST)
         return self._LEO_API_PLATFORM_HOST
 
     def set_host(self, host):
