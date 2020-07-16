@@ -5,6 +5,7 @@ env_dict = os.environ
 
 class Config:
     _LEO_API_PLATFORM_ENV = env_dict.get('LEO_API_PLATFORM_ENV', 'production')
+    _LEO_API_PLATFORM_HOST = env_dict.get('LEO_API_PLATFORM_HOST', '127.0.0.1')
     _LEO_API_PLATFORM_PORT = env_dict.get('LEO_API_PLATFORM_PORT', 8888)
     _LEO_API_PLATFORM_MONGO_HOST = env_dict.get('LEO_API_PLATFORM_MONGO_HOST', '127.0.0.1')
     _LEO_API_PLATFORM_MONGO_PORT = env_dict.get('LEO_API_PLATFORM_MONGO_PORT', 27017)
@@ -28,6 +29,14 @@ class Config:
         if isinstance(port, str):
             port = int(port)
         self._LEO_API_PLATFORM_PORT = port
+
+    def get_host(self):
+        if isinstance(self._LEO_API_PLATFORM_HOST, str):
+            self._LEO_API_PLATFORM_HOST = int(self._LEO_API_PLATFORM_HOST)
+        return self._LEO_API_PLATFORM_HOST
+
+    def set_host(self, host):
+        self._LEO_API_PLATFORM_HOST = host
 
     def get_mongo_host(self):
         return self._LEO_API_PLATFORM_MONGO_HOST
@@ -73,6 +82,7 @@ class Config:
 if __name__ == '__main__':
     config = Config()
     print('LEO_API_PLATFORM_ENV: ----------> %s' % config.get_env())
+    print('LEO_API_PLATFORM_HOST: ----------> %s' % config.get_host())
     print('LEO_API_PLATFORM_PORT: ----------> %s' % config.get_port())
     print('LEO_API_PLATFORM_MONGO_HOST: ----------> %s' % config.get_mongo_host())
     print('LEO_API_PLATFORM_MONGO_PORT: ----------> %s' % config.get_mongo_port())
