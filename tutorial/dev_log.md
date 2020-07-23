@@ -131,6 +131,10 @@ FIX BUG 部署时，无法使用环境变量:LEO_API_PLATFORM_PORT，使用了�
 2. 数据初始化支持 Mysql
 3. 定时邮件链接从环境变量中取值：LEO_API_PLATFORM_HOST
 4. 部署时，直接使用环境变量设置的端口：LEO_API_PLATFORM_PORT
+5. docker部署 只部署后端，不rebuild前端
+
+### 2020-07-23
+添加功能 定时任务执行后触发邮件，可设置是否失败才触发
 
 ### TODO
 调试用例，拿到前序接口设置的变量

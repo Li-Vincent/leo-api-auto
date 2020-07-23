@@ -19,7 +19,7 @@ host_port = config.get_port()
 class Cron:
 
     def __init__(self, test_suite_id_list, project_id, test_env_id, trigger_type, include_forbidden=False,
-                 alarm_mail_group_list=None, is_web_hook=False, **trigger_args):
+                 always_send_mail=False, alarm_mail_group_list=None, is_web_hook=False, **trigger_args):
 
         if not isinstance(test_suite_id_list, list) or len(test_suite_id_list) < 1:
             raise TypeError('test_suite_id_list must be list and not empty！')
@@ -39,6 +39,7 @@ class Cron:
         self.include_forbidden = include_forbidden
         self.trigger_args = trigger_args
         self.status_history = {}
+        self.always_send_mail = always_send_mail
         self.alarm_mail_group_list = alarm_mail_group_list
         self.is_web_hook = is_web_hook
         self.execution_mode = 'cronJob'
@@ -77,13 +78,30 @@ class Cron:
                     alarm_mail_list, list) and len(alarm_mail_list) > 0
                 if is_send_mail:
                     subject = 'Leo API Auto Test'
-                    content = "Dears:<br/>" \
-                              "&nbsp;&nbsp;&nbsp;API test case failed!<br/>" \
-                              "&nbsp;&nbsp;&nbsp;Please login platform for details!<br/>" \
-                              "&nbsp;&nbsp;&nbsp;<a href=\"http://{}:{}/project/{}/testReport/{}\">Click here to see " \
-                              "report detail!</a><br/>" \
-                              "&nbsp;&nbsp;&nbsp;Report ID: {}<br/>" \
-                              "&nbsp;&nbsp;&nbsp;Generated At: {} CST" \
+                    content = "<h2>Dears:</h2>" \
+                              "<div style='font-size:20px'>&nbsp;&nbsp;API test case executed successfully! <br/>" \
+                              "&nbsp;&nbsp;Status:&nbsp;&nbsp; <b><font color='red'>FAIL</font></b><br/>" \
+                              "&nbsp;&nbsp;Please login platform for details!<br/>" \
+                              "&nbsp;&nbsp;<a href=\"http://{}:{}/project/{}/testReport/{}\">Click here to view" \
+                              " report detail!</a><br/>" \
+                              "&nbsp;&nbsp;Report ID: {}<br/>" \
+                              "&nbsp;&nbsp;Generated At: {} CST</div>" \
+                        .format(host_ip, host_port, self.project_id, report_id, report_id,
+                                test_report_returned['createAt'].replace(tzinfo=pytz.utc).astimezone(
+                                    pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
+                    mail_result = send_cron_email(alarm_mail_list, subject, content)
+                    if mail_result.get('status') == 'failed':
+                        raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))
+                elif self.always_send_mail:
+                    subject = 'Leo API Auto Test'
+                    content = "<h2>Dears:</h2>" \
+                              "<div style='font-size:20px'>&nbsp;&nbsp;API test case executed successfully!<br/>" \
+                              "&nbsp;&nbsp;Status:&nbsp;&nbsp; <b><font color='green'>PASS</font></b><br/>" \
+                              "&nbsp;&nbsp;Please login platform for details!<br/>" \
+                              "&nbsp;&nbsp;<a href=\"http://{}:{}/project/{}/testReport/{}\">Click here to view" \
+                              " report detail!</a><br/>" \
+                              "&nbsp;&nbsp;Report ID: {}<br/>" \
+                              "&nbsp;&nbsp;Generated At: {} CST</div>" \
                         .format(host_ip, host_port, self.project_id, report_id, report_id,
                                 test_report_returned['createAt'].replace(tzinfo=pytz.utc).astimezone(
                                     pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
