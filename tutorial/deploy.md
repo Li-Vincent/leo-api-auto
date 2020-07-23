@@ -54,7 +54,7 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
   
 若配置成功则可看见输入的配置数据
 
-#### 5. 打包前端 dist 文件 （这一步我已为你们做好，若不需二次开发可跳过）
+#### 5. 打包前端 dist 文件（如不需要二次开发，此步骤可跳过，直接执行第6步）
 
 5.1 安装 Vue 环境，下载 node.js 并配置环境
 
@@ -172,7 +172,6 @@ LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据�
 LEO_API_PLATFORM_MONGO_USERNAME 和 LEO_API_PLATFORM_MONGO_PASSWORD 分别表示数据库的帐号密码（若无可不填，如果开启auth，需要注意，此用户必须为admin用户，并开启readWriteAnyDatabase权限）
 
 LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：leo-api-auto-db，需要先在mongodb中手动创建数据库，database name = DBNAME）
-  
 
 3.2 插入完毕后点击 ESC 按钮、输入 :wq 后单击回车保存
 
@@ -184,7 +183,7 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 
 在项目根目录下执行部署文件,预计需要等待几分钟（取决于网速和机器性能），即可部署完成
 
-    sh Deploy
+    sh DeployService
   
 #### 5. 访问项目
 

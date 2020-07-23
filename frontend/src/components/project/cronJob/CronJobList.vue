@@ -126,6 +126,13 @@
           </el-select>
         </el-form-item>
 
+        <el-form-item label="触发邮件" prop="alwaysSendMail">
+          <el-radio-group v-model="form['alwaysSendMail']">
+            <el-radio :label="true">执行成功也触发邮件</el-radio>
+            <el-radio :label="false">执行失败才触发邮件</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
         <el-form-item label="任务描述" prop='description'>
           <el-input type="textarea" :rows="4" v-model="form.description"></el-input>
         </el-form-item>
@@ -244,6 +251,7 @@
                     includeForbidden: false,
                     testEnvId: '',
                     alarmMailGroupList: [],
+                    alwaysSendMail: false,
                     triggerType: '',
                     interval: 0,
                     runDate: '',
@@ -255,6 +263,7 @@
                     includeForbidden: false,
                     testDomain: '',
                     alarmMailGroupList: [],
+                    alwaysSendMail: false,
                     triggerType: '',
                     interval: 0,
                     runDate: '',
@@ -530,6 +539,7 @@
                                         triggerType: self.form.triggerType,
                                         description: self.form.description.trim(),
                                         alarmMailGroupList: self.form.alarmMailGroupList,
+                                        alwaysSendMail: self.form.alwaysSendMail,
                                         createUser: self.$store.getters.email || 'anonymous',
                                     };
                                     if (self.form.runDate && self.form.runDate.toString().trim() !== '') {
@@ -570,6 +580,7 @@
                                         triggerType: self.form.triggerType,
                                         description: self.form.description.trim(),
                                         alarmMailGroupList: self.form.alarmMailGroupList,
+                                        alwaysSendMail: self.form.alwaysSendMail,
                                         lastUpdateUser: self.$store.getters.email || 'anonymous',
                                     };
                                     if (self.form.runDate && self.form.runDate.toString().trim() !== '') {
