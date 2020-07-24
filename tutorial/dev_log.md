@@ -137,9 +137,11 @@ FIX BUG 部署时，无法使用环境变量:LEO_API_PLATFORM_PORT，使用了�
 添加功能 定时任务执行后触发邮件，可设置是否失败才触发
 
 ### 2020-07-24
-添加功能 为环境配置中的domain 添加 protocol选项(http/https)
+添加功能 为环境配置中的domain 添加 protocol选项(http/https), 支持不同环境使用不同协议
 
 ### TODO
 调试用例，拿到前序接口设置的变量
+
+修改教程  环境配置 protocol
 
 多语言，支持中英文

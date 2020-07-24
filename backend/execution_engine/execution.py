@@ -64,7 +64,7 @@ def async_test(f):
 # 不通过则返回{'status': 'failed'}
 class ExecutionEngine:
 
-    def __init__(self, domain, test_env_id=None, global_env_vars=None, test_result_list=None, max_retries=5,
+    def __init__(self, protocol, domain, test_env_id=None, global_env_vars=None, test_result_list=None, max_retries=5,
                  global_suite_vars=None):
 
         # if not test_case_list and not test_suite_list:
@@ -77,6 +77,7 @@ class ExecutionEngine:
         #     raise TypeError('test_suite_list must be a list!')
 
         self.test_env_id = test_env_id
+        self.protocol = protocol
         self.domain = domain
         # self.test_case_list = test_case_list
         # self.test_suite_list = test_suite_list
@@ -134,6 +135,13 @@ class ExecutionEngine:
         check_response_number = None
         set_global_vars = None  # for example {'user': ['data','user']}
 
+        # 获取接口protocol
+        if 'requestProtocol' in test_case and isinstance(test_case["requestProtocol"], str) \
+                and (test_case["requestProtocol"] == 'HTTP' or test_case["requestProtocol"] == 'HTTPS'):
+            protocol = test_case["requestProtocol"]
+        else:
+            protocol = self.protocol
+
         # 获取接口domain
         if 'domain' in test_case and isinstance(test_case["domain"], str) and not test_case["domain"].strip() == '':
             domain = test_case["domain"]
@@ -148,7 +156,7 @@ class ExecutionEngine:
         # 处理url  protocol+domain+route
         route = common.replace_global_var_for_str(init_var_str=test_case['route'], global_var_dic=self.global_vars) \
             if isinstance(test_case['route'], str) else test_case['route']
-        request_url = '%s://%s%s' % (test_case['requestProtocol'].lower(), domain, route)
+        request_url = '%s://%s%s' % (protocol.lower(), domain, route)
         returned_data['testCaseDetail']['url'] = request_url
 
         # 获取method
@@ -498,7 +506,8 @@ class ExecutionEngine:
 
 # 异步执行，便于调试时及时反馈
 @async_test
-def execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_id_list, domain, global_env_vars):
+def execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_id_list, protocol, domain,
+                                global_env_vars):
     test_report['testStartTime'] = datetime.utcnow()
     report_total_count = 0
     report_pass_count = 0
@@ -507,7 +516,8 @@ def execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_
     report_start_time = time.time()
     test_report['testSuites'] = {}
     for test_suite_id in test_suite_id_list:
-        execute_engine = ExecutionEngine(test_env_id=test_env_id, domain=domain, global_env_vars=global_env_vars)
+        execute_engine = ExecutionEngine(test_env_id=test_env_id, protocol=protocol, domain=domain,
+                                         global_env_vars=global_env_vars)
         test_suite_result = execute_engine.execute_single_suite_test(report_id, test_suite_id)
         test_report['testSuites'][test_suite_id] = test_suite_result
         report_total_count += test_suite_result['totalCount']
@@ -525,7 +535,7 @@ def execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_
 
 
 # 定时任务, 需同步执行
-def execute_test_by_suite(report_id, test_report, test_env_id, test_suite_id_list, domain, global_env_vars):
+def execute_test_by_suite(report_id, test_report, test_env_id, test_suite_id_list, protocol, domain, global_env_vars):
     test_report['testStartTime'] = datetime.utcnow()
     report_total_count = 0
     report_pass_count = 0
@@ -534,7 +544,8 @@ def execute_test_by_suite(report_id, test_report, test_env_id, test_suite_id_lis
     report_start_time = time.time()
     test_report['testSuites'] = {}
     for test_suite_id in test_suite_id_list:
-        execute_engine = ExecutionEngine(test_env_id=test_env_id, domain=domain, global_env_vars=global_env_vars)
+        execute_engine = ExecutionEngine(test_env_id=test_env_id, protocol=protocol, domain=domain,
+                                         global_env_vars=global_env_vars)
         test_suite_result = execute_engine.execute_single_suite_test(report_id, test_suite_id)
         test_report['testSuites'][test_suite_id] = test_suite_result
         report_total_count += test_suite_result['totalCount']

@@ -45,11 +45,9 @@ class Cron:
         self.execution_mode = 'cronJob'
 
     def cron_mission(self):
-        (env_name, domain) = get_env_name_and_domain(self.test_env_id)
-        if not domain:
-            return jsonify({'status': 'failed', 'data': '未找到任何「启用的」环境信息'})
-        if not env_name:
-            return jsonify({'status': 'failed', 'data': '测试环境名称为空，请设置环境名称'})
+        (env_name, protocol, domain) = get_env_name_and_domain(self.test_env_id)
+        if not protocol or not domain or not env_name:
+            return jsonify({'status': 'failed', 'data': '测试环境配置存在问题，请前往环境设置检查'})
 
         global_env_vars = get_global_env_vars(self.test_env_id)
         alarm_mail_list = []
@@ -70,7 +68,7 @@ class Cron:
             test_report['projectId'] = ObjectId(self.project_id)
         try:
             test_report_returned = execute_test_by_suite(report_id, test_report, self.test_env_id,
-                                                         self.test_suite_id_list, domain,
+                                                         self.test_suite_id_list, protocol, domain,
                                                          global_env_vars)
             save_report(test_report_returned)
             if test_report_returned['totalCount'] > 0:
