@@ -173,15 +173,14 @@ def start_api_test_by_case():
 
     testing_case_list = remove_duplicated_case(testing_case_list)
 
-    (env_name, domain) = get_env_name_and_domain(test_env_id)
-    if not domain:
-        return jsonify({'status': 'failed', 'data': '未找到任何「启用的」环境信息'})
-    if not env_name:
-        return jsonify({'status': 'failed', 'data': '测试环境名称为空，请设置环境名称'})
+    (env_name, protocol, domain) = get_env_name_and_domain(test_env_id)
+    if not protocol or not domain or not env_name:
+        return jsonify({'status': 'failed', 'data': '测试环境配置存在问题，请前往环境设置检查'})
 
     global_env_vars = get_global_env_vars(test_env_id)
 
-    execute_engine = ExecutionEngine(test_env_id=test_env_id, domain=domain, global_env_vars=global_env_vars)
+    execute_engine = ExecutionEngine(test_env_id=test_env_id, protocol=protocol, domain=domain,
+                                     global_env_vars=global_env_vars)
 
     test_result_list = execute_engine.execute_manual_test_by_case(testing_case_list)
     try:
@@ -222,11 +221,9 @@ def start_api_test_by_suite():
     if execution_mode == 'manual':
         execution_user = request_data["executionUser"]
 
-    (env_name, domain) = get_env_name_and_domain(test_env_id)
-    if not domain:
-        return jsonify({'status': 'failed', 'data': '未找到任何「启用的」环境信息'})
-    if not env_name:
-        return jsonify({'status': 'failed', 'data': '测试环境名称为空，请设置环境名称'})
+    (env_name, protocol, domain) = get_env_name_and_domain(test_env_id)
+    if not protocol or not domain or not env_name:
+        return jsonify({'status': 'failed', 'data': '测试环境配置存在问题，请前往环境设置检查'})
 
     global_env_vars = get_global_env_vars(test_env_id)
 
@@ -241,7 +238,8 @@ def start_api_test_by_suite():
     if project_id:
         test_report['projectId'] = ObjectId(project_id)
     try:
-        execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_id_list, domain, global_env_vars)
+        execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_id_list, protocol, domain,
+                                    global_env_vars)
         return jsonify({'status': 'ok', 'data': "测试已成功启动，请稍后前往「测试报告」查看报告"})
     except BaseException as e:
         current_app.logger.error("start_api_test_by_suite failed. - %s" % str(e))

@@ -19,14 +19,6 @@
         </el-row>
         <el-row :gutter="24">
           <el-col :span="8">
-            <el-form-item label="协议" prop='requestProtocol'>
-              <el-select v-model="addForm.requestProtocol" placeholder="请选择">
-                <el-option v-for="item in protocolOptions" :key="item.value" :label="item.label" :value="item.value">
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
             <el-form-item label="请求方法" prop='requestMethod'>
               <el-select v-model="addForm.requestMethod" placeholder="请选择">
                 <el-option v-for="item in methodOptions" :key="item.value" :label="item.label" :value="item.value">
@@ -272,7 +264,6 @@
             };
             return {
                 testSuiteName: '',
-                protocolOptions: [{label: "HTTP", value: "HTTP"}, {label: "HTTPS", value: "HTTPS"}],
                 methodOptions: [{label: "GET", value: "GET"},
                     {label: "POST", value: "POST"},
                     {label: "PUT", value: "PUT"},
@@ -311,7 +302,6 @@
                 addForm: {
                     name: '',
                     description: '',
-                    requestProtocol: '',
                     requestMethod: '',
                     route: '',
                     service: ''
@@ -321,9 +311,6 @@
                     name: [
                         {required: true, message: '请输入名称', trigger: 'blur'},
                         {min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur'}
-                    ],
-                    requestProtocol: [
-                        {required: true, message: '请选择类型', trigger: 'blur'}
                     ],
                     requestMethod: [
                         {required: true, message: '请选择请求方法', trigger: 'blur'}
@@ -459,7 +446,6 @@
                             self.addLoading = true;
                             let params = {
                                 name: self.addForm.name.trim(),
-                                requestProtocol: self.addForm.requestProtocol,
                                 requestMethod: self.addForm.requestMethod,
                                 route: self.addForm.route,
                                 service: self.addForm.service,
