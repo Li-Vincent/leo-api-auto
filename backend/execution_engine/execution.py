@@ -12,7 +12,8 @@ from bson import ObjectId
 
 from controllers.test_report import save_report_detail, save_report
 from controllers.test_suite import get_suite_name
-from controllers.cookies import save_cookies_for_suite, get_cookies_by_suite
+from controllers.temp_cookies import save_cookies_for_suite, get_cookies_by_suite
+from controllers.temp_suite_params import save_temp_params_for_suite, get_temp_params_by_suite
 from models.test_case import TestCase
 from utils import common
 from execution_engine.data_initialize.handler import execute_data_init
@@ -133,7 +134,16 @@ class ExecutionEngine:
         check_response_code = None
         check_response_body = None
         check_response_number = None
-        set_global_vars = None  # for example {'user': ['data','user']}
+        set_global_vars = None  # for example {'user': 'user1'}
+        temp_suite_params = dict()
+        new_temp_suite_params = dict()
+
+        # 如果是debug测试用例，需要拿到临时Suite变量
+        if is_debug:
+            if 'testSuiteId' in test_case and test_case["testSuiteId"]:
+                temp_suite_params = get_temp_params_by_suite(test_case["testSuiteId"])
+                if temp_suite_params:
+                    self.global_vars.update(temp_suite_params)
 
         # 获取接口protocol
         if 'requestProtocol' in test_case and isinstance(test_case["requestProtocol"], str) \
@@ -280,7 +290,8 @@ class ExecutionEngine:
             # 如果出现异常，表名接口返回格式不是json
             if set_global_vars and isinstance(set_global_vars, list):
                 for set_global_var in set_global_vars:
-                    if isinstance(set_global_var, dict) and isinstance(set_global_var.get('name'), str):
+                    if isinstance(set_global_var, dict) and isinstance(set_global_var.get('name'),
+                                                                       str) and set_global_var.get('name'):
                         name = set_global_var.get('name')
                         query = set_global_var.get('query')
                         if query and isinstance(query, list):
@@ -288,6 +299,12 @@ class ExecutionEngine:
                                                                        global_var_dic=self.global_vars)
                         value = common.dict_get(response.text, query)
                         self.global_vars[name] = str(value) if value else value
+                        if is_debug:
+                            new_temp_suite_params[name] = str(value) if value else value
+            # 保存临时suite 变量
+            if is_debug and new_temp_suite_params:
+                temp_suite_params.update(new_temp_suite_params)
+                save_temp_params_for_suite(test_case.get("testSuiteId"), temp_suite_params)
 
             if check_response_code and not str(response_status_code) == str(check_response_code):
                 returned_data["status"] = 'failed'
@@ -350,11 +367,18 @@ class ExecutionEngine:
 
         if set_global_vars and isinstance(set_global_vars, list):
             for set_global_var in set_global_vars:
-                if isinstance(set_global_var, dict) and isinstance(set_global_var.get('name'), str):
+                if isinstance(set_global_var, dict) and isinstance(set_global_var.get('name'),
+                                                                   str) and set_global_var.get('name'):
                     name = set_global_var.get('name')
                     query = set_global_var.get('query')
                     value = common.dict_get(response_json, query)
                     self.global_vars[name] = str(value) if value else value
+                    if is_debug:
+                        new_temp_suite_params[name] = str(value) if value else value
+        # 保存临时suite 变量
+        if is_debug and new_temp_suite_params:
+            temp_suite_params.update(new_temp_suite_params)
+            save_temp_params_for_suite(test_case.get("testSuiteId"), temp_suite_params)
 
         # checkResponseBody 校验处理
         if 'checkResponseBody' in test_case and test_case['checkResponseBody'] not in [[], {}, "", None]:

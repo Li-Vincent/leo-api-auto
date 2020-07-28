@@ -3,7 +3,7 @@ import datetime
 from bson import ObjectId
 from flask import current_app
 
-from models.cookies import Cookies
+from models.temp_cookies import Cookies
 
 EMPIRES_TIME = 1800
 
@@ -33,7 +33,6 @@ def save_cookies_for_suite(test_suite_id, cookies):
         if not test_suite_id or not cookies:
             current_app.logger.error("test suite id and cookies are required.")
             raise ValueError("test suite id is required.")
-        print("cookies to be saved. =======", cookies)
         now = datetime.datetime.utcnow()
         expires_time = now + datetime.timedelta(seconds=EMPIRES_TIME)
         res = Cookies.find_one({'testSuiteId': ObjectId(test_suite_id)})
