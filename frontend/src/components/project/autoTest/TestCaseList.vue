@@ -371,15 +371,6 @@
                 };
                 this.queryTestCases(params);
             },
-            handleSizeChange(val) {
-                let self = this;
-                self.listLoading = true;
-                let params = {
-                    size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
-                    projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
-                };
-                this.queryTestCases(params);
-            },
             handleChangeStatus: function (index, row) {
                 let self = this;
                 self.statusChangeLoading = true;
@@ -416,9 +407,29 @@
                     this.getTestCaseList()
                 });
             },
+            handleSizeChange(val) {
+                let self = this;
+                self.$store.dispatch('pageInfo/setTestCasePageInfo', {
+                    size: val,
+                    testSuiteId: self.$route.params.test_suite_id
+                })
+                self.size = val
+                self.listLoading = true;
+                let params = {
+                    size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
+                    projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
+                };
+                this.queryTestCases(params);
+            },
             handleCurrentChange(val) {
                 let self = this;
                 self.listLoading = true;
+                self.$store.dispatch('pageInfo/setTestCasePageInfo', {
+                    skip: (val - 1) * self.size,
+                    currentPage: val,
+                    testSuiteId: self.$route.params.test_suite_id
+                })
+                self.skip = (val - 1) * self.size
                 let params = {
                     size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
@@ -769,6 +780,24 @@
                 }
             });
             this.warmPrompt();
+        },
+        created() {
+            this.pageInfoIndex = this.$store.getters.testCasePageInfo.findIndex(ele => ele.testSuiteId === this.$route.params.test_suite_id)
+            this.size = this.pageInfoIndex === -1 ?
+                10 : (this.$store.getters.testCasePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testCasePageInfo[this.pageInfoIndex].size) || 10
+            this.skip = this.pageInfoIndex === -1 ?
+                0 : (this.$store.getters.testCasePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testCasePageInfo[this.pageInfoIndex].skip) || 0
+            this.sortBy = this.pageInfoIndex === -1 ?
+                'sequence' : (this.$store.getters.testCasePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testCasePageInfo[this.pageInfoIndex].sortBy) || 'sequence'
+            this.order = this.pageInfoIndex === -1 ?
+                'ascending' : (this.$store.getters.testCasePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testCasePageInfo[this.pageInfoIndex].order) || 'ascending'
+            this.currentPage = this.pageInfoIndex === -1 ?
+                1 : (this.$store.getters.testCasePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testCasePageInfo[this.pageInfoIndex].currentPage) || 1
         }
     }
 </script>

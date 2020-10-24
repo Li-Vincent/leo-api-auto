@@ -114,7 +114,7 @@ class ExecutionEngine:
             return returned_data
 
         def validate_test_case(case):
-            required_key_list = ['requestProtocol', 'route', 'requestMethod']
+            required_key_list = ['route', 'requestMethod']
             return all([required_key in case for required_key in required_key_list])
 
         if not validate_test_case(test_case):

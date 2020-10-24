@@ -145,5 +145,16 @@ FIX BUG 部署时，无法使用环境变量:LEO_API_PLATFORM_PORT，使用了�
 ### 2020-07-29
 修改教程  环境配置 protocol
 
+### 2020-10-24
+FIX BUG  testcase 和testsuite分页问题
+FIX BUG  记录分页信息，返回自动跳转分页
+
+### 2020-10-25
+FIX BUG  如果testcase不覆盖HTTP协议，执行接口用例时，无法获取环境设置中的请求协议
+
 ### TODO
+支持CI/CD， 暴露出接口执行URL
+
+跨项目执行，根据priority筛选执行用例
+
 多语言，支持中英文

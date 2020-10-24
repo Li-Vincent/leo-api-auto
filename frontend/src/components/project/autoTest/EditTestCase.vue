@@ -58,7 +58,7 @@
             </el-col>
             <el-col :span="3">
               <el-form-item>
-                <el-select v-model="form.requestProtocol" placeholder="HTTP协议">
+                <el-select v-model="form.requestProtocol" placeholder="请求协议">
                   <el-option v-for="(item,index) in ProtocolOptions" :key="index+''" :label="item.label"
                              :value="item.value"></el-option>
                 </el-select>
