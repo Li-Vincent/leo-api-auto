@@ -120,6 +120,7 @@
         style="float: right"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
+        :current-page.sync="currentPage"
         v-if="totalNum != 0"
         :page-sizes="[10, 20, 40]"
         :page-size="size"
@@ -292,6 +293,12 @@
             },
             handleSizeChange(val) {
                 let self = this;
+                self.$store.dispatch('pageInfo/setTestSuitePageInfo', {
+                    size: val,
+                    projectId: self.$route.params.project_id
+                })
+                self.size = val
+                self.listLoading = true;
                 let params = {
                     skip: self.skip, size: self.size, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id
@@ -300,6 +307,13 @@
             },
             handleCurrentChange(val) {
                 let self = this;
+                self.listLoading = true;
+                self.$store.dispatch('pageInfo/setTestSuitePageInfo', {
+                    skip: (val - 1) * self.size,
+                    currentPage: val,
+                    projectId: self.$route.params.project_id
+                })
+                self.skip = (val - 1) * self.size
                 let params = {
                     skip: self.skip, size: self.size, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id
@@ -688,6 +702,24 @@
         mounted() {
             this.getTestEnvList();
             this.getTestSuiteList();
+        },
+        created() {
+            this.pageInfoIndex = this.$store.getters.testSuitePageInfo.findIndex(ele => ele.projectId === this.$route.params.project_id)
+            this.size = this.pageInfoIndex === -1 ?
+                10 : (this.$store.getters.testSuitePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testSuitePageInfo[this.pageInfoIndex].size) || 10
+            this.skip = this.pageInfoIndex === -1 ?
+                0 : (this.$store.getters.testSuitePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testSuitePageInfo[this.pageInfoIndex].skip) || 0
+            this.sortBy = this.pageInfoIndex === -1 ?
+                'createAt' : (this.$store.getters.testSuitePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testSuitePageInfo[this.pageInfoIndex].sortBy) || 'createAt'
+            this.order = this.pageInfoIndex === -1 ?
+                'descending' : (this.$store.getters.testSuitePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testSuitePageInfo[this.pageInfoIndex].order) || 'descending'
+            this.currentPage = this.pageInfoIndex === -1 ?
+                1 : (this.$store.getters.testSuitePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testSuitePageInfo[this.pageInfoIndex].currentPage) || 1
         }
     }
 </script>
