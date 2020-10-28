@@ -10,6 +10,7 @@ from models.leo_user import LeoUser
 from models.role import Role
 from utils import common
 
+
 # add favicon.ico
 @app.route('/favicon.ico')
 def favicon():
@@ -19,7 +20,7 @@ def favicon():
 def query_user(email):
     try:
         user = LeoUser.find_one({'email': email})
-        return common.format_response_in_dic(user)
+        return common.format_response_in_dic(user) if user else None
     except BaseException as e:
         current_app.logger.error("query_user failed. - %s" % str(e))
         return ''
@@ -77,7 +78,7 @@ def register():
         user = user_data_store.find_user(email=request_data['email'])
         for role in request_data['roles']:
             user_data_store.add_role_to_user(user, role)
-        current_app.logger.info("register user successfully. email: %s" % str(email))
+        current_app.logger.info("register user successfully. email: %s" % str(request_data['email']))
         return jsonify({'status': 'ok', 'data': '注册成功'})
     except BaseException as e:
         current_app.logger.error("register user failed. - %s" % str(e))

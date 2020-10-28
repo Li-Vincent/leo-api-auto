@@ -152,6 +152,10 @@ FIX BUG  记录分页信息，返回自动跳转分页
 ### 2020-10-25
 FIX BUG  如果testcase不覆盖HTTP协议，执行接口用例时，无法获取环境设置中的请求协议
 
+### 2020-10-27
+FIX BUG  添加用户报错register user failed. - name 'email' is not defined
+FIX BUG  由于Flask-Security 自带login页面的模板，影响前端/login路由，需禁用Flask-Security自带模板  register_blueprint=False
+
 ### TODO
 支持CI/CD， 暴露出接口执行URL
 
