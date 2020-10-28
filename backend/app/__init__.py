@@ -82,7 +82,8 @@ class User(user_db.Document, UserMixin):
 
 # Setup Flask-Security
 user_data_store = MongoEngineUserDatastore(user_db, User, Role)
-security = Security(app, user_data_store)
+# register_blueprint=False 是为了禁止后端占用/login路由影响前端
+security = Security(app, user_data_store, register_blueprint=False)
 
 
 @app.route('/', defaults={'path': ''})
