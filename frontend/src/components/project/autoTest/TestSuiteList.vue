@@ -68,7 +68,7 @@
               highlight-current-row v-loading="listLoading" @selection-change="selectsChange" style="width: 100%;">
       <el-table-column type="selection" min-width="5%">
       </el-table-column>
-      <el-table-column sortable='custom' prop="name" label="用例名称" min-width="50%" show-overflow-tooltip>
+      <el-table-column sortable='custom' prop="name" label="用例组名称" min-width="40%" show-overflow-tooltip>
         <template slot-scope="scope">
           <el-icon name="name"></el-icon>
           <router-link :to="{ name: 'TestCaseList', params: {
@@ -78,9 +78,9 @@
           </router-link>
         </template>
       </el-table-column>
-      <el-table-column prop="description" label="描述" min-width="20%" show-overflow-tooltip>
-      </el-table-column>
       <el-table-column prop="priority" label="优先级" min-width="10%" show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column prop="description" label="描述" min-width="20%" show-overflow-tooltip>
       </el-table-column>
       <el-table-column prop="service" label="服务" min-width="10%" show-overflow-tooltip>
       </el-table-column>
@@ -120,6 +120,7 @@
         style="float: right"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
+        :current-page.sync="currentPage"
         v-if="totalNum != 0"
         :page-sizes="[10, 20, 40]"
         :page-size="size"
@@ -215,7 +216,7 @@
                         {max: 1024, message: '不能超过1024个字符', trigger: 'blur'}
                     ],
                     priority: [
-                        {required: false, message: '请输入优先级，P1 or P2', trigger: 'blur'},
+                        {required: true, message: '请输入优先级，P1 or P2', trigger: 'blur'},
                         {min: 2, max: 2, message: '请输入 P1 or P2', trigger: 'blur'}
                     ],
                     service: [
@@ -292,6 +293,12 @@
             },
             handleSizeChange(val) {
                 let self = this;
+                self.$store.dispatch('pageInfo/setTestSuitePageInfo', {
+                    size: val,
+                    projectId: self.$route.params.project_id
+                })
+                self.size = val
+                self.listLoading = true;
                 let params = {
                     skip: self.skip, size: self.size, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id
@@ -300,6 +307,13 @@
             },
             handleCurrentChange(val) {
                 let self = this;
+                self.listLoading = true;
+                self.$store.dispatch('pageInfo/setTestSuitePageInfo', {
+                    skip: (val - 1) * self.size,
+                    currentPage: val,
+                    projectId: self.$route.params.project_id
+                })
+                self.skip = (val - 1) * self.size
                 let params = {
                     skip: self.skip, size: self.size, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id
@@ -423,7 +437,7 @@
                             if (this.dialogStatus == 'add') {
                                 let params = {
                                     name: self.form.name.trim(),
-                                    priority: self.form.priority,
+                                    priority: self.form.priority.trim(),
                                     service: self.form.service,
                                     sprint: self.form.sprint,
                                     storyId: self.form.storyId,
@@ -688,6 +702,24 @@
         mounted() {
             this.getTestEnvList();
             this.getTestSuiteList();
+        },
+        created() {
+            this.pageInfoIndex = this.$store.getters.testSuitePageInfo.findIndex(ele => ele.projectId === this.$route.params.project_id)
+            this.size = this.pageInfoIndex === -1 ?
+                10 : (this.$store.getters.testSuitePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testSuitePageInfo[this.pageInfoIndex].size) || 10
+            this.skip = this.pageInfoIndex === -1 ?
+                0 : (this.$store.getters.testSuitePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testSuitePageInfo[this.pageInfoIndex].skip) || 0
+            this.sortBy = this.pageInfoIndex === -1 ?
+                'createAt' : (this.$store.getters.testSuitePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testSuitePageInfo[this.pageInfoIndex].sortBy) || 'createAt'
+            this.order = this.pageInfoIndex === -1 ?
+                'descending' : (this.$store.getters.testSuitePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testSuitePageInfo[this.pageInfoIndex].order) || 'descending'
+            this.currentPage = this.pageInfoIndex === -1 ?
+                1 : (this.$store.getters.testSuitePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testSuitePageInfo[this.pageInfoIndex].currentPage) || 1
         }
     }
 </script>

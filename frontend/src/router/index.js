@@ -268,9 +268,9 @@ export const asyncRoutes = [
         }
       },
       {
-        path: '/mailGroupConfig/:mail_group_id',
-        component: () => import('@/components/config/mailConfig/MailGroupConfig'),
-        name: 'MailGroupConfig',
+        path: '/mailListConfig/:mail_group_id',
+        component: () => import('@/components/config/mailConfig/MailListConfig'),
+        name: 'MailListConfig',
         meta: {
           title: '收件人配置',
           icon: 'fa fa-id-card-o',

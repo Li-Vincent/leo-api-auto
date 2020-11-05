@@ -9,6 +9,7 @@ class EnvConfig(Model):
     # Fields
     _id = ObjectIdField()
     name = StringField(field_name='name')
+    protocol = StringField(field_name='protocol')
     domain = StringField(field_name='domain')
     description = StringField()
     status = BooleanField(field_name='status', default=False)
@@ -19,8 +20,8 @@ class EnvConfig(Model):
     lastUpdateUser = StringField()
 
     def __str__(self):
-        return "name:{} - envKeyword:{} - description:{} - status:{} " \
-            .format(self.name, self.envKeyword, self.description, self.status)
+        return "name:{} - protocol:{} - domain:{} - description:{} " \
+            .format(self.name, self.protocol, self.domain, self.description)
 
 
 if __name__ == '__main__':

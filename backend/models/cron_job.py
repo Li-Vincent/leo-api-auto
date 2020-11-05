@@ -19,6 +19,7 @@ class CronJob(Model):
     interval = FloatField()
     runDate = DateField()
     alarmMailGroupList = ListField()
+    alwaysSendMail = BooleanField(field_name='alwaysSendMail', default=False)
     status = StringField(field_name='status', default='CREATED')
     isDeleted = BooleanField(field_name='isDeleted', default=False)
     createAt = DateField()

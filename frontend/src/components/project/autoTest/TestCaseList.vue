@@ -19,14 +19,6 @@
         </el-row>
         <el-row :gutter="24">
           <el-col :span="8">
-            <el-form-item label="协议" prop='requestProtocol'>
-              <el-select v-model="addForm.requestProtocol" placeholder="请选择">
-                <el-option v-for="item in protocolOptions" :key="item.value" :label="item.label" :value="item.value">
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
             <el-form-item label="请求方法" prop='requestMethod'>
               <el-select v-model="addForm.requestMethod" placeholder="请选择">
                 <el-option v-for="item in methodOptions" :key="item.value" :label="item.label" :value="item.value">
@@ -272,7 +264,6 @@
             };
             return {
                 testSuiteName: '',
-                protocolOptions: [{label: "HTTP", value: "HTTP"}, {label: "HTTPS", value: "HTTPS"}],
                 methodOptions: [{label: "GET", value: "GET"},
                     {label: "POST", value: "POST"},
                     {label: "PUT", value: "PUT"},
@@ -311,7 +302,6 @@
                 addForm: {
                     name: '',
                     description: '',
-                    requestProtocol: '',
                     requestMethod: '',
                     route: '',
                     service: ''
@@ -321,9 +311,6 @@
                     name: [
                         {required: true, message: '请输入名称', trigger: 'blur'},
                         {min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur'}
-                    ],
-                    requestProtocol: [
-                        {required: true, message: '请选择类型', trigger: 'blur'}
                     ],
                     requestMethod: [
                         {required: true, message: '请选择请求方法', trigger: 'blur'}
@@ -384,15 +371,6 @@
                 };
                 this.queryTestCases(params);
             },
-            handleSizeChange(val) {
-                let self = this;
-                self.listLoading = true;
-                let params = {
-                    size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
-                    projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
-                };
-                this.queryTestCases(params);
-            },
             handleChangeStatus: function (index, row) {
                 let self = this;
                 self.statusChangeLoading = true;
@@ -429,9 +407,29 @@
                     this.getTestCaseList()
                 });
             },
+            handleSizeChange(val) {
+                let self = this;
+                self.$store.dispatch('pageInfo/setTestCasePageInfo', {
+                    size: val,
+                    testSuiteId: self.$route.params.test_suite_id
+                })
+                self.size = val
+                self.listLoading = true;
+                let params = {
+                    size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
+                    projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
+                };
+                this.queryTestCases(params);
+            },
             handleCurrentChange(val) {
                 let self = this;
                 self.listLoading = true;
+                self.$store.dispatch('pageInfo/setTestCasePageInfo', {
+                    skip: (val - 1) * self.size,
+                    currentPage: val,
+                    testSuiteId: self.$route.params.test_suite_id
+                })
+                self.skip = (val - 1) * self.size
                 let params = {
                     size: self.size, skip: self.skip, sortBy: self.sortBy, order: self.order,
                     projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
@@ -459,7 +457,6 @@
                             self.addLoading = true;
                             let params = {
                                 name: self.addForm.name.trim(),
-                                requestProtocol: self.addForm.requestProtocol,
                                 requestMethod: self.addForm.requestMethod,
                                 route: self.addForm.route,
                                 service: self.addForm.service,
@@ -635,7 +632,7 @@
                 let showPrompt = self.$router.history.current.params.showWarmPrompt;
                 if (showPrompt) {
                     self.$message.info({
-                        message: '测试用例默认按照「Sequence」和 [创建时间] 正序执行~',
+                        message: '测试用例默认按照「Sequence」和「创建时间」正序执行~',
                         center: true,
                     })
                 }
@@ -783,6 +780,24 @@
                 }
             });
             this.warmPrompt();
+        },
+        created() {
+            this.pageInfoIndex = this.$store.getters.testCasePageInfo.findIndex(ele => ele.testSuiteId === this.$route.params.test_suite_id)
+            this.size = this.pageInfoIndex === -1 ?
+                10 : (this.$store.getters.testCasePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testCasePageInfo[this.pageInfoIndex].size) || 10
+            this.skip = this.pageInfoIndex === -1 ?
+                0 : (this.$store.getters.testCasePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testCasePageInfo[this.pageInfoIndex].skip) || 0
+            this.sortBy = this.pageInfoIndex === -1 ?
+                'sequence' : (this.$store.getters.testCasePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testCasePageInfo[this.pageInfoIndex].sortBy) || 'sequence'
+            this.order = this.pageInfoIndex === -1 ?
+                'ascending' : (this.$store.getters.testCasePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testCasePageInfo[this.pageInfoIndex].order) || 'ascending'
+            this.currentPage = this.pageInfoIndex === -1 ?
+                1 : (this.$store.getters.testCasePageInfo[this.pageInfoIndex]
+                && this.$store.getters.testCasePageInfo[this.pageInfoIndex].currentPage) || 1
         }
     }
 </script>

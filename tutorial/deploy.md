@@ -28,6 +28,7 @@
 #### 4. 设置系统环境变量
 
     LEO_API_PLATFORM_ENV=production
+    LEO_API_PLATFORM_HOST=${PLATFORM_HOST}
     LEO_API_PLATFORM_PORT=${PLATFORM_PORT}
     LEO_API_PLATFORM_MONGO_HOST=${MONGO_HOST}
     LEO_API_PLATFORM_MONGO_PORT=${MONGO_PORT}
@@ -35,7 +36,11 @@
     LEO_API_PLATFORM_MONGO_PASSWORD=${PASSWORD}
     LEO_API_PLATFORM_MONGO_DBNAME=${DBNAME}
 
-说明：LEO_API_PLATFORM_ENV 默认为 production（可不填），LEO_API_PLATFORM_PORT为平台端口，默认为8888，可不填
+说明：LEO_API_PLATFORM_ENV 默认为 production（可不填），
+
+LEO_API_PLATFORM_HOST为平台访问IP，一般为公网IP 或 服务器所在局域网IP, 默认为127.0.0.1（必填）
+
+LEO_API_PLATFORM_PORT为平台访问端口，默认为8888（必填）
 
 LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据库的地址和端口（必填）
 
@@ -49,7 +54,7 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
   
 若配置成功则可看见输入的配置数据
 
-#### 5. 打包前端 dist 文件 （这一步我已为你们做好，若不需二次开发可跳过）
+#### 5. 打包前端 dist 文件（如不需要二次开发，此步骤可跳过，直接执行第6步）
 
 5.1 安装 Vue 环境，下载 node.js 并配置环境
 
@@ -80,20 +85,20 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
     python ./backend/run.py
   
 #### 7. 访问项目
-现在就可以访问 http://127.0.0.1:8888/
+现在就可以访问  ${PLATFORM_HOST}:${PLATFORM_PORT}
 
 7.1 创建平台管理员帐号密码
 
-进入http://127.0.0.1:8888/initAdminUser
+进入${PLATFORM_HOST}:${PLATFORM_PORT}/initAdminUser
 进行注册管理员账号，如果db中已经存在管理员账号，此页面无法访问
 
-![初始化管理员账号](https://gitee.com/Li-Vincent/res/raw/master/leo_api/images/initAdminUser.png "账号初始化.png")
+![初始化管理员账号](images/initAdminUser.png)
     
 7.2 使用创建的管理员帐号密码进行登录
 
-http://127.0.0.1:8888/
+${PLATFORM_HOST}:${PLATFORM_PORT}/login
 
-![登录页面展示](https://gitee.com/Li-Vincent/res/raw/master/leo_api/images/login.png "login.png")
+![登录页面展示](images/login.png "login.png")
 
 ### Linux(CentOS7) 环境下 Docker 容器化部署
 
@@ -144,21 +149,29 @@ http://127.0.0.1:8888/
 3.1 文本末端插入下列数据 (输入 i 则变为 insert 状态)
 
     export LEO_API_PLATFORM_ENV=production
-    export LEO_API_PLATFORM_PORT=${PORT}
+    export LEO_API_PLATFORM_HOST=${PLATFORM_HOST}
+    export LEO_API_PLATFORM_PORT=${PLATFORM_PORT}
     export LEO_API_PLATFORM_MONGO_HOST=${MONGO_HOST}
     export LEO_API_PLATFORM_MONGO_PORT=${MONGO_PORT}
     export LEO_API_PLATFORM_MONGO_USERNAME=${USERNAME}
     export LEO_API_PLATFORM_MONGO_PASSWORD=${PASSWORD}
     export LEO_API_PLATFORM_MONGO_DBNAME=${DBNAME}
     
-说明：LEO_API_PLATFORM_ENV 默认为 production（可不填），LEO_API_PLATFORM_PORT为平台端口，默认为8888，必填
+说明：LEO_API_PLATFORM_ENV 默认为 production（可不填）
 
-LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据库的地址和端口（必填,一般为部署mongodb的服务器公网IP和指定的端口）
+LEO_API_PLATFORM_HOST为平台访问IP，一般为公网IP 或 服务器所在局域网IP（必填）
+
+LEO_API_PLATFORM_PORT为平台访问端口，默认为8888，如果为阿里云等服务器，需要开放该端口（必填）
+
+LEO_API_PLATFORM_MONGO_HOST 和 LEO_API_PLATFORM_MONGO_PORT 分别表示数据库的地址和端口（必填,一般为部署mongodb的服务器局域网/公网IP和指定的端口）
+
+**踩坑记录**
+> 如果MongoDB和平台部署在同一台服务器里，Mongo_HOST 不可使用127.0.0.1, 应该使用docker宿主机IP。  
+> 在机器中 执行 ifconfig 查看宿主机IP，一般为： 172.18.0.1 或 172.17.0.1
 
 LEO_API_PLATFORM_MONGO_USERNAME 和 LEO_API_PLATFORM_MONGO_PASSWORD 分别表示数据库的帐号密码（若无可不填，如果开启auth，需要注意，此用户必须为admin用户，并开启readWriteAnyDatabase权限）
 
 LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：leo-api-auto-db，需要先在mongodb中手动创建数据库，database name = DBNAME）
-  
 
 3.2 插入完毕后点击 ESC 按钮、输入 :wq 后单击回车保存
 
@@ -168,21 +181,19 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
   
 #### 4. 启动项目
 
-//在项目根目录下执行部署文件
+在项目根目录下执行部署文件,预计需要等待几分钟（取决于网速和机器性能），即可部署完成
 
-    sh deploy ${PORT} 
+    sh DeployService
   
-其中 ${PORT} 变量填写项目访问端口即可，如果为阿里云等服务器，需要开放该端口
-
 #### 5. 访问项目
 
-浏览器访问部署服务器地址的 ${PORT}端口即可
+浏览器访问${PLATFORM_HOST}:${PLATFORM_PORT}即可
 
-首先需要创建管理员账号，访问  HOST:PORT/initAdminUser
+首先需要创建管理员账号，访问  ${PLATFORM_HOST}:${PLATFORM_PORT}/initAdminUser
 
-![初始化管理员账号](https://gitee.com/Li-Vincent/res/raw/master/leo_api/images/initAdminUser.png "账号初始化.png")
+![初始化管理员账号](images/initAdminUser.png)
    
-创建账户后访问登录页面，  HOST:PORT/login
+创建账户后访问登录页面， ${PLATFORM_HOST}:${PLATFORM_PORT}/login
 
-![登录页面展示](https://gitee.com/Li-Vincent/res/raw/master/leo_api/images/login.png "login.png")
+![登录页面展示](images/login.png "login.png")
 

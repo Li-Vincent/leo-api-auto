@@ -36,6 +36,8 @@
       </el-table-column>
       <el-table-column prop="name" label="名称" min-width="15%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
+      <el-table-column prop="protocol" label="协议" min-width="15%" sortable='custom' show-overflow-tooltip>
+      </el-table-column>
       <el-table-column prop="domain" label="域名" min-width="35%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
       <el-table-column prop="description" label="描述" min-width="20%" show-overflow-tooltip>
@@ -85,9 +87,15 @@
     <el-dialog :title="titleMap[dialogStatus]" :visible.sync="formVisible"
                :close-on-click-modal="false"
                style="width: 60%; left: 20%">
-      <el-form :model="form" :rules="formRules" ref="form" label-width="80px">
+      <el-form :model="form" :rules="formRules" ref="form" label-width="100px">
         <el-form-item label="名称" prop="name">
           <el-input placeholder="请输入环境名称" v-model="form.name" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item  label="HTTP协议" prop='protocol'>
+          <el-select v-model="form.protocol" placeholder="HTTP协议">
+            <el-option v-for="(item,index) in ProtocolOptions" :key="index+''" :label="item.label"
+                       :value="item.value"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="域名" prop='domain'>
           <el-input placeholder="www.test.com/www.service-${service}.com" v-model.trim="form.domain"
@@ -130,6 +138,10 @@
                     add: '新增',
                     edit: '编辑'
                 },
+                ProtocolOptions: [
+                    {value: 'HTTP', label: 'HTTP'},
+                    {value: 'HTTPS', label: 'HTTPS'}
+                ],
                 dialogStatus: '',
                 formVisible: false,//dialog是否显示
                 loading: false,
@@ -137,6 +149,10 @@
                     name: [
                         {required: true, message: '请输入名称', trigger: 'blur'},
                         {min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur'}
+                    ],
+                    protocol: [
+                        {required: true, message: '请选择协议', trigger: 'blur'},
+                        {min: 4, max: 5, message: 'HTTP or HTTPS', trigger: 'blur'}
                     ],
                     domain: [
                         {required: true, message: '请输入域名', trigger: 'blur'},
@@ -150,11 +166,13 @@
                 //编辑界面数据
                 form: {
                     name: '',
+                    protocol: 'HTTP',
                     domain: '',
                     description: ''
                 },
                 initForm: {
                     name: '',
+                    protocol: 'HTTP',
                     domain: '',
                     description: ''
                 }
@@ -327,6 +345,7 @@
                             if (this.dialogStatus == 'add') {
                                 let params = {
                                     name: self.form.name.trim(),
+                                    protocol: self.form.protocol,
                                     domain: self.form.domain,
                                     description: self.form.description.trim(),
                                     createUser: this.$store.getters.email || 'anonymous'
@@ -356,6 +375,7 @@
                             } else if (this.dialogStatus == 'edit') {
                                 let params = {
                                     name: self.form.name.trim(),
+                                    protocol: self.form.protocol,
                                     domain: self.form.domain,
                                     description: self.form.description.trim(),
                                     lastUpdateUser: this.$store.getters.email || 'anonymous'

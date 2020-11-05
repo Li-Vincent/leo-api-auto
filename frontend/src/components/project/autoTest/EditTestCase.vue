@@ -58,7 +58,7 @@
             </el-col>
             <el-col :span="3">
               <el-form-item>
-                <el-select v-model="form.requestProtocol" placeholder="HTTP协议">
+                <el-select v-model="form.requestProtocol" placeholder="请求协议">
                   <el-option v-for="(item,index) in ProtocolOptions" :key="index+''" :label="item.label"
                              :value="item.value"></el-option>
                 </el-select>
@@ -465,6 +465,7 @@
                     {label: "HEAD", value: "HEAD"}
                 ],
                 ProtocolOptions: [
+                    {value: '', label: '未选择'},
                     {value: 'HTTP', label: 'HTTP'},
                     {value: 'HTTPS', label: 'HTTPS'}
                 ],
@@ -544,7 +545,7 @@
                     name: '',
                     service: '',
                     requestMethod: 'GET',
-                    requestProtocol: 'HTTP',
+                    requestProtocol: '',
                     route: '',
                     domain: '',
                     description: '',
@@ -583,7 +584,8 @@
                         {min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur'}
                     ],
                     requestProtocol: [
-                        {required: true, message: '请选择类型', trigger: 'blur'}
+                        {required: false, message: '请选择协议', trigger: 'blur'},
+                        {min: 4, max: 5, message: 'HTTP or HTTPS', trigger: 'blur'}
                     ],
                     requestMethod: [
                         {required: true, message: '请选择请求方法', trigger: 'blur'}
@@ -630,9 +632,9 @@
             getDBConfigList() {
                 let header = {};
                 let params = {
-                    projectId: this.$route.params.project_id
+                    "status": true
                 };
-                getDBConfigs(this.$route.params.project_id, params, header).then((res) => {
+                getDBConfigs(params, header).then((res) => {
                     let {status, data} = res;
                     if (status === 'ok') {
                         this.dbConfigs = data.rows
@@ -846,9 +848,16 @@
                         let self = this;
                         let flag = true;
                         this.$confirm('确认提交吗？', '提示', {}).then(() => {
-                            if (!self.form.domain && !this.form.service) {
+                            // if (!self.form.domain && !this.form.service) {
+                            //     self.$message.error({
+                            //         message: "由于没有输入domain，请输入service",
+                            //         center: true,
+                            //     });
+                            //     return
+                            // }
+                            if (self.form.domain && !this.form.requestProtocol || !self.form.domain && this.form.requestProtocol) {
                                 self.$message.error({
-                                    message: "由于没有输入domain，请输入service",
+                                    message: "domain 和 requestProtocol 立誓同生共死！",
                                     center: true,
                                 });
                                 return

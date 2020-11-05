@@ -37,9 +37,9 @@ logging_format = logging.Formatter(
 fileHandler.setFormatter(logging_format)
 app.logger.addHandler(fileHandler)
 
-_config = Config()
+app_config = Config()
 
-app.config['SECRET_KEY'] = _config.get_secret_key()
+app.config['SECRET_KEY'] = app_config.get_secret_key()
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)  # 设置session的保存时间=7days
 # 解决中文乱码问题
 app.config['JSON_AS_ASCII'] = False
@@ -51,18 +51,18 @@ login_manager.init_app(app)
 
 cors = CORS(app, supports_credentials=True)
 
-conn, db = connect(_config.get_mongo_db_name(),
-                   ip=_config.get_mongo_host(),
-                   port=int(_config.get_mongo_port()),
-                   username=_config.get_mongo_username(),
-                   password=_config.get_mongo_password())
+conn, db = connect(app_config.get_mongo_db_name(),
+                   ip=app_config.get_mongo_host(),
+                   port=int(app_config.get_mongo_port()),
+                   username=app_config.get_mongo_username(),
+                   password=app_config.get_mongo_password())
 
 # Create User database connection object
-app.config['MONGODB_DB'] = _config.get_mongo_db_name()
-app.config['MONGODB_HOST'] = _config.get_mongo_host()
-app.config['MONGODB_PORT'] = int(_config.get_mongo_port())
-app.config['MONGODB_USERNAME'] = _config.get_mongo_username()
-app.config['MONGODB_PASSWORD'] = _config.get_mongo_password()
+app.config['MONGODB_DB'] = app_config.get_mongo_db_name()
+app.config['MONGODB_HOST'] = app_config.get_mongo_host()
+app.config['MONGODB_PORT'] = int(app_config.get_mongo_port())
+app.config['MONGODB_USERNAME'] = app_config.get_mongo_username()
+app.config['MONGODB_PASSWORD'] = app_config.get_mongo_password()
 user_db = MongoEngine(app)
 
 
@@ -82,7 +82,8 @@ class User(user_db.Document, UserMixin):
 
 # Setup Flask-Security
 user_data_store = MongoEngineUserDatastore(user_db, User, Role)
-security = Security(app, user_data_store)
+# register_blueprint=False 是为了禁止后端占用/login路由影响前端
+security = Security(app, user_data_store, register_blueprint=False)
 
 
 @app.route('/', defaults={'path': ''})
@@ -102,4 +103,4 @@ from controllers import project, test_case, test_suite, test_suite_param, env_co
     test_report, user, cron_job, data_source, mail, mail_sender, init_admin_user, functional_api
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=_config.get_port())
+    app.run(debug=True, host='0.0.0.0', port=app_config.get_port())

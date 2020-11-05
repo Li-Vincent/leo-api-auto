@@ -7,10 +7,13 @@ from datetime import datetime
 from threading import Thread
 
 import requests
+from requests.cookies import RequestsCookieJar
 from bson import ObjectId
 
 from controllers.test_report import save_report_detail, save_report
 from controllers.test_suite import get_suite_name
+from controllers.temp_cookies import save_cookies_for_suite, get_cookies_by_suite
+from controllers.temp_suite_params import save_temp_params_for_suite, get_temp_params_by_suite
 from models.test_case import TestCase
 from utils import common
 from execution_engine.data_initialize.handler import execute_data_init
@@ -62,7 +65,7 @@ def async_test(f):
 # 不通过则返回{'status': 'failed'}
 class ExecutionEngine:
 
-    def __init__(self, domain, test_env_id=None, global_env_vars=None, test_result_list=None, max_retries=5,
+    def __init__(self, protocol, domain, test_env_id=None, global_env_vars=None, test_result_list=None, max_retries=5,
                  global_suite_vars=None):
 
         # if not test_case_list and not test_suite_list:
@@ -75,6 +78,7 @@ class ExecutionEngine:
         #     raise TypeError('test_suite_list must be a list!')
 
         self.test_env_id = test_env_id
+        self.protocol = protocol
         self.domain = domain
         # self.test_case_list = test_case_list
         # self.test_suite_list = test_suite_list
@@ -98,7 +102,7 @@ class ExecutionEngine:
                 raise ValueError('global_suite_vars must be a dict!')
             self.global_vars.update(global_suite_vars)
 
-    def execute_single_case_test(self, test_case):
+    def execute_single_case_test(self, test_case, is_debug=False):
         returned_data = dict()
         returned_data["_id"] = ObjectId(test_case["_id"])
         returned_data["testConclusion"] = []
@@ -110,7 +114,7 @@ class ExecutionEngine:
             return returned_data
 
         def validate_test_case(case):
-            required_key_list = ['requestProtocol', 'route', 'requestMethod']
+            required_key_list = ['route', 'requestMethod']
             return all([required_key in case for required_key in required_key_list])
 
         if not validate_test_case(test_case):
@@ -130,7 +134,23 @@ class ExecutionEngine:
         check_response_code = None
         check_response_body = None
         check_response_number = None
-        set_global_vars = None  # for example {'user': ['data','user']}
+        set_global_vars = None  # for example {'user': 'user1'}
+        temp_suite_params = dict()
+        new_temp_suite_params = dict()
+
+        # 如果是debug测试用例，需要拿到临时Suite变量
+        if is_debug:
+            if 'testSuiteId' in test_case and test_case["testSuiteId"]:
+                temp_suite_params = get_temp_params_by_suite(test_case["testSuiteId"])
+                if temp_suite_params:
+                    self.global_vars.update(temp_suite_params)
+
+        # 获取接口protocol
+        if 'requestProtocol' in test_case and isinstance(test_case["requestProtocol"], str) \
+                and (test_case["requestProtocol"] == 'HTTP' or test_case["requestProtocol"] == 'HTTPS'):
+            protocol = test_case["requestProtocol"]
+        else:
+            protocol = self.protocol
 
         # 获取接口domain
         if 'domain' in test_case and isinstance(test_case["domain"], str) and not test_case["domain"].strip() == '':
@@ -146,7 +166,7 @@ class ExecutionEngine:
         # 处理url  protocol+domain+route
         route = common.replace_global_var_for_str(init_var_str=test_case['route'], global_var_dic=self.global_vars) \
             if isinstance(test_case['route'], str) else test_case['route']
-        request_url = '%s://%s%s' % (test_case['requestProtocol'].lower(), domain, route)
+        request_url = '%s://%s%s' % (protocol.lower(), domain, route)
         returned_data['testCaseDetail']['url'] = request_url
 
         # 获取method
@@ -216,7 +236,7 @@ class ExecutionEngine:
                         returned_data["dataInitResult"].append(
                             execute_data_init(self.test_env_id, dataInitialize, self.global_vars))
 
-        # 处理 cookies
+        # 处理 cookies  for 用例组执行
         test_case['cookies'] = []
         for key, value in session.cookies.items():
             cookie_dic = dict()
@@ -225,9 +245,29 @@ class ExecutionEngine:
             test_case['cookies'].append(cookie_dic)
         returned_data['testCaseDetail']['cookies'] = test_case['cookies']
 
+        # 获取debug时保存的临时 cookies  for 调试用例
+        if is_debug and not test_case.get('isClearCookie'):
+            request_cookies = get_cookies_by_suite(test_case.get("testSuiteId"))
+            returned_data['testCaseDetail']['cookies'] = request_cookies
+            if request_cookies:
+                cookie_jar = RequestsCookieJar()
+                for cookie in request_cookies:
+                    cookie_jar.set(cookie['name'], cookie['value'])
+                session.cookies.update(cookie_jar)
         try:
             response = session.request(url=request_url, method=request_method, json=request_body,
                                        headers=request_headers, verify=False)
+            if is_debug:
+                # 保存的临时 cookies  for 调试用例
+                response_cookies = []
+                for key, value in session.cookies.items():
+                    cookie_dic = dict()
+                    cookie_dic['name'] = key
+                    cookie_dic['value'] = value
+                    response_cookies.append(cookie_dic)
+                if len(response_cookies) > 0:
+                    save_cookies_for_suite(test_case.get("testSuiteId"), response_cookies)
+
         except BaseException as e:
             returned_data["status"] = 'failed'
             returned_data["testConclusion"].append(
@@ -250,7 +290,8 @@ class ExecutionEngine:
             # 如果出现异常，表名接口返回格式不是json
             if set_global_vars and isinstance(set_global_vars, list):
                 for set_global_var in set_global_vars:
-                    if isinstance(set_global_var, dict) and isinstance(set_global_var.get('name'), str):
+                    if isinstance(set_global_var, dict) and isinstance(set_global_var.get('name'),
+                                                                       str) and set_global_var.get('name'):
                         name = set_global_var.get('name')
                         query = set_global_var.get('query')
                         if query and isinstance(query, list):
@@ -258,6 +299,12 @@ class ExecutionEngine:
                                                                        global_var_dic=self.global_vars)
                         value = common.dict_get(response.text, query)
                         self.global_vars[name] = str(value) if value else value
+                        if is_debug:
+                            new_temp_suite_params[name] = str(value) if value else value
+            # 保存临时suite 变量
+            if is_debug and new_temp_suite_params:
+                temp_suite_params.update(new_temp_suite_params)
+                save_temp_params_for_suite(test_case.get("testSuiteId"), temp_suite_params)
 
             if check_response_code and not str(response_status_code) == str(check_response_code):
                 returned_data["status"] = 'failed'
@@ -320,11 +367,18 @@ class ExecutionEngine:
 
         if set_global_vars and isinstance(set_global_vars, list):
             for set_global_var in set_global_vars:
-                if isinstance(set_global_var, dict) and isinstance(set_global_var.get('name'), str):
+                if isinstance(set_global_var, dict) and isinstance(set_global_var.get('name'),
+                                                                   str) and set_global_var.get('name'):
                     name = set_global_var.get('name')
                     query = set_global_var.get('query')
                     value = common.dict_get(response_json, query)
                     self.global_vars[name] = str(value) if value else value
+                    if is_debug:
+                        new_temp_suite_params[name] = str(value) if value else value
+        # 保存临时suite 变量
+        if is_debug and new_temp_suite_params:
+            temp_suite_params.update(new_temp_suite_params)
+            save_temp_params_for_suite(test_case.get("testSuiteId"), temp_suite_params)
 
         # checkResponseBody 校验处理
         if 'checkResponseBody' in test_case and test_case['checkResponseBody'] not in [[], {}, "", None]:
@@ -431,7 +485,7 @@ class ExecutionEngine:
         for test_case in test_case_list:
             test_start_time = time.time()
             test_start_datetime = datetime.utcnow()
-            test_result = self.execute_single_case_test(test_case)
+            test_result = self.execute_single_case_test(test_case, is_debug=True)
             test_end_time = time.time()
             test_result["testStartTime"] = test_start_datetime
             test_result["spendTimeInSec"] = round(test_end_time - test_start_time, 3)
@@ -476,7 +530,8 @@ class ExecutionEngine:
 
 # 异步执行，便于调试时及时反馈
 @async_test
-def execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_id_list, domain, global_env_vars):
+def execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_id_list, protocol, domain,
+                                global_env_vars):
     test_report['testStartTime'] = datetime.utcnow()
     report_total_count = 0
     report_pass_count = 0
@@ -485,7 +540,8 @@ def execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_
     report_start_time = time.time()
     test_report['testSuites'] = {}
     for test_suite_id in test_suite_id_list:
-        execute_engine = ExecutionEngine(test_env_id=test_env_id, domain=domain, global_env_vars=global_env_vars)
+        execute_engine = ExecutionEngine(test_env_id=test_env_id, protocol=protocol, domain=domain,
+                                         global_env_vars=global_env_vars)
         test_suite_result = execute_engine.execute_single_suite_test(report_id, test_suite_id)
         test_report['testSuites'][test_suite_id] = test_suite_result
         report_total_count += test_suite_result['totalCount']
@@ -503,7 +559,7 @@ def execute_test_by_suite_async(report_id, test_report, test_env_id, test_suite_
 
 
 # 定时任务, 需同步执行
-def execute_test_by_suite(report_id, test_report, test_env_id, test_suite_id_list, domain, global_env_vars):
+def execute_test_by_suite(report_id, test_report, test_env_id, test_suite_id_list, protocol, domain, global_env_vars):
     test_report['testStartTime'] = datetime.utcnow()
     report_total_count = 0
     report_pass_count = 0
@@ -512,7 +568,8 @@ def execute_test_by_suite(report_id, test_report, test_env_id, test_suite_id_lis
     report_start_time = time.time()
     test_report['testSuites'] = {}
     for test_suite_id in test_suite_id_list:
-        execute_engine = ExecutionEngine(test_env_id=test_env_id, domain=domain, global_env_vars=global_env_vars)
+        execute_engine = ExecutionEngine(test_env_id=test_env_id, protocol=protocol, domain=domain,
+                                         global_env_vars=global_env_vars)
         test_suite_result = execute_engine.execute_single_suite_test(report_id, test_suite_id)
         test_report['testSuites'][test_suite_id] = test_suite_result
         report_total_count += test_suite_result['totalCount']
