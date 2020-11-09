@@ -78,7 +78,7 @@
           </router-link>
         </template>
       </el-table-column>
-      <el-table-column prop="priority" label="优先级" min-width="10%" show-overflow-tooltip>
+      <el-table-column sortable='custom' prop="priority" label="优先级" min-width="10%" show-overflow-tooltip>
       </el-table-column>
       <el-table-column prop="description" label="描述" min-width="20%" show-overflow-tooltip>
       </el-table-column>
@@ -139,7 +139,10 @@
           <el-input type="textarea" :rows="4" v-model="form.description"></el-input>
         </el-form-item>
         <el-form-item label="优先级" prop="priority">
-          <el-input v-model.trim="form.priority" auto-complete="off"></el-input>
+          <el-select v-model="form.priority" placeholder="请选择">
+            <el-option v-for="item in priorityOptions" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="所属服务" prop="service">
           <el-input v-model.trim="form.service" auto-complete="off"></el-input>
@@ -243,9 +246,11 @@
                 },
                 initForm: {
                     name: '',
-                    description: ''
+                    description: '',
+                    priority: 'P1'
                 },
-
+                priorityOptions: [{label: "P1", value: "P1"},
+                    {label: "P2", value: "P2"}],
                 // For import cases.
                 importExtraData: {
                     projectId: this.$route.params.project_id,

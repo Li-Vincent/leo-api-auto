@@ -202,19 +202,13 @@
             <el-collapse-item title="请求参数" name="3">
               <div style="margin: 5px">
                 <el-row :span="24">
-                  <!--                  <el-col :span="4">-->
-                  <!--                    <el-radio v-model="radio" label="form-data">表单(form-data)</el-radio>-->
-                  <!--                  </el-col>-->
-                  <el-col v-if="showRequestBody" :span="4">
-                    <el-radio v-model="radio" label="raw">源数据(raw) —— 支持json数组</el-radio>
+                  <el-col v-if="showRequestBody" :span="6">
+                    <el-radio v-model="form.parameterType" label="json">源数据(raw) —— 支持json数组</el-radio>
+                    <el-radio v-model="form.parameterType" label="form">Form Data</el-radio>
                   </el-col>
-                  <el-col :span='3' style="float: right">
-                    <el-checkbox label='是否 json数组' v-model.trim="form.isJsonArray">
-                    </el-checkbox>
+                  <el-col :span='3' style="float: right" v-if="form.parameterType == 'json'">
+                    <el-checkbox label='是否 json数组' v-model.trim="form.isJsonArray"></el-checkbox>
                   </el-col>
-                  <!--                  <el-col v-if="showRequestBody" :span="16">-->
-                  <!--                    <el-checkbox v-model="radioType" label="3" v-show="parameterType">表单转源数据</el-checkbox>-->
-                  <!--                  </el-col>-->
                 </el-row>
                 <template>
                   <el-form-item label="" prop="parameterRaw">
@@ -515,13 +509,17 @@
                 ],
                 ResponseCodeOptions: [
                     {value: '200', label: '200'},
+                    {value: '201', label: '201'},
+                    {value: '203', label: '203'},
                     {value: '302', label: '302'},
                     {value: '400', label: '400'},
                     {value: '401', label: '401'},
                     {value: '403', label: '403'},
                     {value: '404', label: '404'},
+                    {value: '405', label: '405'},
                     {value: '500', label: '500'},
                     {value: '502', label: '502'},
+                    {value: '503', label: '503'},
                     {value: '504', label: '504'}
                 ],
                 operatorOptions: [
@@ -540,7 +538,6 @@
                 showRequestBody: true,
                 radio: "raw",
                 radioType: '',
-                parameterType: 'raw',
                 form: {
                     name: '',
                     service: '',
@@ -560,7 +557,7 @@
                         sql: ''
                     }],
                     headers: [{name: "", value: ""}],
-                    parameterType: "",
+                    parameterType: 'json',
                     parameterRaw: "",
                     isJsonArray: false,
                     parameterForm: [{name: "", value: ""}, {name: "", value: ""}],
@@ -781,8 +778,9 @@
                             self.form.domain = data.domain;
                             self.form.isClearCookie = data.isClearCookie;
                             self.form.description = data.description;
+                            self.form.parameterType = data.parameterType;
                             self.form.isJsonArray = data.isJsonArray;
-                            // 加后缀ww
+                            // 加后缀
                             data.setGlobalVars.forEach((setGlobalVar) => {
                                 setGlobalVar.query = this.addSuffix(setGlobalVar.query)
                             });
@@ -883,6 +881,7 @@
                                 description: self.form.description.trim(),
                                 headers: self.form.headers,
                                 isClearCookie: self.form.isClearCookie,
+                                parameterType: self.form.parameterType,
                                 isJsonArray: self.form.isJsonArray,
                                 setGlobalVars: self.form.setGlobalVars,
                                 checkResponseBody: self.form.checkResponseBody,
