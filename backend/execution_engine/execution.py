@@ -255,8 +255,13 @@ class ExecutionEngine:
                     cookie_jar.set(cookie['name'], cookie['value'])
                 session.cookies.update(cookie_jar)
         try:
-            response = session.request(url=request_url, method=request_method, json=request_body,
-                                       headers=request_headers, verify=False)
+            print(request_url, request_body)
+            if 'parameterType' in test_case and test_case["parameterType"] == "form":
+                response = session.request(url=request_url, method=request_method, data=request_body,
+                                           headers=request_headers, verify=False)
+            else:
+                response = session.request(url=request_url, method=request_method, json=request_body,
+                                           headers=request_headers, verify=False)
             if is_debug:
                 # 保存的临时 cookies  for 调试用例
                 response_cookies = []
@@ -331,7 +336,6 @@ class ExecutionEngine:
                     if not isinstance(check_item, dict) or 'regex' not in check_item or 'query' not in check_item or \
                             not isinstance(check_item['regex'], str) or not isinstance(check_item['query'], list):
                         raise TypeError('checkResponseBody is not valid!')
-                    # TODO 可开启/关闭 全局替换
                     # 对校验结果进行全局替换
                     test_case['checkResponseBody'][index]['regex'] = common.replace_global_var_for_str(
                         init_var_str=check_item['regex'], global_var_dic=self.global_vars) if check_item.get(

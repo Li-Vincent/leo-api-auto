@@ -156,9 +156,15 @@ FIX BUG  如果testcase不覆盖HTTP协议，执行接口用例时，无法获�
 FIX BUG  添加用户报错register user failed. - name 'email' is not defined
 FIX BUG  由于Flask-Security 自带login页面的模板，影响前端/login路由，需禁用Flask-Security自带模板  register_blueprint=False
 
-### TODO
-支持CI/CD， 暴露出接口执行URL
+## V3 版本  
+### 2020-11-09
+支持 接口请求参数 form-data格式
 
+### TODO V3
 跨项目执行，根据priority筛选执行用例
+
+    解决方案：
+    
+支持CI/CD， 暴露出接口执行URL
 
 多语言，支持中英文

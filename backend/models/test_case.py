@@ -74,6 +74,7 @@ class TestCase(Model):
                                 }
                             ]
                         })
+    parameterType = StringField(field_name='service', default='json')  # json or form
     requestBody = ListField(field_name='requestBody', default=[{}],
                             expected_structure={
                                 'expectedTypeRange': [list],
