@@ -81,7 +81,6 @@
       </el-table-column>
       <el-table-column prop="name" label="接口用例名称" min-width="40%" sortable='custom' show-overflow-tooltip>
         <template slot-scope="scope">
-          <el-icon name="name"></el-icon>
           <router-link :to="{ name: 'EditTestCase', params: {test_case_id: scope.row._id}}"
                        style='text-decoration: none;color: #000000;'>{{ scope.row.name }}
           </router-link>
@@ -240,7 +239,6 @@
     import {getTestCases, updateTestCase, addTestCase, copyTestCase} from "../../../api/testCase";
     import {getTestSuiteInfo} from "../../../api/testSuite";
     import {getEnvConfigs} from "../../../api/envConfig";
-    import {getCookie} from "../../../utils/cookies";
     import {startAPITestByCase} from "../../../api/execution";
     import moment from "moment";
 
@@ -277,7 +275,6 @@
                 testLoading: false,
                 statusChangeLoading: false,
                 delLoading: false,
-                searchName: "",
                 pageInfoIndex: -1,
                 size: 10,
                 skip: 0,
@@ -461,7 +458,7 @@
                                 route: self.addForm.route,
                                 service: self.addForm.service,
                                 description: self.addForm.description.trim(),
-                                createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || 'anonymous'
+                                createUser: self.$store.getters.email,
                             };
                             let header = {};
                             addTestCase(self.$route.params.project_id, self.$route.params.test_suite_id, params, header).then((res) => {
@@ -646,7 +643,7 @@
                     let params = {
                         testCaseIdList: [row._id],
                         testEnvId: self.testEnv,
-                        executionUser: unescape(getCookie('email').replace(/\\u/g, '%u')),
+                        executionUser: self.$store.getters.email,
                         executionMode: 'manual'
                     };
                     startAPITestByCase(params, headers).then((res) => {

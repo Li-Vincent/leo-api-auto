@@ -778,7 +778,11 @@
                             self.form.domain = data.domain;
                             self.form.isClearCookie = data.isClearCookie;
                             self.form.description = data.description;
-                            self.form.parameterType = data.parameterType;
+                            if (data.parameterType) {
+                                self.form.parameterType = data.parameterType;
+                            } else {
+                                self.form.parameterType = 'json'
+                            }
                             self.form.isJsonArray = data.isJsonArray;
                             // 加后缀
                             data.setGlobalVars.forEach((setGlobalVar) => {
@@ -846,13 +850,6 @@
                         let self = this;
                         let flag = true;
                         this.$confirm('确认提交吗？', '提示', {}).then(() => {
-                            // if (!self.form.domain && !this.form.service) {
-                            //     self.$message.error({
-                            //         message: "由于没有输入domain，请输入service",
-                            //         center: true,
-                            //     });
-                            //     return
-                            // }
                             if (self.form.domain && !this.form.requestProtocol || !self.form.domain && this.form.requestProtocol) {
                                 self.$message.error({
                                     message: "domain 和 requestProtocol 立誓同生共死！",
@@ -889,6 +886,10 @@
                                 requestBody: self.form.parameterRaw,
                                 lastUpdateUser: self.$store.getters.email || 'anonymous'
                             };
+                            // reset isJsonArray
+                            if (self.form.parameterType == 'form') {
+                                params["isJsonArray"] = false;
+                            }
                             // check dataInitializes
                             if (self.form.dataInitializes && self.form.dataInitializes.length > 0) {
                                 self.form.dataInitializes.forEach((item, index) => {
@@ -932,7 +933,7 @@
                                         self.$router.push({
                                             name: 'TestCaseList', params: {
                                                 project_id: self.$route.params.project_id,
-                                                test_suite_id: self.$route.params.test_suite_id,
+                                                test_suite_id: self.$route.params.test_suite_id
                                             }
                                         });
                                         self.$message({

@@ -56,7 +56,7 @@ def update_db_config(db_config_id):
         update_response = DBConfig.update({'_id': ObjectId(db_config_id)}, {'$set': filtered_data})
         if update_response['n'] == 0:
             return jsonify({'status': 'failed', 'data': '未找到相应的更新数据！'})
-        current_app.logger.info("update db config successfully. DB Config Name: %s" % str(filtered_data['name']))
+        current_app.logger.info("update db config successfully. DB Config ID: %s" % str(db_config_id))
         return jsonify({'status': 'ok', 'data': '更新DB配置成功'})
     except BaseException as e:
         current_app.logger.error("update db config failed. - %s" % str(e))
