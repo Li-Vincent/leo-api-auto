@@ -44,15 +44,13 @@ def add_project():
 @roles_accepted('admin', 'project')
 def update_project(project_id):
     try:
-        filtered_data = Project.filter_field(request.get_json())
-        for key, value in filtered_data.items():
-            Project.update({"_id": ObjectId(project_id)},
-                           {'$set': {key: value}})
-        update_response = Project.update({"_id": ObjectId(project_id)},
-                                         {'$set': {'lastUpdateTime': datetime.utcnow()}}, )
+        request_data = request.get_json()
+        request_data['lastUpdateTime'] = datetime.utcnow()
+        filtered_data = Project.filter_field(request_data)
+        update_response = Project.update({'_id': ObjectId(project_id)}, {'$set': filtered_data})
         if update_response["n"] == 0:
             return jsonify({'status': 'failed', 'data': '未找到相应更新数据！'})
-        current_app.logger.info("update project successfully. Project: %s" % str(filtered_data['name']))
+        current_app.logger.info("update project successfully. Project: %s" % str(project_id))
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
         current_app.logger.error("update project failed. - %s" % str(e))

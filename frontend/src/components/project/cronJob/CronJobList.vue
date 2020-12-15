@@ -637,7 +637,6 @@
                 let params = {
                     updateUser: self.$store.getters.email
                 };
-                console.log(row.status)
                 if (row.status !== 'PAUSED') {
                     pauseCronJob(self.$route.params.project_id, row._id, params, header).then((res) => {
                         self.statusChangeLoading = false;

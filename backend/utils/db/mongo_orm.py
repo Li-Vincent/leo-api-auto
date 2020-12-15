@@ -218,7 +218,6 @@ class Model(object):
         subcls.Meta.collection = subcls.Meta.collection if hasattr(subcls.Meta,
                                                                    'collection') else subcls.__name__.lower()
         collection = subcls.Meta.database[subcls.Meta.collection]
-        # print(dir(collection))
         if hasattr(subcls.Meta, 'index'):
             for index in subcls.Meta.index:
                 try:
@@ -242,9 +241,7 @@ class Model(object):
             kwargs = (lambda **kwargs: kwargs)(**dict_data)
             # same as
             # kwargs = args[0]
-        # print(dir(self))
         for attr_name in dir(self):
-            # print('1: %s' % attr_name)
             field = self.__getitem__(attr_name)
             if isinstance(field, Field):
                 if not field.name:
@@ -262,8 +259,6 @@ class Model(object):
     def __getitem__(self, k):
         # import traceback
         # s = traceback.extract_stack()
-        # print ('%s Invoked me!' % s[-2][2])
-        # print(k)
         return getattr(self, k)
 
     def __setitem__(self, k, v):

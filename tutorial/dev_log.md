@@ -153,18 +153,35 @@ FIX BUG  记录分页信息，返回自动跳转分页
 FIX BUG  如果testcase不覆盖HTTP协议，执行接口用例时，无法获取环境设置中的请求协议
 
 ### 2020-10-27
-FIX BUG  添加用户报错register user failed. - name 'email' is not defined
-FIX BUG  由于Flask-Security 自带login页面的模板，影响前端/login路由，需禁用Flask-Security自带模板  register_blueprint=False
+1. FIX BUG  添加用户报错register user failed. - name 'email' is not defined
+2. FIX BUG  由于Flask-Security 自带login页面的模板，影响前端/login路由，需禁用Flask-Security自带模板  register_blueprint=False
 
 ## V3 版本  
 ### 2020-11-09
 支持 接口请求参数 form-data格式
 
-### TODO V3
-跨项目执行，根据priority筛选执行用例
+### 2020-11-11
+FIX BUG  嵌套路由，导航 对应Menu没有高亮显示
 
-    解决方案：
-    
+### 2020-11-20
+1. FIX BUG  右键新tab打开link，登录状态消失
+2. 改善一些DB操作相关的用法
+3. 增加/修复Log输出
+
+### 2020-12-15
+1. 增加Plan模块，可跨项目执行，根据priority筛选执行用例
+2. FIX BUG   UpdateEmail失败
+3. FIX BUG   Json正则校验  选取字典列表中指定条件的字典中的某个字段进行判断
+
+### TODO V3
+完善plan report
+
+为Plan增加 webhook URL 查询
+
+为Plan 模块 增加操作教程
+
+删除 指定日期之前的report
+
 支持CI/CD， 暴露出接口执行URL
 
 多语言，支持中英文

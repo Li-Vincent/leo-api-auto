@@ -70,7 +70,6 @@
       </el-table-column>
       <el-table-column sortable='custom' prop="name" label="用例组名称" min-width="40%" show-overflow-tooltip>
         <template slot-scope="scope">
-          <el-icon name="name"></el-icon>
           <router-link :to="{ name: 'TestCaseList', params: {
                         test_suite_id: scope.row._id,
                         showWarmPrompt: true}}" style='text-decoration: none;'>

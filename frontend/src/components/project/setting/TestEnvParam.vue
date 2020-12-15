@@ -32,7 +32,6 @@
       </el-table-column>
       <el-table-column prop="name" label="参数名" min-width="20%" sortable='custom' show-overflow-tooltip>
         <template slot-scope="scope">
-          <el-icon name="name"></el-icon>
           {{ scope.row.name }}
         </template>
       </el-table-column>
@@ -106,7 +105,6 @@
 </template>
 
 <script>
-    import {getCookie} from "../../../utils/cookies";
     import {getTestEnvInfo} from "../../../api/testEnv";
     import {getTestEnvParams, addTestEnvParam, updateTestEnvParam} from "../../../api/testEnvParam";
 
@@ -341,7 +339,7 @@
                                     name: self.form.name,
                                     paramValue: self.form.paramValue,
                                     description: self.form.description.trim(),
-                                    lastUpdateUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || 'anonymous'
+                                    lastUpdateUser: self.$store.getters.email || 'anonymous'
                                 };
                                 updateTestEnvParam(this.$route.params.project_id, self.form._id, params, headers).then(res => {
                                     let {status, data} = res;
@@ -368,7 +366,7 @@
                                     name: self.form.name,
                                     paramValue: self.form.paramValue,
                                     description: self.form.description.trim(),
-                                    createUser: unescape(getCookie('email').replace(/\\u/g, '%u')) || 'anonymous',
+                                    createUser: self.$store.getters.email || 'anonymous',
                                 };
                                 addTestEnvParam(this.$route.params.project_id, this.$route.params.test_env_id, params, headers).then((res) => {
                                     let {status, data} = res;

@@ -22,7 +22,6 @@
       </el-table-column>
       <el-table-column prop="name" label="项目名称" min-width="30%" sortable='custom' show-overflow-tooltip>
         <template slot-scope="scope">
-          <el-icon name="name"></el-icon>
           <router-link :to="{ name: 'TestSuiteList', params: {project_id: scope.row._id}}"
                        style='text-decoration: none;color: #000000;'>
             {{ scope.row.name }}
@@ -205,7 +204,7 @@
                     let params = {isDeleted: true};
                     let header = {
                         "Content-Type": "application/json",
-                        Authorization: 'Token ' + JSON.parse(sessionStorage.getItem('token'))
+                        "Authorization": 'Token ' + JSON.parse(sessionStorage.getItem('token'))
                     };
                     updateProject(row._id, params, header).then(_data => {
                         let {status, data} = _data;

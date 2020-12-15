@@ -4,7 +4,7 @@
     <el-col :span="24" class="main">
       <aside :class="collapsed?'menu-collapsed':'menu-expanded'">
         <!--导航菜单-->
-        <el-menu :default-active="$route.path" class="el-menu-vertical-demo" unique-opened router v-if="!collapsed">
+        <el-menu :default-active="$route.meta.menu" class="el-menu-vertical-demo" unique-opened router v-if="!collapsed">
           <template v-for="(item,index) in $store.getters.routes" v-if="!item.hidden">
             <el-menu-item style="font-size:16px" v-for="child in item.children" :index="child.path" :key="child.path"
                           v-if="!child.hidden"><i :class="child.meta.icon"></i>{{child.meta.title}}
