@@ -1,9 +1,10 @@
+import ast
 import copy
 import datetime
+import random
 import re
-import time
 import socket
-import ast
+import time
 
 from bson import ObjectId
 
@@ -22,7 +23,10 @@ def format_escapes(input, escapes=RE_ESCAPES):
 
 
 def get_total_num_and_arranged_data(raw_model, query_res, fuzzy_fields=None):
-    query_dict = query_res.to_dict() if query_res.to_dict() else {}
+    if type(query_res) == dict:
+        query_dict = query_res if query_res else {}
+    else:
+        query_dict = query_res.to_dict() if query_res.to_dict() else {}
     if fuzzy_fields is not None:
         if not isinstance(fuzzy_fields, list):
             raise TypeError('fuzzy_fields need to be list.')
@@ -47,7 +51,6 @@ def get_total_num_and_arranged_data(raw_model, query_res, fuzzy_fields=None):
     size = int(query_dic.get('size')) if can_convert_to_int(query_dic.get('size')) else None
     sort_by = query_dic.get('sortBy')
     order = query_dic.get('order')
-
     query_dic.pop('skip') if query_dic.get('skip') else None
     query_dic.pop('size') if query_dic.get('size') else None
     query_dic.pop('sortBy') if query_dic.get('sortBy') else None
@@ -331,8 +334,8 @@ def dict_get(dic, locators, default=None):
 
     if dic == {} or len(locators) < 1:
         return str(dic)  # 用于后续 re.search
-    value = None
 
+    value = None
     for locator in locators:
         locator = locator.replace(' ', '').replace('\n', '').replace('\t', '')
         if not type(value) in [dict, list] and isinstance(locator, str) and not is_slice_expression(locator):
@@ -364,6 +367,9 @@ def dict_get(dic, locators, default=None):
                     return default
                 continue
             elif is_specific_search_by_dict_value(locator) and all([isinstance(v, dict) for v in value]):
+                # e.g.
+                # locator:  email=michael(.)+.first_name
+                # 含义为 取 （key = email, value = michael开头） 的那个 dict的 key 为 first_name 的value
                 first_equal_index = locator.index('=')
                 last_dot_index = locator.rindex('.')
                 matched_key_re = locator[:first_equal_index]  # 字典中存在满足的正则条件的键
@@ -381,7 +387,6 @@ def dict_get(dic, locators, default=None):
                     break
                 else:
                     return default
-
                 continue
             elif locator == 'random':
                 try:
@@ -391,6 +396,13 @@ def dict_get(dic, locators, default=None):
                 continue
 
     return value
+
+
+def is_specific_search_by_dict_value(expression):
+    if re.match(r'(.)+=(.)+\.(.)+', expression):
+        return True
+    else:
+        return False
 
 
 def time_stamp2str(time_stamp, timedelta=None):

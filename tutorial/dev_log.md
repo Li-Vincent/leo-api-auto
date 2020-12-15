@@ -168,8 +168,19 @@ FIX BUG  嵌套路由，导航 对应Menu没有高亮显示
 2. 改善一些DB操作相关的用法
 3. 增加/修复Log输出
 
+### 2020-12-15
+1. 增加Plan模块，可跨项目执行，根据priority筛选执行用例
+2. FIX BUG   UpdateEmail失败
+3. FIX BUG   Json正则校验  选取字典列表中指定条件的字典中的某个字段进行判断
+
 ### TODO V3
-跨项目执行，根据priority筛选执行用例
+完善plan report
+
+为Plan增加 webhook URL 查询
+
+为Plan 模块 增加操作教程
+
+删除 指定日期之前的report
 
 支持CI/CD， 暴露出接口执行URL
 

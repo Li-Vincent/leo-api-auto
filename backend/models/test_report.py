@@ -19,12 +19,15 @@ class TestReport(Model):
     projectId = ObjectIdField()
     testEnvId = ObjectIdField()
     testEnvName = StringField()
-    executionMode = StringField()  # manual/ cronJob
+    executionMode = StringField()  # manual/ cronJob / planManual / webHook
     executionUser = StringField()
     cronJobId = ObjectIdField()
     createAt = DateField()
     isDeleted = BooleanField(field_name='isDeleted', default=False)
     lastUpdateTime = DateField()
+
+    # add for plan execution report
+    planReportId = ObjectIdField()
 
     def __str__(self):
         return "_id:{} - projectId:{} - totalCount:{} - passCount:{}".format(self._id, self.projectId, self.totalCount,

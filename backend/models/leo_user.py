@@ -16,8 +16,7 @@ class LeoUser(Model):
     createAt = DateField()
 
     def __str__(self):
-        return "email:{} - password:{} - nickname:{} - roleIds:{}".format(self.email, self.password, self.nickname,
-                                                                          self.roleIds)
+        return "email:{} - password:{} -  roleIds:{}".format(self.email, self.password, self.roleIds)
 
 
 if __name__ == "__main__":

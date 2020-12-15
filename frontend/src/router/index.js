@@ -206,7 +206,7 @@ export const constantRoutes = [
         ]
       }
     ]
-  },
+  }
 ]
 
 /**
@@ -225,15 +225,81 @@ export const asyncRoutes = [
         name: 'ProjectList',
         component: () => import('@/components/project/ProjectList'),
         meta: {
+          menu: '/projects',
           title: '接口测试',
           icon: 'fa fa-meetup'
         }
+      },
+      {
+        path: '/plan',
+        component: () => import('@/components/plan/Plan'),
+        name: 'Plan',
+        redirect: '/plans',
+        meta: {
+          menu: '/plan',
+          title: '执行计划',
+          icon: 'fa fa-etsy',
+          roles: ['admin', 'project'] // you can set roles in root nav
+        },
+        children: [
+          {
+            path: '/plans',
+            component: () => import('@/components/plan/PlanList'),
+            name: 'PlanList',
+            nav: 'planList',
+            meta: {
+              menu: '/plan',
+              title: '执行计划列表'
+            }
+          },
+          {
+            path: '/plan/:plan_id',
+            component: () => import('@/components/plan/PlanDetail'),
+            name: 'PlanDetail',
+            nav: 'planDetail',
+            meta: {
+              menu: '/plan',
+              title: '执行计划'
+            }
+          },
+          {
+            path: '/plan/:plan_id/report',
+            component: () => import('@/components/plan/PlanReportList'),
+            name: 'PlanReportList',
+            nav: 'PlanReportList',
+            meta: {
+              menu: '/plan',
+              title: '执行计划报告列表'
+            }
+          },
+          {
+            path: '/plan/:plan_id/reportDetail/:report_id',
+            component: () => import('@/components/plan/PlanReportDetail'),
+            name: 'PlanReportDetail',
+            nav: 'PlanReportDetail',
+            meta: {
+              menu: '/plan',
+              title: '执行计划报告'
+            }
+          },
+          {
+            path: '/plan/:plan_id/reportDetail/:report_id/project/:project_id',
+            component: () => import('@/components/plan/PlanProjectReport'),
+            name: 'PlanProjectReport',
+            nav: 'PlanProjectReport',
+            meta: {
+              menu: '/plan',
+              title: '执行计划-项目报告'
+            }
+          }
+        ]
       },
       {
         path: '/envConfig',
         component: () => import('@/components/config/EnvConfig'),
         name: 'EnvConfig',
         meta: {
+          menu: '/envConfig',
           title: '环境配置',
           icon: 'fa fa-cog',
           roles: ['admin'] // you can set roles in root nav
@@ -244,6 +310,7 @@ export const asyncRoutes = [
         component: () => import('@/components/config/dbConfig/DBConfig'),
         name: 'DBConfig',
         meta: {
+          menu: '/envConfig',
           title: 'DB配置'
         },
         hidden: true
@@ -253,6 +320,7 @@ export const asyncRoutes = [
         component: () => import('@/components/config/dbConfig/DBEnvConnect'),
         name: 'DBEnvConnect',
         meta: {
+          menu: '/envConfig',
           title: 'DB环境连接配置'
         },
         hidden: true
@@ -262,6 +330,7 @@ export const asyncRoutes = [
         component: () => import('@/components/config/mailConfig/MailConfig'),
         name: 'MailConfig',
         meta: {
+          menu: '/mailConfig',
           title: '邮件配置',
           icon: 'fa fa-envelope-o',
           roles: ['admin', 'project'] // you can set roles in root nav
@@ -272,6 +341,7 @@ export const asyncRoutes = [
         component: () => import('@/components/config/mailConfig/MailListConfig'),
         name: 'MailListConfig',
         meta: {
+          menu: '/mailConfig',
           title: '收件人配置',
           icon: 'fa fa-id-card-o',
           roles: ['admin', 'project'] // you can set roles in root nav
@@ -283,6 +353,7 @@ export const asyncRoutes = [
         component: () => import('@/components/user/UserList'),
         name: 'Users',
         meta: {
+          menu: '/users',
           title: '用户管理',
           icon: 'fa fa-id-card-o',
           roles: ['admin'] // you can set roles in root nav
@@ -293,6 +364,7 @@ export const asyncRoutes = [
         component: () => import('@/components/user/Register'),
         name: 'Register',
         meta: {
+          menu: '/users',
           title: '用户注册',
           icon: 'fa fa-id-card-o',
           roles: ['admin'] // you can set roles in root nav
@@ -304,6 +376,7 @@ export const asyncRoutes = [
         component: () => import('@/components/user/ChangePassword'),
         name: 'ChangePassword',
         meta: {
+          menu: '/users',
           title: '修改密码',
           icon: 'fa fa-id-card-o'
         },
@@ -314,6 +387,7 @@ export const asyncRoutes = [
         name: 'About',
         component: () => import('@/components/About'),
         meta: {
+          menu: '/about',
           title: '功能介绍',
           icon: 'fa fa-eye'
         }

@@ -64,6 +64,8 @@ def update_mail(mail_id):
     try:
         request_data = request.get_json()
         request_data['lastUpdateTime'] = datetime.utcnow()
+        if 'mailGroupId' in request_data and request_data["mailGroupId"]:
+            request_data["mailGroupId"] = ObjectId(request_data["mailGroupId"])
         filtered_data = MailRecipient.filter_field(request_data)
         update_response = MailRecipient.update({'_id': ObjectId(mail_id)}, {'$set': filtered_data})
         if update_response['n'] == 0:

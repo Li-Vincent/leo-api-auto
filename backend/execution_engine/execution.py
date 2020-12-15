@@ -1,22 +1,31 @@
 import ast
 import json
+import pytz
 import re
 import ssl
 import time
 from datetime import datetime
+from multiprocessing import Pool
 from threading import Thread
 
 import requests
-from requests.cookies import RequestsCookieJar
 from bson import ObjectId
+from requests.cookies import RequestsCookieJar
 
-from controllers.test_report import save_report_detail, save_report
-from controllers.test_suite import get_suite_name
+from config import Config
+from controllers.mail import get_mails_by_group
+from controllers.mail_sender import send_cron_email
 from controllers.temp_cookies import save_cookies_for_suite, get_cookies_by_suite
 from controllers.temp_suite_params import save_temp_params_for_suite, get_temp_params_by_suite
-from models.test_case import TestCase
-from utils import common
+from controllers.test_env_param import get_global_env_vars
+from controllers.test_plan_report import save_plan_report
+from controllers.test_report import save_report_detail, save_report
+from controllers.test_suite import get_suite_name
 from execution_engine.data_initialize.handler import execute_data_init
+from models.plan import Plan
+from models.test_case import TestCase
+from models.test_suite import TestSuite
+from utils import common
 
 ssl._create_default_https_context = ssl._create_unverified_context
 requests.packages.urllib3.disable_warnings()
@@ -27,6 +36,10 @@ test_conclusion = {
     2: "error",
     3: "notRun"
 }
+
+config = Config()
+host_ip = config.get_host()
+host_port = config.get_port()
 
 
 def get_case_list_by_suite(test_suite_id, include_forbidden=False):
@@ -67,21 +80,9 @@ class ExecutionEngine:
 
     def __init__(self, protocol, domain, test_env_id=None, global_env_vars=None, test_result_list=None, max_retries=5,
                  global_suite_vars=None):
-
-        # if not test_case_list and not test_suite_list:
-        #     raise ValueError('test_case_list and test_suite_list are both None!')
-        #
-        # if test_case_list and not isinstance(test_case_list, list):
-        #     raise TypeError('test_case_list must be a list!')
-        #
-        # if test_suite_list and not isinstance(test_suite_list, list):
-        #     raise TypeError('test_suite_list must be a list!')
-
         self.test_env_id = test_env_id
         self.protocol = protocol
         self.domain = domain
-        # self.test_case_list = test_case_list
-        # self.test_suite_list = test_suite_list
         self.session = requests.Session()
 
         if isinstance(max_retries, int) and max_retries > 0:
@@ -255,7 +256,6 @@ class ExecutionEngine:
                     cookie_jar.set(cookie['name'], cookie['value'])
                 session.cookies.update(cookie_jar)
         try:
-            print(request_url, request_body)
             if 'parameterType' in test_case and test_case["parameterType"] == "form":
                 response = session.request(url=request_url, method=request_method, data=request_body,
                                            headers=request_headers, verify=False)
@@ -588,6 +588,167 @@ def execute_test_by_suite(report_id, test_report, test_env_id, test_suite_id_lis
     test_report['spendTimeInSec'] = round(report_end_time - report_start_time, 3)
     test_report['createAt'] = datetime.utcnow()
     return test_report
+
+
+@async_test
+def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, env_name, protocol, domain,
+                       execution_mode="planManual"):
+    # validate plan id
+    res_plan = common.format_response_in_dic(Plan.find_one({'_id': ObjectId(plan_id)}))
+    execution_range = list(map(get_project_execution_range, res_plan.get("executionRange")))
+    is_parallel = res_plan.get('isParallel')
+    always_send_mail = res_plan.get('alwaysSendMail')
+    alarm_mail_group_list = res_plan.get('alarmMailGroupList')
+
+    # test plan report
+    test_plan_report['testStartTime'] = datetime.utcnow()
+    plan_total_count = 0
+    plan_pass_count = 0
+    plan_fail_count = 0
+    plan_error_count = 0
+    plan_start_time = time.time()
+    try:
+        if is_parallel:
+            counts = []
+            pool = Pool(processes=len(execution_range))
+            for item in execution_range:
+                count_dict = pool.apply_async(execute_single_project,
+                                              (item, plan_report_id, test_env_id, env_name, protocol, domain,
+                                               execution_mode))
+                counts.append(count_dict)
+            pool.close()
+            pool.join()
+            for count in counts:
+                plan_total_count += int(count.get().get("total_count"))
+                plan_pass_count += int(count.get().get("pass_count"))
+                plan_fail_count += int(count.get().get("fail_count"))
+                plan_error_count += int(count.get().get("error_count"))
+        else:
+            for item in execution_range:
+                count_dict = execute_single_project(item, plan_report_id, test_env_id, env_name, protocol, domain,
+                                                    execution_mode)
+                plan_total_count += count_dict.get("total_count")
+                plan_pass_count += count_dict.get("pass_count")
+                plan_fail_count += count_dict.get("fail_count")
+                plan_error_count += count_dict.get("error_count")
+        test_plan_report['totalCount'] = plan_total_count
+        test_plan_report['passCount'] = plan_pass_count
+        test_plan_report['failCount'] = plan_fail_count
+        test_plan_report['errorCount'] = plan_error_count
+        plan_end_time = time.time()
+        test_plan_report['spendTimeInSec'] = round(plan_end_time - plan_start_time, 3)
+        test_plan_report['createAt'] = datetime.utcnow()
+        save_plan_report(test_plan_report)
+        if test_plan_report['totalCount'] > 0:
+            print("send mail")
+            alarm_mail_list = []
+            if alarm_mail_group_list:
+                if isinstance(alarm_mail_group_list, list) and len(alarm_mail_group_list) > 0:
+                    alarm_mail_list = get_mails_by_group(alarm_mail_group_list)
+                else:
+                    raise TypeError('alarm_mail_group_list must be list')
+            is_send_mail = test_plan_report['totalCount'] > test_plan_report['passCount'] and isinstance(
+                alarm_mail_list, list) and len(alarm_mail_list) > 0
+            if is_send_mail:
+                subject = 'Leo API Auto Test'
+                content = "<h2>Dears:</h2>" \
+                          "<div style='font-size:20px'>&nbsp;&nbsp;API Test Plan executed successfully! <br/>" \
+                          "&nbsp;&nbsp;Status:&nbsp;&nbsp; <b><font color='red'>FAIL</font></b><br/>" \
+                          "&nbsp;&nbsp;Please login platform for details!<br/>" \
+                          "&nbsp;&nbsp;<a href=\"http://{}:{}/plan/{}/reportDetail/{}\">Click here to view" \
+                          " report detail!</a><br/>" \
+                          "&nbsp;&nbsp;Report ID: {}<br/>" \
+                          "&nbsp;&nbsp;Generated At: {} CST</div>" \
+                    .format(host_ip, host_port, plan_id, plan_report_id, plan_report_id,
+                            test_plan_report['createAt'].replace(tzinfo=pytz.utc).astimezone(
+                                pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
+                mail_result = send_cron_email(alarm_mail_list, subject, content)
+                if mail_result.get('status') == 'failed':
+                    raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))
+            elif always_send_mail and isinstance(alarm_mail_list, list) and len(alarm_mail_list) > 0:
+                print("always send mail")
+                subject = 'Leo API Auto Test'
+                content = "<h2>Dears:</h2>" \
+                          "<div style='font-size:20px'>&nbsp;&nbsp;API Test Plan executed successfully!<br/>" \
+                          "&nbsp;&nbsp;Status:&nbsp;&nbsp; <b><font color='green'>PASS</font></b><br/>" \
+                          "&nbsp;&nbsp;Please login platform for details!<br/>" \
+                          "&nbsp;&nbsp;<a href=\"http://{}:{}/plan/{}/reportDetail/{}\">Click here to view" \
+                          " report detail!</a><br/>" \
+                          "&nbsp;&nbsp;Report ID: {}<br/>" \
+                          "&nbsp;&nbsp;Generated At: {} CST</div>" \
+                    .format(host_ip, host_port, plan_id, plan_report_id, plan_report_id,
+                            test_plan_report['createAt'].replace(tzinfo=pytz.utc).astimezone(
+                                pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
+                print(subject, content)
+                mail_result = send_cron_email(alarm_mail_list, subject, content)
+                if mail_result.get('status') == 'failed':
+                    raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))
+        else:
+            raise TypeError('无任何测试结果！')
+    except BaseException as e:
+        print(str(e))
+        return False, "出错了 - %s" % e
+
+
+def execute_single_project(item, plan_report_id, test_env_id, env_name, protocol, domain, execution_mode):
+    # 根据时间生成一个ObjectId作为reportId
+    project_report_id = str(ObjectId())
+    project_start_datetime = datetime.utcnow()
+    project_test_report = {
+        '_id': ObjectId(project_report_id),
+        'testEnvId': ObjectId(test_env_id),
+        'testEnvName': env_name,
+        'testStartTime': project_start_datetime,
+        'executionMode': execution_mode,
+        'projectId': ObjectId(item.get('projectId')),
+        'planReportId': ObjectId(plan_report_id),
+        'testSuites': {}
+    }
+    project_report_total_count = 0
+    project_report_pass_count = 0
+    project_report_fail_count = 0
+    project_report_error_count = 0
+    project_start_time = time.time()
+    for test_suite_id in item.get("testSuiteIdList"):
+        global_env_vars = get_global_env_vars(test_env_id)
+        execute_engine = ExecutionEngine(test_env_id=test_env_id, protocol=protocol, domain=domain,
+                                         global_env_vars=global_env_vars)
+        test_suite_result = execute_engine.execute_single_suite_test(project_report_id, test_suite_id)
+        project_test_report['testSuites'][test_suite_id] = test_suite_result
+        project_report_total_count += test_suite_result['totalCount']
+        project_report_pass_count += test_suite_result['passCount']
+        project_report_fail_count += test_suite_result['failCount']
+        project_report_error_count += test_suite_result['errorCount']
+    project_test_report['totalCount'] = project_report_total_count
+    project_test_report['passCount'] = project_report_pass_count
+    project_test_report['failCount'] = project_report_fail_count
+    project_test_report['errorCount'] = project_report_error_count
+    project_end_time = time.time()
+    project_test_report['spendTimeInSec'] = round(project_end_time - project_start_time, 3)
+    project_test_report['createAt'] = datetime.utcnow()
+    save_report(project_test_report)
+    return {
+        'total_count': project_report_total_count,
+        'pass_count': project_report_pass_count,
+        'fail_count': project_report_fail_count,
+        'error_count': project_report_error_count
+    }
+
+
+def get_project_execution_range(range):
+    # get execution range by priority for project
+    if range.get("projectId") is None or range.get("priority") is None:
+        current_app.logger.error("ProjectId and Priority should not be empty.")
+    if range.get("priority") == "P1" or range.get("priority") == "P2":
+        query_dict = {'projectId': ObjectId(range.get("projectId")),
+                      'priority': range.get("priority"),
+                      'isDeleted': {"$ne": True},
+                      'status': True}
+    else:
+        query_dict = {'projectId': ObjectId(range.get("projectId")), 'isDeleted': {"$ne": True}, 'status': True}
+    res = TestSuite.find(query_dict)
+    test_suite_id_list = list(map(lambda e: str(e.get('_id')), res))
+    return {"projectId": range.get("projectId"), "testSuiteIdList": test_suite_id_list}
 
 
 if __name__ == '__main__':

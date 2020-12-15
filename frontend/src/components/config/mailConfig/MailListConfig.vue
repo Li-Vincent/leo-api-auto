@@ -320,7 +320,6 @@
                                     name: self.mailForm.name.trim(),
                                     email: self.mailForm.email,
                                     description: self.mailForm.description.trim(),
-                                    mailGroupId: self.$route.params.mail_group_id,
                                     lastUpdateUser: self.$store.getters.email || 'anonymous'
                                 };
                                 updateMail(self.mailForm._id, params, headers).then(res => {
