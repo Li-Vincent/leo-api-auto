@@ -34,6 +34,8 @@
               highlight-current-row v-loading="listLoading" @selection-change="selectsChange" style="width: 100%;">
       <el-table-column type="selection" min-width="5%">
       </el-table-column>
+      <el-table-column prop="_id" label="ID" min-width="30%" sortable='custom' show-overflow-tooltip>
+      </el-table-column>
       <el-table-column prop="name" label="名称" min-width="15%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
       <el-table-column prop="protocol" label="协议" min-width="15%" sortable='custom' show-overflow-tooltip>

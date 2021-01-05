@@ -640,7 +640,6 @@ def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, e
         test_plan_report['createAt'] = datetime.utcnow()
         save_plan_report(test_plan_report)
         if test_plan_report['totalCount'] > 0:
-            print("send mail")
             alarm_mail_list = []
             if alarm_mail_group_list:
                 if isinstance(alarm_mail_group_list, list) and len(alarm_mail_group_list) > 0:
@@ -666,7 +665,6 @@ def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, e
                 if mail_result.get('status') == 'failed':
                     raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))
             elif always_send_mail and isinstance(alarm_mail_list, list) and len(alarm_mail_list) > 0:
-                print("always send mail")
                 subject = 'Leo API Auto Test'
                 content = "<h2>Dears:</h2>" \
                           "<div style='font-size:20px'>&nbsp;&nbsp;API Test Plan executed successfully!<br/>" \
@@ -679,7 +677,6 @@ def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, e
                     .format(host_ip, host_port, plan_id, plan_report_id, plan_report_id,
                             test_plan_report['createAt'].replace(tzinfo=pytz.utc).astimezone(
                                 pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
-                print(subject, content)
                 mail_result = send_cron_email(alarm_mail_list, subject, content)
                 if mail_result.get('status') == 'failed':
                     raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))

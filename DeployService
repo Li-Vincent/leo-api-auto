@@ -1,4 +1,3 @@
-docker rm leo-api-platform-frontend;
 docker stop leo-api-platform-backend;
 docker rm leo-api-platform-backend;
 
