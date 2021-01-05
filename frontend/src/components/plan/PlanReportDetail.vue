@@ -4,7 +4,7 @@
     <el-row>
       <el-col :span="24" class="title">
         <span>{{$route.meta.title}} </span>
-        <span class="report-id"> - Report ID: {{$route.params.report_id}}</span>
+        <span class="report-id"> - Report ID: {{$route.params.plan_report_id}}</span>
       </el-col>
     </el-row>
 
@@ -171,10 +171,10 @@
         },
         methods: {
             getReport() {
-                getPlanReportInfo(this.$route.params.report_id).then((res) => {
+                getPlanReportInfo(this.$route.params.plan_report_id).then((res) => {
                         if (res.status === 'ok') {
                             this.planReport = res.data;
-                            getPlanReportDetail(this.$route.params.report_id).then(detailRes => {
+                            getPlanReportDetail(this.$route.params.plan_report_id).then(detailRes => {
                                 if (detailRes.status == 'ok') {
                                     detailRes.data.rows.forEach(row => {
                                         this.projectReports.push(row)

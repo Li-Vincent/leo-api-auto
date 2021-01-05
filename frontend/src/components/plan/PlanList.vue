@@ -67,7 +67,7 @@
           <el-button type="primary" size="small" :loading="executeLoading"
                      @click="executePlanByManual(scope.$index, scope.row)">执行
           </el-button>
-          <el-button type="success" size="small" @click="checkReport(scope.$index, scope.row)">查看报告</el-button>
+          <el-button type="success" size="small" @click="checkReport(scope.$index, scope.row._id)">查看报告</el-button>
           <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
           <el-button type="info" size="small" :loading="statusChangeLoading"
                      @click="handleChangeStatus(scope.$index, scope.row)">
@@ -448,8 +448,8 @@
                     })
                 }
             },
-            checkReport(index, row) {
-                this.$router.push({name: 'PlanReportList', params: {plan_id: row._id}})
+            checkReport(index, plan_id) {
+                this.$router.push({name: 'PlanReportList', params: {plan_id: plan_id}})
             }
         },
         mounted() {

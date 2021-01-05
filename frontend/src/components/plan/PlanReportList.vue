@@ -58,7 +58,7 @@
       <el-table-column label="操作" min-width="20%">
         <template slot-scope="scope">
           <router-link
-            :to="{ name: 'PlanReportDetail', params: {plan_id:$route.params.plan_id, report_id: scope.row._id}}"
+            :to="{ name: 'PlanReportDetail', params: {plan_id:$route.params.plan_id, plan_report_id: scope.row._id}}"
             style='text-decoration: none;color: #000000;'>
             <el-button type="primary" size="small">查看详情</el-button>
           </router-link>

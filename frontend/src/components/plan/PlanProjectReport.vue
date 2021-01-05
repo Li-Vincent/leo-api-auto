@@ -4,7 +4,7 @@
     <el-row>
       <el-col :span="24" class="title">
         <span>{{$route.meta.title}} </span>
-        <span class="report-id"> - Report ID: {{$route.params.report_id}}</span>
+        <span class="report-id"> - Report ID: {{$route.params.plan_report_id}}</span>
       </el-col>
     </el-row>
 
@@ -238,7 +238,7 @@
         },
         methods: {
             getReport() {
-                getPlanProjectReport(this.$route.params.report_id, this.$route.params.project_id).then((res) => {
+                getPlanProjectReport(this.$route.params.plan_report_id, this.$route.params.project_id).then((res) => {
                         if (res.status === 'ok') {
                             this.projectReport = res.data;
                             if (res.data.testSuites) {
@@ -250,9 +250,9 @@
                                         sortBy: 'createAt',
                                         order: 'ascending',
                                         testSuiteId: item._id,
-                                        reportId: this.$route.params.report_id
+                                        reportId: this.projectReport._id
                                     };
-                                    getTestCaseReports(item._id, this.$route.params.report_id, params).then(detailRes => {
+                                    getTestCaseReports(this.projectReport._id, item._id, params).then(detailRes => {
                                         if (detailRes.status == 'ok') {
                                             detailRes.data.rows.forEach(caseReport => {
                                                 item['testCaseReports'].push(caseReport)
