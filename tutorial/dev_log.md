@@ -173,9 +173,10 @@ FIX BUG  嵌套路由，导航 对应Menu没有高亮显示
 2. FIX BUG   UpdateEmail失败
 3. FIX BUG   Json正则校验  选取字典列表中指定条件的字典中的某个字段进行判断
 
-### TODO V3
-完善plan report
+### 2021-01-05
+FIX BUG   planReport 项目报告没有展示接口用例详情
 
+### TODO V3
 为Plan增加 webhook URL 查询
 
 为Plan 模块 增加操作教程

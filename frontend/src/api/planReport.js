@@ -7,13 +7,6 @@ export function getPlanReportInfo(plan_report_id) {
   })
 }
 
-export function getPlanProjectReport(plan_report_id, project_id) {
-  return request({
-    url: `/api/plan/planReport/${plan_report_id}/project/${project_id}`,
-    method: 'GET'
-  })
-}
-
 export function getPlanReportDetail(plan_report_id) {
   return request({
     url: `/api/plan/planReport/${plan_report_id}/detail`,
@@ -21,9 +14,16 @@ export function getPlanReportDetail(plan_report_id) {
   })
 }
 
+export function getPlanProjectReport(plan_report_id, project_id) {
+  return request({
+    url: `/api/plan/planReport/${plan_report_id}/project/${project_id}`,
+    method: 'GET'
+  })
+}
+
 export function getPlanReports(plan_id, params, header) {
   return request({
-    url: `/api/plan/:plan_id/planReportList`,
+    url: `/api/plan/${plan_id}/planReportList`,
     headers: header,
     params: params,
     method: 'GET'

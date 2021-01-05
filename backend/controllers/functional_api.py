@@ -36,9 +36,3 @@ def get_timestamp():
     return jsonify({'timestamp': now_millisecond})
 
 
-@app.route('/api/function/testMail', methods=['GET'])
-def test_mail():
-    # 获取当前时间戳，13位
-    mail_group_id = ['5ef0188914a0b303a8f273c2', '5ef0cdd0f13a0861bd8c7bc7']
-    res = get_mails_by_group(mail_group_id)
-    return jsonify({'res': res})

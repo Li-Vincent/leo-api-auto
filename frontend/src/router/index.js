@@ -263,7 +263,7 @@ export const asyncRoutes = [
             }
           },
           {
-            path: '/plan/:plan_id/report',
+            path: '/plan/:plan_id/reports',
             component: () => import('@/components/plan/PlanReportList'),
             name: 'PlanReportList',
             nav: 'PlanReportList',
@@ -273,7 +273,7 @@ export const asyncRoutes = [
             }
           },
           {
-            path: '/plan/:plan_id/reportDetail/:report_id',
+            path: '/plan/:plan_id/reportDetail/:plan_report_id',
             component: () => import('@/components/plan/PlanReportDetail'),
             name: 'PlanReportDetail',
             nav: 'PlanReportDetail',
@@ -283,7 +283,7 @@ export const asyncRoutes = [
             }
           },
           {
-            path: '/plan/:plan_id/reportDetail/:report_id/project/:project_id',
+            path: '/plan/:plan_id/reportDetail/:plan_report_id/project/:project_id',
             component: () => import('@/components/plan/PlanProjectReport'),
             name: 'PlanProjectReport',
             nav: 'PlanProjectReport',
