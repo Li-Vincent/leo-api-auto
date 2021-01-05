@@ -175,14 +175,11 @@ FIX BUG  嵌套路由，导航 对应Menu没有高亮显示
 
 ### 2021-01-05
 FIX BUG   planReport 项目报告没有展示接口用例详情
+为Plan增加 curl Script, 间接实现CI
 
 ### TODO V3
-为Plan增加 webhook URL 查询
-
 为Plan 模块 增加操作教程
 
 删除 指定日期之前的report
-
-支持CI/CD， 暴露出接口执行URL
 
 多语言，支持中英文

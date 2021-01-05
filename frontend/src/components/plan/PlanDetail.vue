@@ -55,17 +55,29 @@
           <el-row :gutter="10">
             <el-col :span="20">
               <el-form-item label="secretToken:" label-width="120px" prop="secretToken">
-                <el-input v-model="form.secretToken" auto-complete="off"></el-input>
+                <el-tooltip placement="top">
+                  <div slot="content">
+                    　<span>secretToken：通过第三方平台trigger执行plan时用于进行校验的token，如不需要第三方trigger，可不填</span>
+                  </div>
+                  <el-input v-model="form.secretToken" auto-complete="off"></el-input>
+                </el-tooltip>
               </el-form-item>
             </el-col>
           </el-row>
-<!--          <el-row :gutter="10">-->
-<!--            <el-col :span="20">-->
-<!--              <el-form-item label="WebHook URL:" label-width="120px" prop="HookURL">-->
-<!--                <el-input v-model="form.hookUrl" auto-complete="off"></el-input>-->
-<!--              </el-form-item>-->
-<!--            </el-col>-->
-<!--          </el-row>-->
+          <el-row :gutter="10">
+            <el-col :span="20">
+              <el-form-item label="CURL Script:" label-width="120px" prop="curlScript">
+                <el-tooltip effect="dark" placement="top">
+                  <div slot="content">
+                    　<span>请将如下脚本信息补全（ testEnvId请进入环境配置查询ID，remark为自定义标记,可填入jenkins job name）</span><br/>
+                    　<span>将补全的curl Script 填入jenkins job - Build - Execute Shell中即可通过jenkins trigger执行plan</span><br/>
+                    　<span>注意:curl脚本不能换行</span>
+                  </div>
+                  <el-input type="textarea" v-model="form.curlScript" auto-complete="off" readonly="true"></el-input>
+                </el-tooltip>
+              </el-form-item>
+            </el-col>
+          </el-row>
           <el-form-item label="告警邮件组" label-width="120px" prop="alarmMailGroupList">
             <el-select style="width: 60%;" v-model="form.alarmMailGroupList" @visible-change="checkActiveMail"
                        clearable multiple placeholder="请选择告警报告接受者(可多选)">
@@ -169,7 +181,8 @@
                     description: "",
                     isParallel: false,
                     secretToken: '',
-                    hookUrl: 'http://localhost:8080/plan/5fa8b3b5745763b16e85389e/run',
+                    hookUrl: '',
+                    curlScript: '',
                     alarmMailGroupList: [],
                     alwaysSendMail: false,
                     executionRange: [{
@@ -271,6 +284,12 @@
                             if (data.alwaysSendMail) {
                                 self.form.alwaysSendMail = data.alwaysSendMail;
                             }
+                            self.form.hookUrl = window.document.location.protocol + '//'
+                                + window.document.location.host + '/api/plan/'
+                                + self.$route.params.plan_id + '/executePlanByWebHook';
+                            self.form.curlScript = "curl -d \"testEnvId=${testEnvId}&secretToken="
+                                + self.form.secretToken
+                                + "&executionRemark=${remark}\" \"" + self.form.hookUrl + "\"";
                         }
                     }).catch((error) => {
                     self.$message.error({

@@ -1,2 +1,0 @@
-webpackJsonp([20],{MdK7:function(e,t){},uuuz:function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var r={render:function(){var e=this.$createElement,t=this._self._c||e;return t("section",{staticStyle:{margin:"10px 35px"}},[t("router-view")],1)},staticRenderFns:[]};var a=n("VU/8")({name:"TestReport"},r,!1,function(e){n("MdK7")},"data-v-61dfa777",null);t.default=a.exports}});
-//# sourceMappingURL=20.93ea083b790177e7a332.js.map
