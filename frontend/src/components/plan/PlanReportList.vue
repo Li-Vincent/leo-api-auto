@@ -263,7 +263,7 @@
                     let self = this;
                     self.listLoading = true;
                     let params = {
-                        cleanDate: 60,
+                        cleanDate: self.cleanDate,
                         planId: self.$route.params.plan_id,
                         operator: self.$store.getters.email
                     };
