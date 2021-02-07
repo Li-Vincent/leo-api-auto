@@ -33,6 +33,7 @@ def add_plan():
     try:
         params = request.get_json()
         params['createAt'] = datetime.utcnow()
+        params['status'] = False
         filtered_data = Plan.filter_field(params, use_set_default=True)
         Plan.insert(filtered_data)
         current_app.logger.info("add plan successfully. Plan: %s" % str(filtered_data['name']))
