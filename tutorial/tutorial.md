@@ -295,7 +295,7 @@ DB配置 用于数据初始化，设置接口DB的连接信息
 进入 **接口用例列表**页面后，点击 要编辑的 接口用例名称 进入 编辑页面。修改后点击页面上方的**保存**按钮保存修改。
 ##### 4.4.1 基本信息
 基本信息包括： 接口名称、请求方法、请求协议、域名、路由route、所属Service，还可以设置是否在请求接口前清空Cookies   
-![接口基本信息](images/api-detail-base.png)
+![接口基本信息](images/project/api-detail-base.png)
 
     关于域名Domain字段：Domain字段可为空，如果为空，则执行用例时，接口domain从 测试环境配置中的 domain字段取值。  
         如果Domain字段不为空，则执行时此domain值会覆盖 测试环境配置中的domain字段值。           
@@ -311,15 +311,15 @@ MongoDB
 选择DB类型为 MongoDB, 选择DB, 选择方法(Insert One、Update One、Update Many)   
 输入 查询条件（Json格式） 和 变更内容（Json格式）  
 *注意：引号需使用双引号，支持参数替换，字符串参数类型格式为${strParamName}，数值类型参数格式为$num{numParamName}*
-![数据初始化MongoDB](images/dataInitMongoDB.png)
+![数据初始化MongoDB](images/project/dataInitMongoDB.png)
 
 MySQL
 
 选择DB类型为 MySQL, 选择DB, 输入SQL（支持参数替换, 格式为${strParamName})
-![数据初始化MySQL](images/dataInitMySQL.png)
+![数据初始化MySQL](images/project/dataInitMySQL.png)
 ##### 4.4.3 请求头部
 可以设置多个Header
-![Headers](images/headers.png)
+![Headers](images/project/headers.png)
 ##### 4.4.4 请求参数
 请求参数支持 参数替换， 变量格式为 ${paramName}
 
@@ -337,7 +337,7 @@ MySQL
 * POST 请求
 对于POST请求，只能将参数写到请求参数里，支持请求参数是Json数组格式，但须勾选 **是否json数组** checkbox  
 *请求参数Json需使用双引号*  
-![请求参数](images/requestBody.png)
+![请求参数](images/project/requestBody.png)
 ##### 4.4.5 返回结果设置全局变量(用例组级别)
 从接口返回Json结果中，取值并赋给设置的用例组变量供后序用例调用，用例组变量的有效范围是当前用例组。  
 关于变量查询语句（类似JsonPath)，以如下Json为例：
@@ -372,20 +372,20 @@ MySQL
         ]
     }
 * 获取小白的银行卡号：  stu_info > 0 > info > card
-![设置用例组变量](images/setSuiteParams.png)
+![设置用例组变量](images/project/setSuiteParams.png)
 ##### 4.4.6 测试结果校验
 1. HTTP状态校验
 接口返回HTTP状态码校验： 200 - 500
-![HTTP状态校验](images/HTTPCheck.png)
+![HTTP状态校验](images/project/HTTPCheck.png)
 2. JSON返回结果校验
-![JSON返回结果校验](images/ResponseBodyCheck.png)
+![JSON返回结果校验](images/project/ResponseBodyCheck.png)
 3. 数值校验
 数值校验需先将 校验的数值先设置成变量再引用
-![数值校验](images/ResponseNumberCheck.png)
+![数值校验](images/project/ResponseNumberCheck.png)
 #### 4.5 全局参数配置
 进入项目后，页面默认显示自动化测试Tab，点击上方导航栏 **全局参数配置** 进入参数配置页面  
 不同环境，可配置不同的参数值（一般来说，不同环境中的参数个数和参数名相同，参数值不同）
-![Project全局参数配置](images/projectParams.png)
+![Project全局参数配置](images/project/projectParams.png)
 ##### 4.5.1 测试环境查看
 进入参数配置页面后，默认进入环境配置页面，展示的**环境配置列表**为管理员 配置好的，如需更改环境配置请联系管理员。  
 普通用户可以查看环境配置信息，包括：环境名称、域名Domain、描述等。
@@ -397,7 +397,7 @@ MySQL
 1. 点击**环境名称**进入 **参数配置** 页面, 页面显示参数列表
 2. 选择要编辑的 参数， 点击右侧的 **编辑** 按钮，在弹出框中修改信息后，点击提交即可编辑参数
 3. 选择要删除的 参数， 点击右侧的 **删除** 按钮，在弹出框中点击**确认**后，即可删除参数
-![参数配置](images/envParamConfig.png)
+![参数配置](images/project/envParamConfig.png)
 ##### 4.5.4 禁用/启用参数
 1. 点击**环境名称**进入 **参数配置** 页面, 页面显示参数列表
 2. 选择要禁用的 参数，点击右侧 **禁用** 按钮（如果状态为禁用，则按钮为 **启用**），即可禁用/启用 参数
@@ -408,7 +408,7 @@ MySQL
 3. 选择要查看的 DB配置，点击右侧 **连接信息** 按钮， 进入DB环境连接配置页面
 4. 页面会根据配置的测试环境展示DB连接信息
 5. 如需更改DB连接信息，请联系管理员进行修改
-![DB配置查看](images/showDBConnect.png)
+![DB配置查看](images/project/showDBConnect.png)
 
 #### 4.6 接口用例执行
 此平台接口用例执行有3种方式：   
@@ -419,16 +419,16 @@ MySQL
 1. 当新增接口用例成功后，需要验证用例是否符合期望。
 2. 进入用例列表，选择 要调试的接口用例，选择**测试环境**后，点击右侧 **执行按钮**
 3. 稍等片刻即可查看测试结果， 点击 **测试结果** 可以查看详情
-![调试用例](images/debugTestCase.png)
+![调试用例](images/project/debugTestCase.png)
 4. 测试详情中，可以查看接口详细信息：包括 替换参数后的 接口信息、请求参数、返回结果、校验结果等
-![调试用例结果](images/debugResultDetail.png)
+![调试用例结果](images/project/debugResultDetail.png)
 
 ##### 4.6.2 接口用例组执行
 1. 进入项目后，选择 **测试环境**，勾选执行的用例组（可多选），点击 上方 **执行测试**按钮
-![手动执行用例组](images/runTestSuite.png)
+![手动执行用例组](images/project/runTestSuite.png)
 2. 页面提示 *测试已成功启动，请稍后前往「测试报告」查看报告*
 3. 稍等片刻，点击 测试报告 -> 手动报告 查看测试结果
-![查看手动测试报告](images/checkManualResult.png)
+![查看手动测试报告](images/project/checkManualResult.png)
 ##### 4.6.3 定时任务执行
 请参照 [4.7 定时任务](#47-定时任务)
 ##### 4.6.4 测试报告查看
@@ -446,10 +446,10 @@ MySQL
    选择测试环境、选择触发类型（具体日期时间/间隔固定时间触发）、  
    如果选择触发间隔则输入间隔时间（单位秒，最小60秒）/如果选择具体日期则选择日期时间（未来的时间）、
    选择 通知邮件组（可以设置是否只有当用例执行失败才触发邮件）、输入任务描述
-   ![新增定时任务](images/addCronJob.png)
+   ![新增定时任务](images/project/addCronJob.png)
 3. 点击 **提交** 按钮，保存定时任务
 4. 任务列表会出现刚刚新增的 定时任务，状态默认为启用（如状态为启用，则可以查看next执行时间)
-   ![定时任务列表](images/cronJobList.png)
+   ![定时任务列表](images/project/cronJobList.png)
 5. 当系统时间到达 next执行时间，会自动触发执行  
    *定时任务执行后，触发类型为：具体日期的定时任务会自动删除，间隔触发的定时任务的next执行时间会自动变为下一次执行时间*
 ##### 4.7.2 定时任务编辑
@@ -464,7 +464,7 @@ MySQL
 ##### 4.7.4 邮件通知
 只有定时任务执行后，存在执行失败的测试用例，才会触发邮件通知  
 邮件模板：
-![通知邮件](images/mailTemplate.png)
+![通知邮件](images/project/mailTemplate.png)
 ##### 4.7.5 测试报告查看
 1. 对于存在失败用例并触发邮件通知的情况，可直接点击 邮件中的链接并登陆后即可查看测试报告
 2. 进入项目后，页面默认显示自动化测试Tab，点击上方导航栏 **测试报告**，在下拉框中点击**任务报告** 进入定时任务报告列表页面
@@ -482,14 +482,14 @@ MySQL
 2. 测试报告列表支持 按照 报告编号、开始时间、定时任务、执行用时 排序
 3. 选择要查看的测试报告，点击右侧 **查看详情** 按钮，进入 测试报告详细页面
 ##### 4.8.3 测试报告解读
-![测试报告详情](images/reportDetail.png)
+![测试报告详情](images/report/reportDetail.png)
 1. 测试报告主要分4个部分：基本信息、通过率统计、用例组分组结果、单个接口详细结果
 2. 基本信息 包含 测试环境、执行开始时间、执行用时、用例总数、通过数、失败数以及通过率
 3. 通过率统计 以饼图方式 展示 Pass率、失败率
 4. 测试结果按照用例组分组展示，每个用例组 单独统计该用例组的 执行开始时间、执行用时、用例总数、通过数、失败数、通过率
 5. 点击用例组 右侧箭头，可查看用例组包含的 接口用例详细结果，点击 用例列表右侧 查看详情 按钮可查看单个接口用例执行的详细结果
 6. 单个接口用例详细结果包含： 用例名、请求URL、请求方法、执行开始时间、执行用时、数据初始化结果、请求参数、返回结果、测试结论等。
-![单个接口详细结果](images/reportCaseDetail.png)
+![单个接口详细结果](images/report/reportCaseDetail.png)
 
 ### 声明
 此教程仅供参考、具体实践后发现更多惊喜！  

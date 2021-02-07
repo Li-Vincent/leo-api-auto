@@ -24,3 +24,12 @@ export function getTestCaseReports(report_id, suite_id, params) {
     params: params
   })
 }
+
+export function cleanProjectReports(project_id, params, header) {
+  return request({
+    url: `/api/project/${project_id}/testReport/cleanReports`,
+    headers: header,
+    method: 'POST',
+    data: params
+  })
+}

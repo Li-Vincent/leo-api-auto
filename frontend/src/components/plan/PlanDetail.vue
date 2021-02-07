@@ -73,7 +73,7 @@
                     　<span>将补全的curl Script 填入jenkins job - Build - Execute Shell中即可通过jenkins trigger执行plan</span><br/>
                     　<span>注意:curl脚本不能换行</span>
                   </div>
-                  <el-input type="textarea" v-model="form.curlScript" auto-complete="off" readonly="true"></el-input>
+                  <el-input type="textarea" v-model="form.curlScript" auto-complete="off" readonly></el-input>
                 </el-tooltip>
               </el-form-item>
             </el-col>

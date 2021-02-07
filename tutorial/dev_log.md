@@ -175,11 +175,12 @@ FIX BUG  嵌套路由，导航 对应Menu没有高亮显示
 
 ### 2021-01-05
 FIX BUG   planReport 项目报告没有展示接口用例详情
-为Plan增加 curl Script, 间接实现CI
+添加功能  为Plan增加 curl Script, 间接实现CI
+
+### 2021-02-07
+添加功能  删除指定日期之前的report
 
 ### TODO V3
 为Plan 模块 增加操作教程
-
-删除 指定日期之前的report
 
 多语言，支持中英文
