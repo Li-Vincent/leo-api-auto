@@ -2,7 +2,18 @@
   <section>
     <!--页面title-->
     <strong class="title">{{$route.meta.title}}</strong>
-
+    <!--工具条-->
+    <el-form :inline="true" v-if="$store.getters.roles.includes('admin')">
+      <el-form-item style="float: right;  margin-right: 30px">
+        <el-select v-model="cleanDate" style="margin-right: 20px" placeholder="删除日期">
+          <el-option v-for="(item,index) in cleanDateOptions" :key="index+''" :label="item.label"
+                     :value="item.value"></el-option>
+        </el-select>
+        <el-form-item>
+          <el-button type="danger" class="el-icon-delete" @click="cleanReports"> 删除报告</el-button>
+        </el-form-item>
+      </el-form-item>
+    </el-form>
     <!--报告列表-->
     <el-table @sort-change='sortChange' :data="testReports" :row-style="reportRowStyle" :row-class-name="ReportTableRow"
               highlight-current-row v-loading="listLoading" @selection-change="selectsChange" style="width: 100%;">
@@ -44,14 +55,12 @@
             style='text-decoration: none;color: #000000;'>
             <el-button type="primary" size="small">查看详情</el-button>
           </router-link>
-          <!--          <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>-->
         </template>
       </el-table-column>
     </el-table>
 
     <!--翻页工具条-->
     <el-col :span="24" class="toolbar">
-      <!--<el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0">批量删除</el-button>-->
       <el-pagination
         style="float: right"
         @size-change="handleSizeChange"
@@ -68,7 +77,7 @@
 
 
 <script>
-    import {getTestReports} from "../../../api/testReport";
+    import {getTestReports, cleanProjectReports} from "../../../api/testReport";
 
     export default {
         name: "TestReportManual",
@@ -87,6 +96,13 @@
                 listLoading: false,
                 statusChangeLoading: false,
                 selects: [],//列表选中列
+                cleanDate: null,
+                cleanDateOptions: [
+                    {value: null, label: '未选择'},
+                    {value: 30, label: '30天之前'},
+                    {value: 7, label: '7天之前'},
+                    {value: 0, label: '全部删除'}
+                ]
             }
         },
         methods: {
@@ -190,6 +206,52 @@
                 return isHasPercentStr ?
                     totalCount <= 0 ? '0%' : (Math.round(passCount / totalCount * 10000) / 100.00 + '%') :
                     totalCount <= 0 ? 0 : (Math.round(passCount / totalCount * 10000) / 100.00);
+            },
+            cleanReports() {
+                this.$confirm('确认删除报告吗?', '提示', {
+                    type: 'warning'
+                }).then((res) => {
+                    if (this.cleanDate == null) {
+                        this.$message.error({
+                            message: "请选择删除日期",
+                            center: true,
+                        })
+                        return
+                    }
+                    let self = this;
+                    self.listLoading = true;
+                    let params = {
+                        cleanDate: self.cleanDate,
+                        projectId: self.$route.params.project_id,
+                        operator: self.$store.getters.email,
+                        executionMode: "manual"
+                    };
+                    let header = {};
+                    cleanProjectReports(this.$route.params.project_id, params, header).then((res) => {
+                        self.listLoading = false;
+                        let {status, data} = res;
+                        if (status === 'ok') {
+                            self.$message.info({
+                                message: '~~删除报告成功~~',
+                                center: true,
+                            });
+                            this.getReports();
+                        } else {
+                            self.$message.error({
+                                message: data,
+                                center: true,
+                            })
+                            this.getReports();
+                        }
+                    }).catch((error) => {
+                        self.listLoading = false;
+                        self.$message.error({
+                            message: '删除报告失败，请稍后刷新重试哦~',
+                            center: true,
+                        });
+                        this.getReports();
+                    })
+                });
             }
         },
         created() {

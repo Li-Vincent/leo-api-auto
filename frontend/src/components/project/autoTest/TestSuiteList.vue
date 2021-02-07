@@ -273,7 +273,6 @@
                 if (self.filters.name.trim() !== '') {
                     params['name'] = self.filters.name.trim()
                 }
-                ;
                 let header = {};
                 getTestSuites(self.$route.params.project_id, params, header).then((res) => {
                     self.listLoading = false;

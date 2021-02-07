@@ -29,3 +29,12 @@ export function getPlanReports(plan_id, params, header) {
     method: 'GET'
   })
 }
+
+export function cleanPlanReports(plan_id, params, header) {
+  return request({
+    url: `/api/plan/${plan_id}/cleanPlanReports`,
+    headers: header,
+    method: 'POST',
+    data: params
+  })
+}
