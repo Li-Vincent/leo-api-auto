@@ -77,11 +77,14 @@ def send_cron_email(to_list, subject, content):
         smtp_port = mail_sender.get('SMTPPort')
         status, msg = send_email(smtp_server, smtp_port, from_email, password, to_list, subject, content)
         if status:
-            current_app.logger.info("send_cron_mail to %s" % str(to_list))
+            with app.app_context():
+                current_app.logger.info("send_cron_mail to %s" % str(to_list))
             return {'status': 'ok', 'data': '邮件发送成功'}
         else:
-            current_app.logger.error("send_cron_mail failed. - %s" % str(msg))
+            with app.app_context():
+                current_app.logger.error("send_cron_mail failed. - %s" % str(msg))
             return {'status': 'failed', 'data': '邮件发送失败', 'message': msg}
     except BaseException as e:
-        current_app.logger.error("send_cron_mail failed. - %s" % str(e))
+        with app.app_context():
+            current_app.logger.error("send_cron_mail failed. - %s" % str(e))
         return {'status': 'failed', 'data': '邮件发送失败', 'error': str(e)}
