@@ -50,11 +50,11 @@
       <el-table-column label="操作" min-width="30%">
         <template slot-scope="scope">
           <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <!--          <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>-->
           <el-button type="info" size="small" :loading="statusChangeLoading"
                      @click="handleChangeStatus(scope.$index, scope.row)">
             {{scope.row.active===false?'启用':'禁用'}}
           </el-button>
+          <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -97,7 +97,7 @@
 </template>
 
 <script>
-    import {getUserList, updateUserStatus, changeRoles, resetPassword} from "../../api/user";
+    import {getUserList, updateUserStatus, changeRoles, resetPassword, deleteUser} from "../../api/user";
 
     export default {
         name: "UserList",
@@ -336,6 +336,42 @@
                         this.getUsers()
                     });
                 });
+            },
+            handleDel: function (index, row) {
+                this.$confirm('确认删除用户吗？', '提示', {}).then(() => {
+                    let self = this;
+                    self.statusChangeLoading = true;
+                    let params = {
+                        'users': [row.email]
+                    };
+                    let headers = {
+                        "Content-Type": "application/json",
+                    };
+                    deleteUser(params, headers).then(res => {
+                        let {status, data} = res;
+                        self.statusChangeLoading = false;
+                        if (status === 'ok') {
+                            self.$message({
+                                message: data,
+                                center: true,
+                                type: 'success'
+                            });
+                        } else {
+                            self.$message.error({
+                                message: data,
+                                center: true,
+                            })
+                        }
+                        self.getUsers()
+                    }).catch(() => {
+                        self.$message.error({
+                            message: '删除用户失败,请稍后重试哦',
+                            center: true
+                        })
+                        self.statusChangeLoading = false;
+                        self.getUsers()
+                    });
+                })
             }
         },
         created() {

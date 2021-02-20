@@ -85,3 +85,12 @@ export function resetPassword(email, params, header) {
     data: params
   })
 }
+
+export function deleteUser(params, header) {
+  return request({
+    url: `/api/user/deleteUsers`,
+    headers: header,
+    method: 'POST',
+    data: params
+  })
+}
