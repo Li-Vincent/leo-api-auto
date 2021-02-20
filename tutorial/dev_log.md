@@ -184,7 +184,11 @@ FIX BUG   planReport 项目报告没有展示接口用例详情
 ### 2021-02-19
 FIX BUG  邮件模板支持中文
 
+### 2021-02-20
+添加功能  删除用户
+
 ### TODO V3
 添加功能  支持 钉钉 企业微信通知
+https://work.weixin.qq.com/wework_admin/register_wx
 
 多语言，支持中英文

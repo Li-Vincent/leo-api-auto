@@ -215,3 +215,24 @@ def reset_password(email):
     except BaseException as e:
         current_app.logger.error("reset_password failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '重置密码失败! %s' % e})
+
+
+@app.route('/api/user/deleteUsers', methods=['POST'])
+@login_required
+@roles_required('admin')
+def delete_users():
+    try:
+        data = request.get_json()
+        if not data['users']:
+            return jsonify({'status': 'failed', 'data': 'users为空'})
+        else:
+            users = data['users']
+            print(users)
+            delete_count = 0
+            for email in users:
+                res = LeoUser.delete_one({'email': email})
+                delete_count += res.deleted_count
+            return jsonify({'status': 'ok', 'data': '删除用户成功,删除数量: %s' % delete_count})
+    except BaseException as e:
+        current_app.logger.error("delete_users failed. - %s" % str(e))
+        return jsonify({'status': 'failed', 'data': '删除用户失败! %s' % e})
