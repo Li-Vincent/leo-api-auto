@@ -10,6 +10,7 @@ from controllers.test_env_param import get_global_env_vars
 from controllers.test_report import save_report
 from execution_engine.execution import execute_test_by_suite
 from utils import common
+from utils import send_notify
 
 config = Config()
 host_ip = config.get_host()
@@ -18,7 +19,9 @@ host_port = config.get_port()
 
 class Cron:
 
-    def __init__(self, test_suite_id_list, project_id, test_env_id, trigger_type, include_forbidden=False,
+    def __init__(self, cron_job_id, test_suite_id_list, project_id, test_env_id, trigger_type, include_forbidden=False,
+                 enable_wxwork_notify=False, wxwork_api_key=None, wxwork_mention_mobile_list=None,
+                 always_wxwork_notify=False,
                  always_send_mail=False, alarm_mail_group_list=None, is_web_hook=False, **trigger_args):
 
         if not isinstance(test_suite_id_list, list) or len(test_suite_id_list) < 1:
@@ -31,7 +34,7 @@ class Cron:
             raise TypeError('trigger_type is invalid!')
 
         # cronJob ID
-        self._id = str(common.get_object_id())
+        self.cron_job_id = cron_job_id
         self.test_suite_id_list = test_suite_id_list
         self.project_id = project_id
         self.test_env_id = test_env_id
@@ -39,6 +42,10 @@ class Cron:
         self.include_forbidden = include_forbidden
         self.trigger_args = trigger_args
         self.status_history = {}
+        self.enable_wxwork_notify = enable_wxwork_notify
+        self.wxwork_api_key = wxwork_api_key
+        self.wxwork_mention_mobile_list = wxwork_mention_mobile_list
+        self.always_wxwork_notify = always_wxwork_notify
         self.always_send_mail = always_send_mail
         self.alarm_mail_group_list = alarm_mail_group_list
         self.is_web_hook = is_web_hook
@@ -62,8 +69,8 @@ class Cron:
                        'testEnvId': ObjectId(self.test_env_id),
                        'testEnvName': env_name,
                        'executionMode': self.execution_mode}
-        if self._id:
-            test_report['cronJobId'] = ObjectId(self._id)
+        if self.cron_job_id:
+            test_report['cronJobId'] = ObjectId(self.cron_job_id)
         if self.project_id:
             test_report['projectId'] = ObjectId(self.project_id)
         try:
@@ -72,6 +79,10 @@ class Cron:
                                                          global_env_vars)
             save_report(test_report_returned)
             if test_report_returned['totalCount'] > 0:
+                notify_total_count = test_report_returned['totalCount']
+                notify_pass_count = test_report_returned['passCount']
+                notify_pass_rate = '{:.2%}'.format(notify_pass_count / notify_total_count)
+                # 发送邮件通知
                 is_send_mail = ((self.always_send_mail
                                  and isinstance(alarm_mail_list, list) and len(alarm_mail_list) > 0)
                                 or (test_report_returned['totalCount'] > test_report_returned['passCount']
@@ -81,9 +92,6 @@ class Cron:
                     content_result = "<font color='green'>PASS</font>"
                     if test_report_returned['totalCount'] > test_report_returned['passCount']:
                         content_result = "<font color='red'>FAIL</font>"
-                    notify_total_count = test_report_returned['totalCount']
-                    notify_pass_count = test_report_returned['passCount']
-                    notify_pass_rate = '{:.2%}'.format(notify_pass_count / notify_total_count)
                     content = "<h2>Dears:</h2>" \
                               "<div style='font-size:20px'>&nbsp;&nbsp;API Test CronJob executed successfully!<br/>" \
                               "&nbsp;&nbsp;Cron Job ID:&nbsp;&nbsp; <b>{}</b><br/>" \
@@ -96,17 +104,55 @@ class Cron:
                               "for details!</a><br/>" \
                               "&nbsp;&nbsp;Report ID: {}<br/>" \
                               "&nbsp;&nbsp;Generated At: {} CST</div>" \
-                        .format(self._id, env_name, content_result, notify_total_count, notify_pass_count,
-                                notify_pass_rate, host_ip, host_port, self.project_id, report_id, report_id,
+                        .format(self.cron_job_id, env_name, content_result,
+                                notify_total_count, notify_pass_count, notify_pass_rate,
+                                host_ip, host_port, self.project_id, report_id, report_id,
                                 test_report_returned['createAt'].replace(tzinfo=pytz.utc).astimezone(
                                     pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
                     mail_result = send_cron_email(alarm_mail_list, subject, content)
                     if mail_result.get('status') == 'failed':
                         raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))
+
+                # 发送企业微信通知
+                if self.enable_wxwork_notify:
+                    if self.always_wxwork_notify \
+                            or test_report_returned['totalCount'] > test_report_returned['passCount']:
+                        notify_title = 'Leo API Auto Test Notify'
+                        content_result = "<font color='green'>PASS</font>"
+                        if test_report_returned['totalCount'] > test_report_returned['passCount']:
+                            content_result = "<font color='red'>FAIL</font>"
+                        content_text = '''请注意'''
+                        content_markdown = '''{} 
+                        > Dears:
+                            API Test CronJob executed successfully!
+                            Cron Job ID: **{}**
+                            Environment: **{}**
+                            Status: **{}**
+                            TotalAPICount: **{}**
+                            PassAPICount: **{}**
+                            PassRate: **{}**
+                            [Please login platform for details!](http://{}:{}/project/{}/testReport/{})
+                            Report ID: {}
+                            Generated At: {} CST
+                            '''.format(notify_title, self.cron_job_id, env_name, content_result,
+                                       notify_total_count, notify_pass_count, notify_pass_rate,
+                                       host_ip, host_port, self.project_id, report_id, report_id,
+                                       test_report_returned['createAt'].replace(tzinfo=pytz.utc).astimezone(
+                                           pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
+                        if self.wxwork_mention_mobile_list and len(self.wxwork_mention_mobile_list) > 0:
+                            notify_res_text = send_notify.send_wxwork_notify_text(content_text,
+                                                                                  self.wxwork_mention_mobile_list,
+                                                                                  self.wxwork_api_key)
+                            if notify_res_text.status_code != 200:
+                                raise BaseException('企业微信通知发送异常: ResponseCode:{}'.format(notify_res_text.status_code))
+                        notify_res_markdown = send_notify.send_wxwork_notify_markdown(content_markdown,
+                                                                                      self.wxwork_api_key)
+                        if notify_res_markdown.status_code != 200:
+                            raise BaseException('企业微信通知发送异常: ResponseCode:{}'.format(notify_res_markdown.status_code))
             else:
                 raise TypeError('无任何测试结果！')
         except BaseException as e:
             return False, "出错了 - %s" % e
 
     def get_cron_job_id(self):
-        return self._id
+        return self.cron_job_id

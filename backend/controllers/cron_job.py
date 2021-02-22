@@ -44,21 +44,32 @@ def add_cron_job(project_id):
         if 'runDate' in request_data:
             request_data['runDate'] = common.frontend_date_str2datetime(request_data['runDate'])
         filtered_data = CronJob.filter_field(request_data, use_set_default=True)
+        new_cron_job_id = str(common.get_object_id())
         if filtered_data.get('runDate'):
-            cron = Cron(test_suite_id_list=filtered_data.get('testSuiteIdList'),
+            cron = Cron(cron_job_id=new_cron_job_id,
+                        test_suite_id_list=filtered_data.get('testSuiteIdList'),
                         project_id=project_id,
                         test_env_id=filtered_data.get('testEnvId'),
                         trigger_type=filtered_data.get('triggerType'),
                         include_forbidden=filtered_data.get('includeForbidden'),
+                        enable_wxwork_notify=filtered_data.get('enableWXWorkNotify'),
+                        wxwork_api_key=filtered_data.get('WXWorkAPIKey'),
+                        wxwork_mention_mobile_list=filtered_data.get('WXWorkMentionMobileList'),
+                        always_wxwork_notify=filtered_data.get('alwaysWXWorkNotify'),
                         alarm_mail_group_list=filtered_data.get('alarmMailGroupList'),
                         always_send_mail=filtered_data.get('alwaysSendMail'),
                         run_date=filtered_data.get('runDate'))
         else:
-            cron = Cron(test_suite_id_list=filtered_data.get('testSuiteIdList'),
+            cron = Cron(cron_job_id=new_cron_job_id,
+                        test_suite_id_list=filtered_data.get('testSuiteIdList'),
                         project_id=project_id,
                         test_env_id=filtered_data.get('testEnvId'),
                         trigger_type=filtered_data.get('triggerType'),
                         include_forbidden=filtered_data.get('includeForbidden'),
+                        enable_wxwork_notify=filtered_data.get('enableWXWorkNotify'),
+                        wxwork_api_key=filtered_data.get('WXWorkAPIKey'),
+                        wxwork_mention_mobile_list=filtered_data.get('WXWorkMentionMobileList'),
+                        always_wxwork_notify=filtered_data.get('alwaysWXWorkNotify'),
                         alarm_mail_group_list=filtered_data.get('alarmMailGroupList'),
                         always_send_mail=filtered_data.get('alwaysSendMail'),
                         seconds=filtered_data.get('interval'))
@@ -101,7 +112,6 @@ def update_cron_job(project_id, cron_job_id):
     filtered_data = CronJob.filter_field(data)
     try:
         cron_manager.update_cron(cron_job_id=cron_job_id, project_id=project_id, cron_info=filtered_data)
-        # TODO 仅修改名字/描述时，也重启了定时器，导致下一次运行时间变更, 解决成本有点大，暂不解决:)
         cron_manager.pause_cron(cron_id=cron_job_id)
         cron_manager.resume_cron(cron_id=cron_job_id)
 

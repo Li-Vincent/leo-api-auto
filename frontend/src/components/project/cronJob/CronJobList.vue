@@ -69,8 +69,8 @@
 
     <!--编辑-->
     <el-dialog :title="titleMap[dialogStatus]" :visible.sync="formVisible" width="70%" :close-on-click-modal="false"
-               style="width: 65%; left: 17.5%">
-      <el-form :model="form" :rules="formRules" ref="form" label-width="100px">
+               style="width:70%;left: 15%">
+      <el-form :model="form" :rules="formRules" ref="form" label-width="120px">
         <el-form-item label="任务名称" prop="name">
           <el-input v-model="form.name" auto-complete="off"></el-input>
         </el-form-item>
@@ -117,22 +117,49 @@
             </el-form-item>
           </div>
         </transition>
+        <!--通知策略-->
+        <div style="border: 1px solid #e6e6e6;margin-bottom: 10px;">
+          <!--企业微信通知-->
+          <el-form-item label="企业微信通知" label-width="120px" prop="enableWXWorkNotify">
+            <el-radio v-model="form.enableWXWorkNotify" :label="true">是</el-radio>
+            <el-radio v-model="form.enableWXWorkNotify" :label="false">否</el-radio>
+          </el-form-item>
+          <transition name="el-zoom-in-top">
+            <div class="form-item-sub form-item-short" v-if="form.enableWXWorkNotify">
+              <el-form-item label="企业微信APIKey" prop="WXWorkAPIKey">
+                <el-input style="width:80%"
+                          placeholder="请填写企业微信群机器人WebhookAPIKey，如: 6789f5f7-736a-423b-b140-98d8324cb8cb"
+                          v-model.trim="form.WXWorkAPIKey" auto-complete="off"></el-input>
+              </el-form-item>
+              <el-form-item v-show="form.enableWXWorkNotify" label="通知策略">
+                <el-radio v-model="form.alwaysWXWorkNotify" :label="true">执行成功也发送通知</el-radio>
+                <el-radio v-model="form.alwaysWXWorkNotify" :label="false">执行失败才发送通知</el-radio>
+              </el-form-item>
+              <el-form-item v-show="form.enableWXWorkNotify" label="提醒手机号列表">
+                <el-select style="width: 80%;" v-model.trim="form.WXWorkMentionMobileList"
+                           multiple clearable filterable default-first-option allow-create
+                           placeholder="手机号列表，提醒手机号对应的群成员(@某个成员)，@all表示提醒所有人">
+                </el-select>
+              </el-form-item>
+            </div>
+          </transition>
 
-        <el-form-item label="告警邮件组" prop="alarmMailGroupList">
-          <el-select style="width: 60%;" v-model="form['alarmMailGroupList']" @visible-change="checkActiveMail"
-                     clearable multiple placeholder="请选择告警报告接受者(可多选)">
-            <el-option v-for="(item,index) in mailGroupList" :key="index" :label="item.name"
-                       :value="item._id"></el-option>
-          </el-select>
-        </el-form-item>
+          <!--邮件通知-->
+          <el-form-item label="告警邮件组" prop="alarmMailGroupList">
+            <el-select style="width: 60%;" v-model="form['alarmMailGroupList']" @visible-change="checkActiveMail"
+                       clearable multiple placeholder="请选择告警报告接受者(可多选)">
+              <el-option v-for="(item,index) in mailGroupList" :key="index" :label="item.name"
+                         :value="item._id"></el-option>
+            </el-select>
+          </el-form-item>
 
-        <el-form-item label="触发邮件" prop="alwaysSendMail">
-          <el-radio-group v-model="form['alwaysSendMail']">
-            <el-radio :label="true">执行成功也触发邮件</el-radio>
-            <el-radio :label="false">执行失败才触发邮件</el-radio>
-          </el-radio-group>
-        </el-form-item>
-
+          <el-form-item label="触发邮件" prop="alwaysSendMail">
+            <el-radio-group v-model="form['alwaysSendMail']">
+              <el-radio :label="true">执行成功也触发邮件</el-radio>
+              <el-radio :label="false">执行失败才触发邮件</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
         <el-form-item label="任务描述" prop='description'>
           <el-input type="textarea" :rows="4" v-model="form.description"></el-input>
         </el-form-item>
@@ -226,9 +253,6 @@
                     testEnvId: [
                         {required: true, message: '请选择测试环境', trigger: 'blur'}
                     ],
-                    alarmMailGroupList: [
-                        {required: false, message: '请选择告警邮件组', trigger: 'blur'}
-                    ],
                     triggerType: [
                         {required: true, message: '请选择触发类型', trigger: 'blur'}
                     ],
@@ -250,6 +274,10 @@
                     testSuiteIdList: [],
                     includeForbidden: false,
                     testEnvId: '',
+                    enableWXWorkNotify: false,
+                    WXWorkAPIKey: '',
+                    WXWorkMentionMobileList: [],
+                    alwaysWXWorkNotify: false,
                     alarmMailGroupList: [],
                     alwaysSendMail: false,
                     triggerType: '',
@@ -262,6 +290,10 @@
                     testSuiteIdList: [],
                     includeForbidden: false,
                     testEnvId: '',
+                    enableWXWorkNotify: false,
+                    WXWorkAPIKey: '',
+                    WXWorkMentionMobileList: [],
+                    alwaysWXWorkNotify: false,
                     alarmMailGroupList: [],
                     alwaysSendMail: false,
                     triggerType: '',
@@ -468,7 +500,6 @@
                     this.update = true
                 }
             },
-            // TODO 抽出成通用方法
             stringToDate: function (dateStr, separator) {
                 if (!separator) {
                     separator = "-";
@@ -506,6 +537,13 @@
                 this.$refs.form.validate((valid) => {
                     let self = this;
                     if (valid) {
+                        if (self.form.enableWXWorkNotify && !self.form.WXWorkAPIKey) {
+                            self.$message.error({
+                                message: "企业微信APIKey不能为空！",
+                                center: true,
+                            })
+                            return
+                        }
                         if (!(self.form.runDate && self.form.runDate.toString().trim() !== '') &&
                             !(self.form.interval && self.form.interval.toString().trim() !== '')) {
                             if (self.form.triggerType === 'interval')
@@ -538,6 +576,10 @@
                                         includeForbidden: self.form.includeForbidden,
                                         triggerType: self.form.triggerType,
                                         description: self.form.description.trim(),
+                                        enableWXWorkNotify: self.form.enableWXWorkNotify,
+                                        WXWorkAPIKey: self.form.WXWorkAPIKey,
+                                        WXWorkMentionMobileList: self.form.WXWorkMentionMobileList,
+                                        alwaysWXWorkNotify: self.form.alwaysWXWorkNotify,
                                         alarmMailGroupList: self.form.alarmMailGroupList,
                                         alwaysSendMail: self.form.alwaysSendMail,
                                         createUser: self.$store.getters.email || 'anonymous',
@@ -579,6 +621,10 @@
                                         includeForbidden: self.form.includeForbidden,
                                         triggerType: self.form.triggerType,
                                         description: self.form.description.trim(),
+                                        enableWXWorkNotify: self.form.enableWXWorkNotify,
+                                        WXWorkAPIKey: self.form.WXWorkAPIKey,
+                                        WXWorkMentionMobileList: self.form.WXWorkMentionMobileList,
+                                        alwaysWXWorkNotify: self.form.alwaysWXWorkNotify,
                                         alarmMailGroupList: self.form.alarmMailGroupList,
                                         alwaysSendMail: self.form.alwaysSendMail,
                                         lastUpdateUser: self.$store.getters.email || 'anonymous',

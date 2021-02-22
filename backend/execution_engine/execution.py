@@ -12,6 +12,7 @@ import requests
 from bson import ObjectId
 from requests.cookies import RequestsCookieJar
 
+from app import app
 from config import Config
 from controllers.mail import get_mails_by_group
 from controllers.mail_sender import send_cron_email
@@ -26,6 +27,7 @@ from models.plan import Plan
 from models.test_case import TestCase
 from models.test_suite import TestSuite
 from utils import common
+from utils import send_notify
 
 ssl._create_default_https_context = ssl._create_unverified_context
 requests.packages.urllib3.disable_warnings()
@@ -597,8 +599,13 @@ def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, e
     res_plan = common.format_response_in_dic(Plan.find_one({'_id': ObjectId(plan_id)}))
     execution_range = list(map(get_project_execution_range, res_plan.get("executionRange")))
     is_parallel = res_plan.get('isParallel')
+    plan_name = res_plan.get('name')
     always_send_mail = res_plan.get('alwaysSendMail')
     alarm_mail_group_list = res_plan.get('alarmMailGroupList')
+    enable_wxwork_notify = res_plan.get('enableWXWorkNotify')
+    wxwork_api_key = res_plan.get('WXWorkAPIKey')
+    mentioned_mobile_list = res_plan.get('WXWorkMentionMobileList')
+    always_wxwork_notify = res_plan.get('alwaysWXWorkNotify')
 
     # test plan report
     test_plan_report['testStartTime'] = datetime.utcnow()
@@ -640,46 +647,78 @@ def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, e
         test_plan_report['createAt'] = datetime.utcnow()
         save_plan_report(test_plan_report)
         if test_plan_report['totalCount'] > 0:
+            notify_total_count = test_plan_report['totalCount']
+            notify_pass_count = test_plan_report['passCount']
+            notify_pass_rate = '{:.2%}'.format(notify_pass_count / notify_total_count)
+            # 发送 邮件通知
             alarm_mail_list = []
             if alarm_mail_group_list:
                 if isinstance(alarm_mail_group_list, list) and len(alarm_mail_group_list) > 0:
                     alarm_mail_list = get_mails_by_group(alarm_mail_group_list)
                 else:
                     raise TypeError('alarm_mail_group_list must be list')
-            is_send_mail = test_plan_report['totalCount'] > test_plan_report['passCount'] and isinstance(
-                alarm_mail_list, list) and len(alarm_mail_list) > 0
+            is_send_mail = ((always_send_mail and isinstance(alarm_mail_list, list) and len(alarm_mail_list) > 0)
+                            or (test_plan_report['totalCount'] > test_plan_report['passCount']
+                                and isinstance(alarm_mail_list, list) and len(alarm_mail_list) > 0))
             if is_send_mail:
-                subject = 'Leo API Auto Test'
-                content = "<h2>Dears:</h2>" \
-                          "<div style='font-size:20px'>&nbsp;&nbsp;API Test Plan executed successfully! <br/>" \
-                          "&nbsp;&nbsp;Status:&nbsp;&nbsp; <b><font color='red'>FAIL</font></b><br/>" \
-                          "&nbsp;&nbsp;Please login platform for details!<br/>" \
-                          "&nbsp;&nbsp;<a href=\"http://{}:{}/plan/{}/reportDetail/{}\">Click here to view" \
-                          " report detail!</a><br/>" \
-                          "&nbsp;&nbsp;Report ID: {}<br/>" \
-                          "&nbsp;&nbsp;Generated At: {} CST</div>" \
-                    .format(host_ip, host_port, plan_id, plan_report_id, plan_report_id,
-                            test_plan_report['createAt'].replace(tzinfo=pytz.utc).astimezone(
-                                pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
-                mail_result = send_cron_email(alarm_mail_list, subject, content)
-                if mail_result.get('status') == 'failed':
-                    raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))
-            elif always_send_mail and isinstance(alarm_mail_list, list) and len(alarm_mail_list) > 0:
-                subject = 'Leo API Auto Test'
+                subject = 'Leo API Auto Test Notify'
+                content_plan_result = "<font color='green'>PASS</font>"
+                if test_plan_report['totalCount'] > test_plan_report['passCount']:
+                    content_plan_result = "<font color='red'>FAIL</font>"
                 content = "<h2>Dears:</h2>" \
                           "<div style='font-size:20px'>&nbsp;&nbsp;API Test Plan executed successfully!<br/>" \
-                          "&nbsp;&nbsp;Status:&nbsp;&nbsp; <b><font color='green'>PASS</font></b><br/>" \
-                          "&nbsp;&nbsp;Please login platform for details!<br/>" \
-                          "&nbsp;&nbsp;<a href=\"http://{}:{}/plan/{}/reportDetail/{}\">Click here to view" \
-                          " report detail!</a><br/>" \
+                          "&nbsp;&nbsp;Plan Name:&nbsp;&nbsp; <b>{}</b><br/>" \
+                          "&nbsp;&nbsp;Environment:&nbsp;&nbsp; <b>{}</b><br/>" \
+                          "&nbsp;&nbsp;Status:&nbsp;&nbsp; <b>{}</b><br/>" \
+                          "&nbsp;&nbsp;TotalAPICount:&nbsp;&nbsp; <b>{}</b><br/>" \
+                          "&nbsp;&nbsp;PassAPICount:&nbsp;&nbsp; <b>{}</b><br/>" \
+                          "&nbsp;&nbsp;PassRate:&nbsp;&nbsp; <b>{}</b><br/>" \
+                          "&nbsp;&nbsp;<a href=\"http://{}:{}/plan/{}/reportDetail/{}\">Please login platform " \
+                          "for details!</a><br/>" \
                           "&nbsp;&nbsp;Report ID: {}<br/>" \
                           "&nbsp;&nbsp;Generated At: {} CST</div>" \
-                    .format(host_ip, host_port, plan_id, plan_report_id, plan_report_id,
+                    .format(plan_name, env_name, content_plan_result, notify_total_count, notify_pass_count,
+                            notify_pass_rate, host_ip, host_port, plan_id, plan_report_id, plan_report_id,
                             test_plan_report['createAt'].replace(tzinfo=pytz.utc).astimezone(
                                 pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
                 mail_result = send_cron_email(alarm_mail_list, subject, content)
                 if mail_result.get('status') == 'failed':
                     raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))
+
+            # 发送企业微信通知
+            if enable_wxwork_notify:
+                if always_wxwork_notify or test_plan_report['totalCount'] > test_plan_report['passCount']:
+                    notify_title = 'Leo API Auto Test Notify'
+                    content_plan_result = "<font color='green'>PASS</font>"
+                    if test_plan_report['totalCount'] > test_plan_report['passCount']:
+                        content_plan_result = "<font color='red'>FAIL</font>"
+                    content_text = '''请注意'''
+                    content_markdown = '''{} 
+                    > Dears:
+                        API Test Plan executed successfully!
+                        Plan Name: **{}**
+                        Environment: **{}**
+                        Status: **{}**
+                        TotalAPICount: **{}**
+                        PassAPICount: **{}**
+                        PassRate: **{}**
+                        [Please login platform for details!](http://{}:{}/plan/{}/reportDetail/{})
+                        Report ID: {}
+                        Generated At: {} CST
+                        '''.format(notify_title, plan_name, env_name, content_plan_result, notify_total_count,
+                                   notify_pass_count,
+                                   notify_pass_rate,
+                                   host_ip, host_port, plan_id, plan_report_id, plan_report_id,
+                                   test_plan_report['createAt'].replace(tzinfo=pytz.utc).astimezone(
+                                       pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
+                    if mentioned_mobile_list and len(mentioned_mobile_list) > 0:
+                        notify_res_text = send_notify.send_wxwork_notify_text(content_text, mentioned_mobile_list,
+                                                                              wxwork_api_key)
+                        if notify_res_text.status_code != 200:
+                            raise BaseException('企业微信通知发送异常: ResponseCode:{}'.format(notify_res_text.status_code))
+                    notify_res_markdown = send_notify.send_wxwork_notify_markdown(content_markdown, wxwork_api_key)
+                    if notify_res_markdown.status_code != 200:
+                        raise BaseException('企业微信通知发送异常: ResponseCode:{}'.format(notify_res.status_code))
         else:
             raise TypeError('无任何测试结果！')
     except BaseException as e:
@@ -735,7 +774,8 @@ def execute_single_project(item, plan_report_id, test_env_id, env_name, protocol
 def get_project_execution_range(range):
     # get execution range by priority for project
     if range.get("projectId") is None or range.get("priority") is None:
-        current_app.logger.error("ProjectId and Priority should not be empty.")
+        with app.app_context():
+            current_app.logger.error("ProjectId and Priority should not be empty.")
     if range.get("priority") == "P1" or range.get("priority") == "P2":
         query_dict = {'projectId': ObjectId(range.get("projectId")),
                       'priority': range.get("priority"),
