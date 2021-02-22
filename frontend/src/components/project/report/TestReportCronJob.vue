@@ -236,11 +236,13 @@
                                 message: '~~删除报告成功~~',
                                 center: true,
                             });
+                            this.getReports();
                         } else {
                             self.$message.error({
                                 message: data,
                                 center: true,
                             })
+                            this.getReports();
                         }
                     }).catch((error) => {
                         self.listLoading = false;
@@ -248,8 +250,8 @@
                             message: '删除报告失败，请稍后刷新重试哦~',
                             center: true,
                         });
+                        this.getReports();
                     })
-                    this.getReports();
                 });
             }
         },

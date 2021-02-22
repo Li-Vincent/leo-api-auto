@@ -78,23 +78,9 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="告警邮件组" label-width="120px" prop="alarmMailGroupList">
-            <el-select style="width: 60%;" v-model="form.alarmMailGroupList" @visible-change="checkActiveMail"
-                       clearable multiple placeholder="请选择告警报告接受者(可多选)">
-              <el-option v-for="(item,index) in mailGroupList" :key="index" :label="item.name"
-                         :value="item._id"></el-option>
-            </el-select>
-          </el-form-item>
-
-          <el-form-item label="触发邮件" label-width="120px" prop="alwaysSendMail">
-            <el-radio-group v-model="form.alwaysSendMail">
-              <el-radio :label="true">执行成功也触发邮件</el-radio>
-              <el-radio :label="false">执行失败才触发邮件</el-radio>
-            </el-radio-group>
-          </el-form-item>
           <el-row :gutter="10">
             <el-col :span="22">
-              <el-form-item label="测试范围:" prop="executionRange" label-width="100px">
+              <el-form-item label="测试范围:" prop="executionRange" label-width="120px">
                 <el-table :data="form.executionRange" highlight-current-row>
                   <el-table-column label="项目" min-width="30%" sortable>
                     <template slot-scope="scope">
@@ -144,6 +130,54 @@
             </el-col>
           </el-row>
         </div>
+        <!--通知策略-->
+        <div style="border: 1px solid #e6e6e6;margin-bottom: 10px;padding:15px">
+          <el-row :gutter="10">
+            <el-col :span="20" style="border-bottom: 1px solid #e6e6e6;margin:20px">
+              <el-form-item label="企业微信通知" label-width="120px" prop="enableWXWorkNotify">
+                <el-radio v-model="form.enableWXWorkNotify" :label="true">是</el-radio>
+                <el-radio v-model="form.enableWXWorkNotify" :label="false">否</el-radio>
+              </el-form-item>
+
+              <transition name="el-zoom-in-top">
+                <div class="form-item-sub form-item-short" v-if="form.enableWXWorkNotify">
+                  <el-form-item label-width="120px" label="企业微信APIKey" prop="WXWorkAPIKey">
+                    <el-input placeholder="请填写企业微信群机器人WebhookAPIKey，如: 6789f5f7-736a-423b-b140-98d8324cb8cb"
+                              v-model.trim="form.WXWorkAPIKey" auto-complete="off"></el-input>
+                  </el-form-item>
+                  <el-form-item v-show="form.enableWXWorkNotify" label-width="120px" label="通知策略">
+                    <el-radio v-model="form.alwaysWXWorkNotify" :label="true">执行成功也发送通知</el-radio>
+                    <el-radio v-model="form.alwaysWXWorkNotify" :label="false">执行失败才发送通知</el-radio>
+                  </el-form-item>
+                  <el-form-item v-show="form.enableWXWorkNotify" label-width="120px" label="提醒手机号列表">
+                    <el-select style="width: 70%;" v-model.trim="form.WXWorkMentionMobileList"
+                               multiple clearable filterable default-first-option allow-create
+                               placeholder="手机号列表，提醒手机号对应的群成员(@某个成员)，@all表示提醒所有人">
+                    </el-select>
+                  </el-form-item>
+                </div>
+              </transition>
+            </el-col>
+          </el-row>
+          <el-row :gutter="10">
+            <el-col :span="20" style="border-bottom: 1px solid #e6e6e6;margin:20px">
+              <el-form-item label="告警邮件组" label-width="120px" prop="alarmMailGroupList">
+                <el-select style="width: 60%;" v-model="form.alarmMailGroupList" @visible-change="checkActiveMail"
+                           clearable multiple placeholder="请选择告警报告接受者(可多选)">
+                  <el-option v-for="(item,index) in mailGroupList" :key="index" :label="item.name"
+                             :value="item._id"></el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item label="触发邮件" label-width="120px" prop="alwaysSendMail">
+                <el-radio-group v-model="form.alwaysSendMail">
+                  <el-radio :label="true">执行成功也触发邮件</el-radio>
+                  <el-radio :label="false">执行失败才触发邮件</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
       </el-form>
     </el-row>
   </section>
@@ -183,6 +217,10 @@
                     secretToken: '',
                     hookUrl: '',
                     curlScript: '',
+                    enableWXWorkNotify: false,
+                    WXWorkAPIKey: '',
+                    WXWorkMentionMobileList: [],
+                    alwaysWXWorkNotify: false,
                     alarmMailGroupList: [],
                     alwaysSendMail: false,
                     executionRange: [{
@@ -279,6 +317,12 @@
                             self.form.description = data.description;
                             self.form.isParallel = data.isParallel;
                             self.form.secretToken = data.secretToken;
+                            self.form.enableWXWorkNotify = data.enableWXWorkNotify;
+                            self.form.WXWorkAPIKey = data.WXWorkAPIKey;
+                            self.form.WXWorkMentionMobileList = data.WXWorkMentionMobileList;
+                            if (data.enableWXWorkNotify) {
+                                self.form.alwaysWXWorkNotify = data.alwaysWXWorkNotify;
+                            }
                             self.form.executionRange = data.executionRange;
                             self.form.alarmMailGroupList = data.alarmMailGroupList;
                             if (data.alwaysSendMail) {
@@ -305,11 +349,22 @@
                         if (this.checkExecutionRange()) {
                             this.$confirm('确认提交吗？', '提示', {}).then(() => {
                                 let self = this;
+                                if (self.form.enableWXWorkNotify && !self.form.WXWorkAPIKey) {
+                                    self.$message.error({
+                                        message: "企业微信APIKey不能为空！",
+                                        center: true,
+                                    })
+                                    return
+                                }
                                 let params = {
                                     name: self.form.name.trim(),
                                     description: self.form.description.trim(),
                                     isParallel: self.form.isParallel,
                                     secretToken: self.form.secretToken,
+                                    enableWXWorkNotify: self.form.enableWXWorkNotify,
+                                    WXWorkAPIKey: self.form.WXWorkAPIKey,
+                                    WXWorkMentionMobileList: self.form.WXWorkMentionMobileList,
+                                    alwaysWXWorkNotify: self.form.alwaysWXWorkNotify,
                                     alarmMailGroupList: self.form.alarmMailGroupList,
                                     alwaysSendMail: self.form.alwaysSendMail,
                                     executionRange: self.form.executionRange,

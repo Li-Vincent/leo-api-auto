@@ -10,21 +10,6 @@ from utils import common
 from execution_engine.cron_job.cron import Cron
 
 
-@app.route('/api/project/<project_id>/cronJob', methods=['GET'])
-def cron_job(project_id):
-    try:
-        cron_instance = Cron(test_suite_id_list=["5de0b7d99a60185278ebaa18", "5dee6bf95bd992898c0955e8"],
-                             project_id="5dce1489a79ddf868dc4bcd8",
-                             test_env_id="5ddb892fbf51c7edf8ec1f4e",
-                             trigger_type="interval",
-                             alarm_mail_list=["liwh9@lenovo.com"])
-        cron_instance.cron_mission()
-        return jsonify({'status': 'ok'})
-    except BaseException as e:
-        current_app.logger.error("test cron job failed. - %s" % str(e))
-        return jsonify({'status': 'failed'})
-
-
 @app.route('/api/project/<project_id>/cronJobList', methods=['GET'])
 @login_required
 def cron_job_list(project_id):
@@ -46,7 +31,7 @@ def add_cron_job(project_id):
         request_data = request.get_json()
         request_data["projectId"] = ObjectId(project_id)
         request_data["testEnvId"] = ObjectId(request_data["testEnvId"])
-        if request_data["alarmMailGroupList"] and len(request_data["alarmMailGroupList"]) > 0:
+        if "alarmMailGroupList" in request_data and len(request_data["alarmMailGroupList"]) > 0:
             for index, value in enumerate(request_data["alarmMailGroupList"]):
                 request_data["alarmMailGroupList"][index] = ObjectId(value)
         request_data["createAt"] = datetime.utcnow()
@@ -59,21 +44,34 @@ def add_cron_job(project_id):
         if 'runDate' in request_data:
             request_data['runDate'] = common.frontend_date_str2datetime(request_data['runDate'])
         filtered_data = CronJob.filter_field(request_data, use_set_default=True)
+        new_cron_job_id = str(common.get_object_id())
         if filtered_data.get('runDate'):
-            cron = Cron(test_suite_id_list=filtered_data.get('testSuiteIdList'),
+            cron = Cron(cron_job_id=new_cron_job_id,
+                        test_suite_id_list=filtered_data.get('testSuiteIdList'),
                         project_id=project_id,
                         test_env_id=filtered_data.get('testEnvId'),
                         trigger_type=filtered_data.get('triggerType'),
                         include_forbidden=filtered_data.get('includeForbidden'),
+                        enable_wxwork_notify=filtered_data.get('enableWXWorkNotify'),
+                        wxwork_api_key=filtered_data.get('WXWorkAPIKey'),
+                        wxwork_mention_mobile_list=filtered_data.get('WXWorkMentionMobileList'),
+                        always_wxwork_notify=filtered_data.get('alwaysWXWorkNotify'),
                         alarm_mail_group_list=filtered_data.get('alarmMailGroupList'),
+                        always_send_mail=filtered_data.get('alwaysSendMail'),
                         run_date=filtered_data.get('runDate'))
         else:
-            cron = Cron(test_suite_id_list=filtered_data.get('testSuiteIdList'),
+            cron = Cron(cron_job_id=new_cron_job_id,
+                        test_suite_id_list=filtered_data.get('testSuiteIdList'),
                         project_id=project_id,
                         test_env_id=filtered_data.get('testEnvId'),
                         trigger_type=filtered_data.get('triggerType'),
                         include_forbidden=filtered_data.get('includeForbidden'),
+                        enable_wxwork_notify=filtered_data.get('enableWXWorkNotify'),
+                        wxwork_api_key=filtered_data.get('WXWorkAPIKey'),
+                        wxwork_mention_mobile_list=filtered_data.get('WXWorkMentionMobileList'),
+                        always_wxwork_notify=filtered_data.get('alwaysWXWorkNotify'),
                         alarm_mail_group_list=filtered_data.get('alarmMailGroupList'),
+                        always_send_mail=filtered_data.get('alwaysSendMail'),
                         seconds=filtered_data.get('interval'))
         cron_id = cron_manager.add_cron(cron)
         filtered_data['lastUpdateTime'] = datetime.utcnow()
@@ -114,7 +112,6 @@ def update_cron_job(project_id, cron_job_id):
     filtered_data = CronJob.filter_field(data)
     try:
         cron_manager.update_cron(cron_job_id=cron_job_id, project_id=project_id, cron_info=filtered_data)
-        # TODO 仅修改名字/描述时，也重启了定时器，导致下一次运行时间变更, 解决成本有点大，暂不解决:)
         cron_manager.pause_cron(cron_id=cron_job_id)
         cron_manager.resume_cron(cron_id=cron_job_id)
 

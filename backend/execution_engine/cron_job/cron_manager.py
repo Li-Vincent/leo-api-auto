@@ -39,7 +39,7 @@ class CronManager:
                                          coalesce=True,
                                          id=cron_instance.get_cron_job_id(),
                                          max_instances=5,
-                                         jitter=0)  # 玄学，新增job的时候不用加args，直接加对象调用的func
+                                         jitter=0)
         elif cron_instance.trigger_type == 'date':
             run_date = cron_instance.trigger_args.get('run_date')
             # TODO 判断run_date类型
@@ -48,7 +48,7 @@ class CronManager:
                                          run_date=run_date,
                                          replace_existing=self.is_replace_existing,
                                          coalesce=True,
-                                         id=cron_instance.get_cron_job_id())  # 玄学，新增job的时候不用加args，直接加对象调用的func
+                                         id=cron_instance.get_cron_job_id())
         elif cron_instance.trigger_type == 'cron':
             raise TypeError('暂时不支持 trigger_type 等于 \'cron\'')
 
@@ -102,7 +102,8 @@ class CronManager:
             else:
                 raise TypeError('更新定时任务触发器失败！')
             if run_date:
-                cron = Cron(test_suite_id_list=test_suite_id_list,
+                cron = Cron(cron_job_id=cron_job_id,
+                            test_suite_id_list=test_suite_id_list,
                             project_id=project_id,
                             test_env_id=test_env_id,
                             include_forbidden=include_forbidden,
@@ -111,7 +112,8 @@ class CronManager:
                             trigger_type=trigger_type,  # 更新定时器时，此参数并没有真正起到作用, 仅修改展示字段
                             run_date=run_date)  # 更新定时器时，此参数并没有起到作用, 仅修改展示字段
             else:
-                cron = Cron(test_suite_id_list=test_suite_id_list,
+                cron = Cron(cron_job_id=cron_job_id,
+                            test_suite_id_list=test_suite_id_list,
                             project_id=project_id,
                             include_forbidden=include_forbidden,
                             test_env_id=test_env_id,
