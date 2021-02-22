@@ -261,7 +261,7 @@
                     name: '',
                     testSuiteIdList: [],
                     includeForbidden: false,
-                    testDomain: '',
+                    testEnvId: '',
                     alarmMailGroupList: [],
                     alwaysSendMail: false,
                     triggerType: '',

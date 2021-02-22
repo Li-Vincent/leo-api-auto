@@ -72,35 +72,32 @@ class Cron:
                                                          global_env_vars)
             save_report(test_report_returned)
             if test_report_returned['totalCount'] > 0:
-                is_send_mail = test_report_returned['totalCount'] > test_report_returned['passCount'] and isinstance(
-                    alarm_mail_list, list) and len(alarm_mail_list) > 0
+                is_send_mail = ((self.always_send_mail
+                                 and isinstance(alarm_mail_list, list) and len(alarm_mail_list) > 0)
+                                or (test_report_returned['totalCount'] > test_report_returned['passCount']
+                                    and isinstance(alarm_mail_list, list) and len(alarm_mail_list) > 0))
                 if is_send_mail:
-                    subject = 'Leo API Auto Test'
+                    subject = 'Leo API Auto Test Notify'
+                    content_result = "<font color='green'>PASS</font>"
+                    if test_report_returned['totalCount'] > test_report_returned['passCount']:
+                        content_result = "<font color='red'>FAIL</font>"
+                    notify_total_count = test_report_returned['totalCount']
+                    notify_pass_count = test_report_returned['passCount']
+                    notify_pass_rate = '{:.2%}'.format(notify_pass_count / notify_total_count)
                     content = "<h2>Dears:</h2>" \
-                              "<div style='font-size:20px'>&nbsp;&nbsp;API test case executed successfully! <br/>" \
-                              "&nbsp;&nbsp;Status:&nbsp;&nbsp; <b><font color='red'>FAIL</font></b><br/>" \
-                              "&nbsp;&nbsp;Please login platform for details!<br/>" \
-                              "&nbsp;&nbsp;<a href=\"http://{}:{}/project/{}/testReport/{}\">Click here to view" \
-                              " report detail!</a><br/>" \
+                              "<div style='font-size:20px'>&nbsp;&nbsp;API Test CronJob executed successfully!<br/>" \
+                              "&nbsp;&nbsp;Cron Job ID:&nbsp;&nbsp; <b>{}</b><br/>" \
+                              "&nbsp;&nbsp;Environment:&nbsp;&nbsp; <b>{}</b><br/>" \
+                              "&nbsp;&nbsp;Status:&nbsp;&nbsp; <b>{}</b><br/>" \
+                              "&nbsp;&nbsp;TotalAPICount:&nbsp;&nbsp; <b>{}</b><br/>" \
+                              "&nbsp;&nbsp;PassAPICount:&nbsp;&nbsp; <b>{}</b><br/>" \
+                              "&nbsp;&nbsp;PassRate:&nbsp;&nbsp; <b>{}</b><br/>" \
+                              "&nbsp;&nbsp;<a href=\"http://{}:{}/project/{}/testReport/{}\">Please login platform " \
+                              "for details!</a><br/>" \
                               "&nbsp;&nbsp;Report ID: {}<br/>" \
                               "&nbsp;&nbsp;Generated At: {} CST</div>" \
-                        .format(host_ip, host_port, self.project_id, report_id, report_id,
-                                test_report_returned['createAt'].replace(tzinfo=pytz.utc).astimezone(
-                                    pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
-                    mail_result = send_cron_email(alarm_mail_list, subject, content)
-                    if mail_result.get('status') == 'failed':
-                        raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))
-                elif self.always_send_mail:
-                    subject = 'Leo API Auto Test'
-                    content = "<h2>Dears:</h2>" \
-                              "<div style='font-size:20px'>&nbsp;&nbsp;API test case executed successfully!<br/>" \
-                              "&nbsp;&nbsp;Status:&nbsp;&nbsp; <b><font color='green'>PASS</font></b><br/>" \
-                              "&nbsp;&nbsp;Please login platform for details!<br/>" \
-                              "&nbsp;&nbsp;<a href=\"http://{}:{}/project/{}/testReport/{}\">Click here to view" \
-                              " report detail!</a><br/>" \
-                              "&nbsp;&nbsp;Report ID: {}<br/>" \
-                              "&nbsp;&nbsp;Generated At: {} CST</div>" \
-                        .format(host_ip, host_port, self.project_id, report_id, report_id,
+                        .format(self._id, env_name, content_result, notify_total_count, notify_pass_count,
+                                notify_pass_rate, host_ip, host_port, self.project_id, report_id, report_id,
                                 test_report_returned['createAt'].replace(tzinfo=pytz.utc).astimezone(
                                     pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
                     mail_result = send_cron_email(alarm_mail_list, subject, content)
