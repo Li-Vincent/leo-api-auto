@@ -93,11 +93,19 @@ class CronManager:
         test_env_id = cron_info.get('testEnvId')
         always_send_mail = cron_info.get('alwaysSendMail')
         alarm_mail_group_list = cron_info.get('alarmMailGroupList')
+        enable_wxwork_notify = cron_info.get('enableWXWorkNotify')
+        wxwork_api_key = cron_info.get('WXWorkAPIKey')
+        wxwork_mention_mobile_list = cron_info.get('WXWorkMentionMobileList')
+        always_wxwork_notify = cron_info.get('alwaysWXWorkNotify')
+        enable_ding_talk_notify = cron_info.get('enableDingTalkNotify')
+        ding_talk_access_token = cron_info.get('DingTalkAccessToken')
+        ding_talk_at_mobiles = cron_info.get('DingTalkAtMobiles')
+        ding_talk_secret = cron_info.get('DingTalkSecret')
+        always_ding_talk_notify = cron_info.get('alwaysDingTalkNotify')
         try:
             if trigger_type == 'interval' and int(interval) > 0:
                 self.scheduler.modify_job(job_id=cron_job_id, trigger=IntervalTrigger(seconds=interval))
             elif trigger_type == 'date':
-                # TODO 判断run_date类型
                 self.scheduler.modify_job(job_id=cron_job_id, trigger=DateTrigger(run_date=run_date))
             else:
                 raise TypeError('更新定时任务触发器失败！')
@@ -107,6 +115,15 @@ class CronManager:
                             project_id=project_id,
                             test_env_id=test_env_id,
                             include_forbidden=include_forbidden,
+                            enable_wxwork_notify=enable_wxwork_notify,
+                            wxwork_api_key=wxwork_api_key,
+                            wxwork_mention_mobile_list=wxwork_mention_mobile_list,
+                            always_wxwork_notify=always_wxwork_notify,
+                            enable_ding_talk_notify=enable_ding_talk_notify,
+                            ding_talk_access_token=ding_talk_access_token,
+                            ding_talk_at_mobiles=ding_talk_at_mobiles,
+                            ding_talk_secret=ding_talk_secret,
+                            always_ding_talk_notify=always_ding_talk_notify,
                             always_send_mail=always_send_mail,
                             alarm_mail_group_list=alarm_mail_group_list,
                             trigger_type=trigger_type,  # 更新定时器时，此参数并没有真正起到作用, 仅修改展示字段
@@ -116,6 +133,15 @@ class CronManager:
                             test_suite_id_list=test_suite_id_list,
                             project_id=project_id,
                             include_forbidden=include_forbidden,
+                            enable_wxwork_notify=enable_wxwork_notify,
+                            wxwork_api_key=wxwork_api_key,
+                            wxwork_mention_mobile_list=wxwork_mention_mobile_list,
+                            always_wxwork_notify=always_wxwork_notify,
+                            enable_ding_talk_notify=enable_ding_talk_notify,
+                            ding_talk_access_token=ding_talk_access_token,
+                            ding_talk_at_mobiles=ding_talk_at_mobiles,
+                            ding_talk_secret=ding_talk_secret,
+                            always_ding_talk_notify=always_ding_talk_notify,
                             test_env_id=test_env_id,
                             always_send_mail=always_send_mail,
                             alarm_mail_group_list=alarm_mail_group_list,

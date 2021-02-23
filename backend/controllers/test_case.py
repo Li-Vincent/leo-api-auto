@@ -366,7 +366,7 @@ def import_test_cases():
                     except BaseException as e:
                         pass
                     pre_import_case_info['status'] = True
-                    pre_import_case_info['testSuiteId'] = ObjectId(test_suite_id)
+                    pre_import_case_info['testSuiteId'] = ObjectId(current_test_suite_id)
                     pre_import_case_info['projectId'] = ObjectId(project_id)
                     pre_import_case_info['createUser'] = current_user
                     pre_import_case_info['lastUpdateUser'] = current_user
@@ -398,7 +398,7 @@ def import_test_cases():
                     inserted_test_suite_id = TestSuite.insert(insert_data)
 
                 if inserted_test_suite_id:
-                    pre_import_case_info.pop('_id') if is_case_exist else None
+                    pre_import_case_info.pop('_id') if is_test_case_exist else None
                     pre_import_case_info["projectId"] = ObjectId(project_id)
                     pre_import_case_info['testSuiteId'] = ObjectId(inserted_test_suite_id)
                     pre_import_case_info = TestCase.filter_field(pre_import_case_info, use_set_default=True)

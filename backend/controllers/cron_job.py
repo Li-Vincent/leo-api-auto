@@ -56,6 +56,11 @@ def add_cron_job(project_id):
                         wxwork_api_key=filtered_data.get('WXWorkAPIKey'),
                         wxwork_mention_mobile_list=filtered_data.get('WXWorkMentionMobileList'),
                         always_wxwork_notify=filtered_data.get('alwaysWXWorkNotify'),
+                        enable_ding_talk_notify=filtered_data.get('enableDingTalkNotify'),
+                        ding_talk_access_token=filtered_data.get('DingTalkAccessToken'),
+                        ding_talk_at_mobiles=filtered_data.get('DingTalkAtMobiles'),
+                        ding_talk_secret=filtered_data.get('DingTalkSecret'),
+                        always_ding_talk_notify=filtered_data.get('alwaysDingTalkNotify'),
                         alarm_mail_group_list=filtered_data.get('alarmMailGroupList'),
                         always_send_mail=filtered_data.get('alwaysSendMail'),
                         run_date=filtered_data.get('runDate'))
@@ -70,6 +75,11 @@ def add_cron_job(project_id):
                         wxwork_api_key=filtered_data.get('WXWorkAPIKey'),
                         wxwork_mention_mobile_list=filtered_data.get('WXWorkMentionMobileList'),
                         always_wxwork_notify=filtered_data.get('alwaysWXWorkNotify'),
+                        enable_ding_talk_notify=filtered_data.get('enableDingTalkNotify'),
+                        ding_talk_access_token=filtered_data.get('DingTalkAccessToken'),
+                        ding_talk_at_mobiles=filtered_data.get('DingTalkAtMobiles'),
+                        ding_talk_secret=filtered_data.get('DingTalkSecret'),
+                        always_ding_talk_notify=filtered_data.get('alwaysDingTalkNotify'),
                         alarm_mail_group_list=filtered_data.get('alarmMailGroupList'),
                         always_send_mail=filtered_data.get('alwaysSendMail'),
                         seconds=filtered_data.get('interval'))
@@ -112,9 +122,9 @@ def update_cron_job(project_id, cron_job_id):
     filtered_data = CronJob.filter_field(data)
     try:
         cron_manager.update_cron(cron_job_id=cron_job_id, project_id=project_id, cron_info=filtered_data)
+        # update cronJob 自动停用，需点击启动后使用
         cron_manager.pause_cron(cron_id=cron_job_id)
-        cron_manager.resume_cron(cron_id=cron_job_id)
-
+        filtered_data['status'] = 'PAUSED'
         filtered_data['lastUpdateTime'] = datetime.utcnow()
         update_response = CronJob.update({"_id": cron_job_id},
                                          {'$set': filtered_data})

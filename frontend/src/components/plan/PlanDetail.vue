@@ -159,6 +159,37 @@
               </transition>
             </el-col>
           </el-row>
+           <el-row :gutter="10">
+            <el-col :span="20" style="border-bottom: 1px solid #e6e6e6;margin:20px">
+              <el-form-item label="钉钉通知" label-width="120px" prop="enableDingTalkNotify">
+                <el-radio v-model="form.enableDingTalkNotify" :label="true">是</el-radio>
+                <el-radio v-model="form.enableDingTalkNotify" :label="false">否</el-radio>
+              </el-form-item>
+
+              <transition name="el-zoom-in-top">
+                <div class="form-item-sub form-item-short" v-if="form.enableDingTalkNotify">
+                  <el-form-item label-width="120px" label="AccessToken" prop="DingTalkAccessToken">
+                    <el-input placeholder="请填写钉钉群机器人DingTalkAccessToken"
+                              v-model.trim="form.DingTalkAccessToken" auto-complete="off"></el-input>
+                  </el-form-item>
+                  <el-form-item label-width="120px" label="钉钉加签密钥" prop="DingTalkSecret">
+                    <el-input placeholder="钉钉机器人安全设置勾选加签后须填写Secret,如不勾选可不填"
+                              v-model.trim="form.DingTalkSecret" auto-complete="off"></el-input>
+                  </el-form-item>
+                  <el-form-item v-show="form.enableDingTalkNotify" label-width="120px" label="通知策略">
+                    <el-radio v-model="form.alwaysDingTalkNotify" :label="true">执行成功也发送通知</el-radio>
+                    <el-radio v-model="form.alwaysDingTalkNotify" :label="false">执行失败才发送通知</el-radio>
+                  </el-form-item>
+                  <el-form-item v-show="form.enableDingTalkNotify" label-width="120px" label="提醒手机号列表">
+                    <el-select style="width: 70%;" v-model.trim="form.DingTalkAtMobiles"
+                               multiple clearable filterable default-first-option allow-create
+                               placeholder="手机号列表，提醒手机号对应的群成员(@某个成员)，@all表示提醒所有人">
+                    </el-select>
+                  </el-form-item>
+                </div>
+              </transition>
+            </el-col>
+          </el-row>
           <el-row :gutter="10">
             <el-col :span="20" style="border-bottom: 1px solid #e6e6e6;margin:20px">
               <el-form-item label="告警邮件组" label-width="120px" prop="alarmMailGroupList">
@@ -217,10 +248,18 @@
                     secretToken: '',
                     hookUrl: '',
                     curlScript: '',
+                    // 企业微信通知
                     enableWXWorkNotify: false,
                     WXWorkAPIKey: '',
                     WXWorkMentionMobileList: [],
                     alwaysWXWorkNotify: false,
+                    // 钉钉通知
+                    enableDingTalkNotify: false,
+                    DingTalkAccessToken: '',
+                    DingTalkAtMobiles: [],
+                    DingTalkSecret: '',
+                    alwaysDingTalkNotify: false,
+                    // 邮件通知
                     alarmMailGroupList: [],
                     alwaysSendMail: false,
                     executionRange: [{
@@ -317,23 +356,34 @@
                             self.form.description = data.description;
                             self.form.isParallel = data.isParallel;
                             self.form.secretToken = data.secretToken;
-                            self.form.enableWXWorkNotify = data.enableWXWorkNotify;
-                            self.form.WXWorkAPIKey = data.WXWorkAPIKey;
-                            self.form.WXWorkMentionMobileList = data.WXWorkMentionMobileList;
-                            if (data.enableWXWorkNotify) {
-                                self.form.alwaysWXWorkNotify = data.alwaysWXWorkNotify;
-                            }
                             self.form.executionRange = data.executionRange;
-                            self.form.alarmMailGroupList = data.alarmMailGroupList;
-                            if (data.alwaysSendMail) {
-                                self.form.alwaysSendMail = data.alwaysSendMail;
-                            }
                             self.form.hookUrl = window.document.location.protocol + '//'
                                 + window.document.location.host + '/api/plan/'
                                 + self.$route.params.plan_id + '/executePlanByWebHook';
                             self.form.curlScript = "curl -d \"testEnvId=${testEnvId}&secretToken="
                                 + self.form.secretToken
                                 + "&executionRemark=${remark}\" \"" + self.form.hookUrl + "\"";
+                            // 通知策略
+                            // 企业微信通知
+                            self.form.enableWXWorkNotify = data.enableWXWorkNotify;
+                            self.form.WXWorkAPIKey = data.WXWorkAPIKey;
+                            self.form.WXWorkMentionMobileList = data.WXWorkMentionMobileList;
+                            if (data.enableWXWorkNotify) {
+                                self.form.alwaysWXWorkNotify = data.alwaysWXWorkNotify;
+                            }
+                            // 钉钉通知
+                            self.form.enableDingTalkNotify = data.enableDingTalkNotify;
+                            self.form.DingTalkAccessToken = data.DingTalkAccessToken;
+                            self.form.DingTalkAtMobiles = data.DingTalkAtMobiles;
+                            self.form.DingTalkSecret = data.DingTalkSecret;
+                            if (data.enableDingTalkNotify) {
+                                self.form.alwaysDingTalkNotify = data.alwaysDingTalkNotify;
+                            }
+                            // 邮件通知
+                            self.form.alarmMailGroupList = data.alarmMailGroupList;
+                            if (data.alwaysSendMail) {
+                                self.form.alwaysSendMail = data.alwaysSendMail;
+                            }
                         }
                     }).catch((error) => {
                     self.$message.error({
@@ -356,6 +406,13 @@
                                     })
                                     return
                                 }
+                                if (self.form.enableDingTalkNotify && !self.form.DingTalkAccessToken) {
+                                    self.$message.error({
+                                        message: "钉钉AccessToken不能为空！",
+                                        center: true,
+                                    })
+                                    return
+                                }
                                 let params = {
                                     name: self.form.name.trim(),
                                     description: self.form.description.trim(),
@@ -365,6 +422,11 @@
                                     WXWorkAPIKey: self.form.WXWorkAPIKey,
                                     WXWorkMentionMobileList: self.form.WXWorkMentionMobileList,
                                     alwaysWXWorkNotify: self.form.alwaysWXWorkNotify,
+                                    enableDingTalkNotify: self.form.enableDingTalkNotify,
+                                    DingTalkAccessToken: self.form.DingTalkAccessToken,
+                                    DingTalkAtMobiles: self.form.DingTalkAtMobiles,
+                                    DingTalkSecret: self.form.DingTalkSecret,
+                                    alwaysDingTalkNotify: self.form.alwaysDingTalkNotify,
                                     alarmMailGroupList: self.form.alarmMailGroupList,
                                     alwaysSendMail: self.form.alwaysSendMail,
                                     executionRange: self.form.executionRange,
