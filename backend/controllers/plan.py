@@ -53,6 +53,9 @@ def update_plan(plan_id):
         if 'enableWXWorkNotify' in request_data:
             if 'WXWorkAPIKey' not in request_data or not request_data['WXWorkAPIKey']:
                 return jsonify({'status': 'failed', 'data': '请设置企业微信APIKey！'})
+        if 'enableDingTalkNotify' in request_data:
+            if 'DingTalkAccessToken' not in request_data or not request_data['DingTalkAccessToken']:
+                return jsonify({'status': 'failed', 'data': '请设置钉钉AccessToken！'})
         filtered_data = Plan.filter_field(request_data)
         update_response = Plan.update({'_id': ObjectId(plan_id)}, {'$set': filtered_data})
         if update_response["n"] == 0:

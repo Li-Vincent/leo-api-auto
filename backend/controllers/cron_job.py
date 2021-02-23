@@ -56,6 +56,11 @@ def add_cron_job(project_id):
                         wxwork_api_key=filtered_data.get('WXWorkAPIKey'),
                         wxwork_mention_mobile_list=filtered_data.get('WXWorkMentionMobileList'),
                         always_wxwork_notify=filtered_data.get('alwaysWXWorkNotify'),
+                        enable_ding_talk_notify=filtered_data.get('enableDingTalkNotify'),
+                        ding_talk_access_token=filtered_data.get('DingTalkAccessToken'),
+                        ding_talk_at_mobiles=filtered_data.get('DingTalkAtMobiles'),
+                        ding_talk_secret=filtered_data.get('DingTalkSecret'),
+                        always_ding_talk_notify=filtered_data.get('alwaysDingTalkNotify'),
                         alarm_mail_group_list=filtered_data.get('alarmMailGroupList'),
                         always_send_mail=filtered_data.get('alwaysSendMail'),
                         run_date=filtered_data.get('runDate'))
@@ -70,6 +75,11 @@ def add_cron_job(project_id):
                         wxwork_api_key=filtered_data.get('WXWorkAPIKey'),
                         wxwork_mention_mobile_list=filtered_data.get('WXWorkMentionMobileList'),
                         always_wxwork_notify=filtered_data.get('alwaysWXWorkNotify'),
+                        enable_ding_talk_notify=filtered_data.get('enableDingTalkNotify'),
+                        ding_talk_access_token=filtered_data.get('DingTalkAccessToken'),
+                        ding_talk_at_mobiles=filtered_data.get('DingTalkAtMobiles'),
+                        ding_talk_secret=filtered_data.get('DingTalkSecret'),
+                        always_ding_talk_notify=filtered_data.get('alwaysDingTalkNotify'),
                         alarm_mail_group_list=filtered_data.get('alarmMailGroupList'),
                         always_send_mail=filtered_data.get('alwaysSendMail'),
                         seconds=filtered_data.get('interval'))

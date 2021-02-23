@@ -13,6 +13,7 @@ from bson import ObjectId
 from requests.cookies import RequestsCookieJar
 
 from app import app
+from flask import current_app
 from config import Config
 from controllers.mail import get_mails_by_group
 from controllers.mail_sender import send_cron_email
@@ -602,10 +603,17 @@ def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, e
     plan_name = res_plan.get('name')
     always_send_mail = res_plan.get('alwaysSendMail')
     alarm_mail_group_list = res_plan.get('alarmMailGroupList')
+
     enable_wxwork_notify = res_plan.get('enableWXWorkNotify')
     wxwork_api_key = res_plan.get('WXWorkAPIKey')
     mentioned_mobile_list = res_plan.get('WXWorkMentionMobileList')
     always_wxwork_notify = res_plan.get('alwaysWXWorkNotify')
+
+    enable_ding_talk_notify = res_plan.get('enableDingTalkNotify')
+    ding_talk_access_token = res_plan.get('DingTalkAccessToken')
+    ding_talk_at_mobiles = res_plan.get('DingTalkAtMobiles')
+    ding_talk_secret = res_plan.get('DingTalkSecret')
+    always_ding_talk_notify = res_plan.get('alwaysDingTalkNotify')
 
     # test plan report
     test_plan_report['testStartTime'] = datetime.utcnow()
@@ -714,11 +722,51 @@ def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, e
                     if mentioned_mobile_list and len(mentioned_mobile_list) > 0:
                         notify_res_text = send_notify.send_wxwork_notify_text(content_text, mentioned_mobile_list,
                                                                               wxwork_api_key)
-                        if notify_res_text.status_code != 200:
-                            raise BaseException('企业微信通知发送异常: ResponseCode:{}'.format(notify_res_text.status_code))
+                        if notify_res_text.status_code != 200 or eval(
+                                str(notify_res_text.content, encoding="utf-8")).get('errcode') != 0:
+                            raise BaseException('企业微信通知发送异常: ResponseCode:{}, ResponseBody:{}'.format(
+                                notify_res_text.status_code, notify_res_text.content))
                     notify_res_markdown = send_notify.send_wxwork_notify_markdown(content_markdown, wxwork_api_key)
-                    if notify_res_markdown.status_code != 200:
-                        raise BaseException('企业微信通知发送异常: ResponseCode:{}'.format(notify_res.status_code))
+                    if notify_res_markdown.status_code != 200 or eval(
+                            str(notify_res_markdown.content, encoding="utf-8")).get('errcode') != 0:
+                        raise BaseException('企业微信通知发送异常: ResponseCode:{}, ResponseBody:{}'.format(
+                            notify_res_markdown.status_code, notify_res_markdown.content))
+
+            # 发送钉钉通知
+            if enable_ding_talk_notify:
+                if always_ding_talk_notify or test_plan_report['totalCount'] > test_plan_report['passCount']:
+                    notify_title = 'LEO API Auto Test Notify'
+                    content_plan_result = "<font color='#00FF00'>PASS</font>"
+                    if test_plan_report['totalCount'] > test_plan_report['passCount']:
+                        content_plan_result = "<font color='#FF0000'>FAIL</font>"
+                    content = "# {}\n" \
+                              "API Test Plan executed successfully!\n\n" \
+                              " Plan Name: **{}** \n\n" \
+                              " Environment: **{}** \n\n" \
+                              " Status: **{}** \n\n" \
+                              " TotalAPICount: **{}** \n\n" \
+                              " PassAPICount: **{}** \n\n" \
+                              " PassRate: **{}** \n\n" \
+                              " [Please login platform for details!](http://{}:{}/plan/{}/reportDetail/{})\n\n" \
+                              " Report ID: **{}** \n\n" \
+                              " Generated At: **{}** CST\n\n".format(notify_title, plan_name, env_name,
+                                                                     content_plan_result, notify_total_count,
+                                                                     notify_pass_count,
+                                                                     notify_pass_rate,
+                                                                     host_ip, host_port, plan_id, plan_report_id,
+                                                                     plan_report_id,
+                                                                     test_plan_report['createAt'].replace(
+                                                                         tzinfo=pytz.utc).astimezone(
+                                                                         pytz.timezone('Asia/Shanghai')).strftime(
+                                                                         '%Y-%m-%d %H:%M:%S'))
+                    notify_res = send_notify.send_ding_talk_notify_markdown(notify_title, content,
+                                                                            ding_talk_access_token,
+                                                                            at_mobiles=ding_talk_at_mobiles,
+                                                                            secret=ding_talk_secret)
+                    if notify_res.status_code != 200 or eval(str(notify_res.content, encoding="utf-8")).get(
+                            'errcode') != 0:
+                        raise BaseException('钉钉通知发送异常: ResponseCode:{}, ResponseBody:{}'.format(
+                            notify_res.status_code, notify_res.content))
         else:
             raise TypeError('无任何测试结果！')
     except BaseException as e:
