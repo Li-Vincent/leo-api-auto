@@ -50,10 +50,10 @@ def update_plan(plan_id):
     try:
         request_data = request.get_json()
         request_data['lastUpdateTime'] = datetime.utcnow()
-        if 'enableWXWorkNotify' in request_data:
+        if 'enableWXWorkNotify' in request_data and request_data['enableWXWorkNotify']:
             if 'WXWorkAPIKey' not in request_data or not request_data['WXWorkAPIKey']:
                 return jsonify({'status': 'failed', 'data': '请设置企业微信APIKey！'})
-        if 'enableDingTalkNotify' in request_data:
+        if 'enableDingTalkNotify' in request_data and request_data['enableDingTalkNotify']:
             if 'DingTalkAccessToken' not in request_data or not request_data['DingTalkAccessToken']:
                 return jsonify({'status': 'failed', 'data': '请设置钉钉AccessToken！'})
         filtered_data = Plan.filter_field(request_data)

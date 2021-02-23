@@ -122,9 +122,9 @@ def update_cron_job(project_id, cron_job_id):
     filtered_data = CronJob.filter_field(data)
     try:
         cron_manager.update_cron(cron_job_id=cron_job_id, project_id=project_id, cron_info=filtered_data)
+        # update cronJob 自动停用，需点击启动后使用
         cron_manager.pause_cron(cron_id=cron_job_id)
-        cron_manager.resume_cron(cron_id=cron_job_id)
-
+        filtered_data['status'] = 'PAUSED'
         filtered_data['lastUpdateTime'] = datetime.utcnow()
         update_response = CronJob.update({"_id": cron_job_id},
                                          {'$set': filtered_data})
