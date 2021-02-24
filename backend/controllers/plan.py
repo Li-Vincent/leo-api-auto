@@ -2,7 +2,7 @@ from datetime import datetime
 
 from bson import ObjectId
 from flask import jsonify, request, current_app
-from flask_security import login_required, roles_accepted
+from flask_security import login_required, roles_accepted, current_user
 
 from app import app
 from controllers.env_config import get_env_name_and_domain
@@ -36,10 +36,11 @@ def add_plan():
         params['status'] = False
         filtered_data = Plan.filter_field(params, use_set_default=True)
         Plan.insert(filtered_data)
-        current_app.logger.info("add plan successfully. Plan: %s" % str(filtered_data['name']))
+        current_app.logger.info(
+            "add plan successfully. Plan:{}, User:{}".format(str(filtered_data['name']), current_user.email))
         return jsonify({'status': 'ok', 'data': '新建成功'})
     except BaseException as e:
-        current_app.logger.error("add plan failed. - %s" % str(e))
+        current_app.logger.error("add plan failed. User:{}, error:{}".format(current_user.email, str(e)))
         return jsonify({'status': 'failed', 'data': '新建失败 %s' % e})
 
 
@@ -60,10 +61,11 @@ def update_plan(plan_id):
         update_response = Plan.update({'_id': ObjectId(plan_id)}, {'$set': filtered_data})
         if update_response["n"] == 0:
             return jsonify({'status': 'failed', 'data': '未找到相应更新数据！'})
-        current_app.logger.info("update plan successfully. Plan ID: %s" % str(plan_id))
+        current_app.logger.info(
+            "update plan successfully. Plan ID: {}, User:{}".format(str(plan_id), current_user.email))
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
-        current_app.logger.error("update plan failed. - %s" % str(e))
+        current_app.logger.error("update plan failed. User:{}, error:{}".format(current_user.email, str(e)))
         return jsonify({'status': 'failed', 'data': '更新失败: %s' % e})
 
 
@@ -133,7 +135,7 @@ def execute_plan_by_manual(plan_id):
                            execution_mode=execution_mode)
         return jsonify({'status': 'ok', 'data': "测试已成功启动，请稍后前往「测试计划报告」查看报告"})
     except BaseException as e:
-        current_app.logger.error("execute_plan_by_manual failed. - %s" % str(e))
+        current_app.logger.error("execute_plan_by_manual failed. User:{}, error:{}".format(current_user.email, str(e)))
         return jsonify({'status': 'failed', 'data': "出错了 - %s" % e})
 
 

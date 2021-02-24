@@ -15,7 +15,7 @@ class TestSuite(Model):
     storyId = StringField()
     testCaseId = StringField()
     projectId = ObjectIdField()
-    isDeleted = BooleanField(field_name='idDeleted', default=False)
+    isDeleted = BooleanField(field_name='isDeleted', default=False)
     status = BooleanField(field_name='status', default=False)
     createAt = DateField()
     createUser = StringField()
