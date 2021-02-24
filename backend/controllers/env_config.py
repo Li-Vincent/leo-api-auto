@@ -60,16 +60,16 @@ def update_env_config(test_env_id):
 
 
 def get_env_name_and_domain(test_env_id):
-    if test_env_id:
+    try:
         test_env_info = common.format_response_in_dic(
             EnvConfig.find_one({'_id': ObjectId(test_env_id), 'status': True}))
         if not test_env_info['protocol']:
-            current_app.logger.error('测试环境protocol为空，请设置')
+            raise ValueError('测试环境protocol为空，请设置')
         if not test_env_info['domain']:
-            current_app.logger.error('未找到任何「启用的」环境信息')
+            raise ValueError('未找到任何「启用的」环境信息')
         if not test_env_info['name']:
-            current_app.logger.error('测试环境名称为空，请设置环境名称')
+            raise ValueError('测试环境名称为空，请设置环境名称')
         return test_env_info['name'], test_env_info['protocol'], test_env_info['domain']
-    else:
-        current_app.logger.error("get_env_name_and_domain failed. - test_env_id is empty")
-        raise ValueError("test_env_id should not be empty")
+    except BaseException as e:
+        with app.context():
+            current_app.logger.error("get_env_name_and_domain failed. %s" % str(e))

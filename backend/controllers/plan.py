@@ -88,8 +88,8 @@ def validate_plan_id(plan_id):
         else:
             return True
     except BaseException as e:
-        current_app.logger.error("plan_id is invalid. plan_id = ", plan_id)
-        current_app.logger.error("validate plan_id error: ", str(e))
+        with app.app_context():
+            current_app.logger.error("validate plan_id error, plan_id: {}, error:{}".format(plan_id, str(e)))
         return False
 
 
@@ -143,7 +143,8 @@ def check_secret_for_plan(plan_id, secret_key):
         secret_token = common.format_response_in_dic(res).get("secretToken")
         return True if secret_key == secret_token else False
     except BaseException as e:
-        current_app.logger.error("check_secret_for_plan failed. - %s" % str(e))
+        with app.app_context():
+            current_app.logger.error("check_secret_for_plan failed. - %s" % str(e))
         return False
 
 

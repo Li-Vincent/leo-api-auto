@@ -110,5 +110,6 @@ def get_mails_by_group(mail_group_id_list):
         returned_mail_list = list(set(returned_mail_list))
         return returned_mail_list if returned_mail_list else None
     except BaseException as e:
-        current_app.logger.error("get mail list failed. - %s" % str(e))
-        return e
+        with app.app_context():
+            current_app.logger.error("get mail list failed. - %s" % str(e))
+        return None

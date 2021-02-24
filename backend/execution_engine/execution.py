@@ -691,6 +691,8 @@ def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, e
                                 pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S'))
                 mail_result = send_cron_email(alarm_mail_list, subject, content)
                 if mail_result.get('status') == 'failed':
+                    with app.app_context():
+                        current_app.logger.error('邮件发送异常: {}'.format(mail_result.get('data')))
                     raise BaseException('邮件发送异常: {}'.format(mail_result.get('data')))
 
             # 发送企业微信通知
@@ -724,11 +726,17 @@ def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, e
                                                                               wxwork_api_key)
                         if notify_res_text.status_code != 200 or eval(
                                 str(notify_res_text.content, encoding="utf-8")).get('errcode') != 0:
+                            with app.app_context():
+                                current_app.logger.error('企业微信通知发送异常: ResponseCode:{}, ResponseBody:{}'.format(
+                                    notify_res_text.status_code, notify_res_text.content))
                             raise BaseException('企业微信通知发送异常: ResponseCode:{}, ResponseBody:{}'.format(
                                 notify_res_text.status_code, notify_res_text.content))
                     notify_res_markdown = send_notify.send_wxwork_notify_markdown(content_markdown, wxwork_api_key)
                     if notify_res_markdown.status_code != 200 or eval(
                             str(notify_res_markdown.content, encoding="utf-8")).get('errcode') != 0:
+                        with app.app_context():
+                            current_app.logger.error('企业微信通知发送异常: ResponseCode:{}, ResponseBody:{}'.format(
+                                notify_res_markdown.status_code, notify_res_markdown.content))
                         raise BaseException('企业微信通知发送异常: ResponseCode:{}, ResponseBody:{}'.format(
                             notify_res_markdown.status_code, notify_res_markdown.content))
 
@@ -765,12 +773,16 @@ def execute_plan_async(plan_id, plan_report_id, test_plan_report, test_env_id, e
                                                                             secret=ding_talk_secret)
                     if notify_res.status_code != 200 or eval(str(notify_res.content, encoding="utf-8")).get(
                             'errcode') != 0:
+                        with app.app_context():
+                            current_app.logger.error('钉钉通知发送异常: ResponseCode:{}, ResponseBody:{}'.format(
+                                notify_res.status_code, notify_res.content))
                         raise BaseException('钉钉通知发送异常: ResponseCode:{}, ResponseBody:{}'.format(
                             notify_res.status_code, notify_res.content))
         else:
             raise TypeError('无任何测试结果！')
     except BaseException as e:
-        print(str(e))
+        with app.app_context():
+            current_app.logger.error("execute_plan_async exception - %s." % str(e))
         return False, "出错了 - %s" % e
 
 

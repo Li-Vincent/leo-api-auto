@@ -22,8 +22,9 @@ def query_user(email):
         user = LeoUser.find_one({'email': email})
         return common.format_response_in_dic(user) if user else None
     except BaseException as e:
-        current_app.logger.error("query_user failed. - %s" % str(e))
-        return ''
+        with app.app_context():
+            current_app.logger.error("query_user failed. - %s" % str(e))
+        return None
 
 
 def generate_auth_token(email, roles=['user'], expiration=7200):

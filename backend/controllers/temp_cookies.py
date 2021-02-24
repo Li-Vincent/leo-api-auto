@@ -3,6 +3,7 @@ import datetime
 from bson import ObjectId
 from flask import current_app
 
+from app import app
 from models.temp_cookies import Cookies
 
 EMPIRES_TIME = 1800
@@ -24,7 +25,8 @@ def get_cookies_by_suite(test_suite_id):
         else:
             return None
     except BaseException as e:
-        current_app.logger.error("get cookies by suite failed. - %s" % str(e))
+        with app.app_context():
+            current_app.logger.error("get cookies by suite failed. - %s" % str(e))
         return None
 
 
@@ -57,5 +59,6 @@ def save_cookies_for_suite(test_suite_id, cookies):
             Cookies.insert(insert_data)
             return {'status': 'ok', 'message': '新增cookies成功！'}
     except BaseException as e:
-        current_app.logger.error("get cookies by suite failed. - %s" % str(e))
+        with app.app_context():
+            current_app.logger.error("get cookies by suite failed. - %s" % str(e))
         return {'status': 'failed', 'message': '新建/更新cookies失败 %s' % str(e)}
