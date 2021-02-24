@@ -5,7 +5,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-# TODO: Support Chinese Content
 def send_email(smtp_server, smtp_port, from_email, password, to_list, subject, content, attachment=None):
     try:
         msg = MIMEMultipart()
@@ -29,11 +28,9 @@ def send_email(smtp_server, smtp_port, from_email, password, to_list, subject, c
         s.quit()
         return True, 'email send successfully'
     except smtplib.SMTPException as e:
-        print("send email failed. - %s" % str(e))
-        return False, 'send email failed : %s' % e
+        return False, 'SMTPException : %s' % str(e)
     except BaseException as e:
-        print("send email failed. - %s" % str(e))
-        return False, 'send email failed. BaseException : %s' % e
+        return False, 'Exception : %s' % str(e)
 
 
 if __name__ == '__main__':

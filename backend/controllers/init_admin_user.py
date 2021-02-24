@@ -38,8 +38,9 @@ def admin_user_existed():
         admin_email = admin_user['email'] if admin_user else None
         return (True, admin_email) if admin_user and admin_email else (False, None)
     except BaseException as e:
-        current_app.logger.error("admin_user_existed failed. - %s" % str(e))
-        return False, e
+        with app.app_context():
+            current_app.logger.error("admin_user_existed failed. - %s" % str(e))
+        return False, None
 
 
 @app.route('/api/addAdminUser', methods=['POST'])

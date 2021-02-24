@@ -113,9 +113,9 @@ def copy_test_suite(project_id, test_suite_id):
 
 
 def get_suite_name(test_suite_id):
-    if test_suite_id:
+    try:
         test_suite = common.format_response_in_dic(TestSuite.find_one({'_id': ObjectId(test_suite_id)}))
         return test_suite['name']
-    else:
-        current_app.logger.error("get_suite_name failed. - %s" % str("test_suite_id is empty"))
-        raise ValueError("test_suite_id should not be empty")
+    except BaseException as e:
+        current_app.logger.error("get_suite_name failed. - %s" % str(e))
+        return None

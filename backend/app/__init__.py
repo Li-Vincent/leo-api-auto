@@ -30,7 +30,8 @@ log_file_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), os.par
 make_dir(log_file_folder)
 logging.basicConfig(level=logging.DEBUG)
 # 安照日志文件大小切割，超过1M时切割，最多保留10个日志文件
-fileHandler = ConcurrentRotatingFileHandler("logs/leo-api-auto.log", maxBytes=1024 * 1024, backupCount=10)
+fileHandler = ConcurrentRotatingFileHandler("logs/leo-api-auto.log", encoding='utf-8', maxBytes=1024 * 1024,
+                                            backupCount=10)
 fileHandler.setLevel('DEBUG')
 logging_format = logging.Formatter(
     "[%(asctime)s][%(levelname)s][%(filename)s:%(funcName)s:%(lineno)s] - %(message)s")

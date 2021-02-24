@@ -122,5 +122,6 @@ def get_db_connect(db_config_id, test_env_id):
         res = DBEnvConnect.find_one({'dbConfigId': ObjectId(db_config_id), 'testEnvId': ObjectId(test_env_id)})
         return common.format_response_in_dic(res) if res else None
     except BaseException as e:
-        current_app.logger.error("get db connect failed. - %s" % str(e))
-        return e
+        with app.app_context():
+            current_app.logger.error("get db connect failed. - %s" % str(e))
+        return None

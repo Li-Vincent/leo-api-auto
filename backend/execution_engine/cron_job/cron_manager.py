@@ -2,9 +2,10 @@ from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from flask import current_app
 from pytz import timezone
 
-from app import db
+from app import db, app
 from execution_engine.cron_job.cron import Cron
 from utils import common
 
@@ -23,36 +24,40 @@ class CronManager:
             self.is_replace_existing = False
 
     def add_cron(self, cron_instance):
-        if not isinstance(cron_instance, Cron):
-            raise TypeError('please add correct cron!')
-        if cron_instance.trigger_type == 'interval':
-            seconds = cron_instance.trigger_args.get('seconds')
-            if not isinstance(seconds, int) and not common.can_convert_to_int(seconds):
-                raise TypeError('please set correct time interval')
-            seconds = int(seconds)
-            if seconds <= 0:
-                raise ValueError('please set interval > 0')
-            job = self.scheduler.add_job(func=cron_instance.cron_mission,
-                                         trigger=cron_instance.trigger_type,
-                                         seconds=seconds,
-                                         replace_existing=self.is_replace_existing,
-                                         coalesce=True,
-                                         id=cron_instance.get_cron_job_id(),
-                                         max_instances=5,
-                                         jitter=0)
-        elif cron_instance.trigger_type == 'date':
-            run_date = cron_instance.trigger_args.get('run_date')
-            # TODO 判断run_date类型
-            job = self.scheduler.add_job(func=cron_instance.cron_mission,
-                                         trigger=cron_instance.trigger_type,
-                                         run_date=run_date,
-                                         replace_existing=self.is_replace_existing,
-                                         coalesce=True,
-                                         id=cron_instance.get_cron_job_id())
-        elif cron_instance.trigger_type == 'cron':
-            raise TypeError('暂时不支持 trigger_type 等于 \'cron\'')
+        try:
+            if not isinstance(cron_instance, Cron):
+                raise TypeError('please add correct cron!')
+            if cron_instance.trigger_type == 'interval':
+                seconds = cron_instance.trigger_args.get('seconds')
+                if not isinstance(seconds, int) and not common.can_convert_to_int(seconds):
+                    raise TypeError('please set correct time interval')
+                seconds = int(seconds)
+                if seconds <= 0:
+                    raise ValueError('please set interval > 0')
+                job = self.scheduler.add_job(func=cron_instance.cron_mission,
+                                             trigger=cron_instance.trigger_type,
+                                             seconds=seconds,
+                                             replace_existing=self.is_replace_existing,
+                                             coalesce=True,
+                                             id=cron_instance.get_cron_job_id(),
+                                             max_instances=5,
+                                             jitter=0)
+            elif cron_instance.trigger_type == 'date':
+                run_date = cron_instance.trigger_args.get('run_date')
+                # TODO 判断run_date类型
+                job = self.scheduler.add_job(func=cron_instance.cron_mission,
+                                             trigger=cron_instance.trigger_type,
+                                             run_date=run_date,
+                                             replace_existing=self.is_replace_existing,
+                                             coalesce=True,
+                                             id=cron_instance.get_cron_job_id())
+            elif cron_instance.trigger_type == 'cron':
+                raise TypeError('暂时不支持 trigger_type 等于 \'cron\'')
 
-        return cron_instance.get_cron_job_id()
+            return cron_instance.get_cron_job_id()
+        except BaseException as e:
+            with app.app_context():
+                current_app.logger.error("add_cron failed. - %s" % str(e))
 
     def start(self, paused=False):
         self.scheduler.start(paused=paused)
@@ -76,33 +81,34 @@ class CronManager:
             self.scheduler.remove_job(job_id=cron_id)
 
     def update_cron(self, cron_job_id, project_id, cron_info):
-        if not isinstance(cron_job_id, str):
-            raise TypeError('cron_id must be str')
-
-        if not isinstance(project_id, str):
-            raise TypeError('project_id must be str')
-
-        if not isinstance(cron_info, dict):
-            raise TypeError('cron_info must be dict')
-
-        trigger_type = cron_info.get('triggerType')
-        interval = cron_info.get('interval')
-        run_date = cron_info.get('runDate')
-        test_suite_id_list = cron_info.get('testSuiteIdList')
-        include_forbidden = cron_info.get('includeForbidden')
-        test_env_id = cron_info.get('testEnvId')
-        always_send_mail = cron_info.get('alwaysSendMail')
-        alarm_mail_group_list = cron_info.get('alarmMailGroupList')
-        enable_wxwork_notify = cron_info.get('enableWXWorkNotify')
-        wxwork_api_key = cron_info.get('WXWorkAPIKey')
-        wxwork_mention_mobile_list = cron_info.get('WXWorkMentionMobileList')
-        always_wxwork_notify = cron_info.get('alwaysWXWorkNotify')
-        enable_ding_talk_notify = cron_info.get('enableDingTalkNotify')
-        ding_talk_access_token = cron_info.get('DingTalkAccessToken')
-        ding_talk_at_mobiles = cron_info.get('DingTalkAtMobiles')
-        ding_talk_secret = cron_info.get('DingTalkSecret')
-        always_ding_talk_notify = cron_info.get('alwaysDingTalkNotify')
         try:
+            if not isinstance(cron_job_id, str):
+                raise TypeError('cron_id must be str')
+
+            if not isinstance(project_id, str):
+                raise TypeError('project_id must be str')
+
+            if not isinstance(cron_info, dict):
+                raise TypeError('cron_info must be dict')
+
+            trigger_type = cron_info.get('triggerType')
+            interval = cron_info.get('interval')
+            run_date = cron_info.get('runDate')
+            test_suite_id_list = cron_info.get('testSuiteIdList')
+            include_forbidden = cron_info.get('includeForbidden')
+            test_env_id = cron_info.get('testEnvId')
+            always_send_mail = cron_info.get('alwaysSendMail')
+            alarm_mail_group_list = cron_info.get('alarmMailGroupList')
+            enable_wxwork_notify = cron_info.get('enableWXWorkNotify')
+            wxwork_api_key = cron_info.get('WXWorkAPIKey')
+            wxwork_mention_mobile_list = cron_info.get('WXWorkMentionMobileList')
+            always_wxwork_notify = cron_info.get('alwaysWXWorkNotify')
+            enable_ding_talk_notify = cron_info.get('enableDingTalkNotify')
+            ding_talk_access_token = cron_info.get('DingTalkAccessToken')
+            ding_talk_at_mobiles = cron_info.get('DingTalkAtMobiles')
+            ding_talk_secret = cron_info.get('DingTalkSecret')
+            always_ding_talk_notify = cron_info.get('alwaysDingTalkNotify')
+
             if trigger_type == 'interval' and int(interval) > 0:
                 self.scheduler.modify_job(job_id=cron_job_id, trigger=IntervalTrigger(seconds=interval))
             elif trigger_type == 'date':
@@ -150,7 +156,8 @@ class CronManager:
             # 玄学，更改job的时候必须改args，不能改func
             self.scheduler.modify_job(job_id=cron_job_id, coalesce=True, args=[cron])
         except BaseException as e:
-            raise TypeError('更新定时任务失败: %s' % e)
+            with app.app_context():
+                current_app.logger.error("update_cron failed. - %s" % str(e))
 
     def shutdown(self, force_shutdown=False):
         if force_shutdown:

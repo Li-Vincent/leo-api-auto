@@ -1,7 +1,8 @@
 import pytz
 from bson import ObjectId
-from flask import jsonify
+from flask import jsonify, current_app
 
+from app import app
 from config import Config
 from controllers.mail_sender import send_cron_email
 from controllers.mail import get_mails_by_group
@@ -25,61 +26,65 @@ class Cron:
                  ding_talk_at_mobiles=None, ding_talk_secret=None, always_ding_talk_notify=False,
                  always_send_mail=False, alarm_mail_group_list=None, is_web_hook=False, **trigger_args):
 
-        if not isinstance(test_suite_id_list, list) or len(test_suite_id_list) < 1:
-            raise TypeError('test_suite_id_list must be list and not empty！')
+        try:
+            if not isinstance(test_suite_id_list, list) or len(test_suite_id_list) < 1:
+                raise TypeError('test_suite_id_list must be list and not empty！')
 
-        if not test_env_id:
-            raise ValueError('test_env_id should not be empty.')
+            if not test_env_id:
+                raise ValueError('test_env_id should not be empty.')
 
-        if not isinstance(trigger_type, str) or trigger_type not in ["interval", "date", "cron"]:
-            raise TypeError('trigger_type is invalid!')
+            if not isinstance(trigger_type, str) or trigger_type not in ["interval", "date", "cron"]:
+                raise TypeError('trigger_type is invalid!')
 
-        # cronJob ID
-        self.cron_job_id = cron_job_id
-        self.test_suite_id_list = test_suite_id_list
-        self.project_id = project_id
-        self.test_env_id = test_env_id
-        self.trigger_type = trigger_type
-        self.include_forbidden = include_forbidden
-        self.trigger_args = trigger_args
-        self.status_history = {}
-        self.enable_wxwork_notify = enable_wxwork_notify
-        self.wxwork_api_key = wxwork_api_key
-        self.wxwork_mention_mobile_list = wxwork_mention_mobile_list
-        self.always_wxwork_notify = always_wxwork_notify
-        self.enable_ding_talk_notify = enable_ding_talk_notify
-        self.ding_talk_access_token = ding_talk_access_token
-        self.ding_talk_at_mobiles = ding_talk_at_mobiles
-        self.ding_talk_secret = ding_talk_secret
-        self.always_ding_talk_notify = always_ding_talk_notify
-        self.always_send_mail = always_send_mail
-        self.alarm_mail_group_list = alarm_mail_group_list
-        self.is_web_hook = is_web_hook
-        self.execution_mode = 'cronJob'
+            # cronJob ID
+            self.cron_job_id = cron_job_id
+            self.test_suite_id_list = test_suite_id_list
+            self.project_id = project_id
+            self.test_env_id = test_env_id
+            self.trigger_type = trigger_type
+            self.include_forbidden = include_forbidden
+            self.trigger_args = trigger_args
+            self.status_history = {}
+            self.enable_wxwork_notify = enable_wxwork_notify
+            self.wxwork_api_key = wxwork_api_key
+            self.wxwork_mention_mobile_list = wxwork_mention_mobile_list
+            self.always_wxwork_notify = always_wxwork_notify
+            self.enable_ding_talk_notify = enable_ding_talk_notify
+            self.ding_talk_access_token = ding_talk_access_token
+            self.ding_talk_at_mobiles = ding_talk_at_mobiles
+            self.ding_talk_secret = ding_talk_secret
+            self.always_ding_talk_notify = always_ding_talk_notify
+            self.always_send_mail = always_send_mail
+            self.alarm_mail_group_list = alarm_mail_group_list
+            self.is_web_hook = is_web_hook
+            self.execution_mode = 'cronJob'
+        except BaseException as e:
+            with app.app_context():
+                current_app.logger.error('__init__ CronJob Exception {}'.format(str(e)))
 
     def cron_mission(self):
-        (env_name, protocol, domain) = get_env_name_and_domain(self.test_env_id)
-        if not protocol or not domain or not env_name:
-            return jsonify({'status': 'failed', 'data': '测试环境配置存在问题，请前往环境设置检查'})
-
-        global_env_vars = get_global_env_vars(self.test_env_id)
-        alarm_mail_list = []
-        if self.alarm_mail_group_list:
-            if isinstance(self.alarm_mail_group_list, list) and len(self.alarm_mail_group_list) > 0:
-                alarm_mail_list = get_mails_by_group(self.alarm_mail_group_list)
-            else:
-                raise TypeError('alarm_mail_group_list must be list')
-        # 根据时间生成一个ObjectId作为reportId
-        report_id = str(common.get_object_id())
-        test_report = {'_id': ObjectId(report_id),
-                       'testEnvId': ObjectId(self.test_env_id),
-                       'testEnvName': env_name,
-                       'executionMode': self.execution_mode}
-        if self.cron_job_id:
-            test_report['cronJobId'] = ObjectId(self.cron_job_id)
-        if self.project_id:
-            test_report['projectId'] = ObjectId(self.project_id)
         try:
+            (env_name, protocol, domain) = get_env_name_and_domain(self.test_env_id)
+            if not protocol or not domain or not env_name:
+                return jsonify({'status': 'failed', 'data': '测试环境配置存在问题，请前往环境设置检查'})
+
+            global_env_vars = get_global_env_vars(self.test_env_id)
+            alarm_mail_list = []
+            if self.alarm_mail_group_list:
+                if isinstance(self.alarm_mail_group_list, list) and len(self.alarm_mail_group_list) > 0:
+                    alarm_mail_list = get_mails_by_group(self.alarm_mail_group_list)
+                else:
+                    raise TypeError('alarm_mail_group_list must be list')
+            # 根据时间生成一个ObjectId作为reportId
+            report_id = str(common.get_object_id())
+            test_report = {'_id': ObjectId(report_id),
+                           'testEnvId': ObjectId(self.test_env_id),
+                           'testEnvName': env_name,
+                           'executionMode': self.execution_mode}
+            if self.cron_job_id:
+                test_report['cronJobId'] = ObjectId(self.cron_job_id)
+            if self.project_id:
+                test_report['projectId'] = ObjectId(self.project_id)
             test_report_returned = execute_test_by_suite(report_id, test_report, self.test_env_id,
                                                          self.test_suite_id_list, protocol, domain,
                                                          global_env_vars)
@@ -201,7 +206,9 @@ class Cron:
             else:
                 raise TypeError('无任何测试结果！')
         except BaseException as e:
-            print(e)
+            with app.app_context():
+                current_app.logger.error('CronJob exception, cronJobID: {}, Exception:{}'.format(
+                    self.cron_job_id, str(e)))
             return False, "出错了 - %s" % e
 
     def get_cron_job_id(self):

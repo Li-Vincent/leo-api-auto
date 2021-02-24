@@ -19,7 +19,8 @@ def save_plan_report(test_plan_report):
         TestPlanReport.insert(filtered_data)
         return True
     except BaseException as e:
-        current_app.logger.error("save_plan_report failed. - %s" % str(e))
+        with app.app_context():
+            current_app.logger.error("save_plan_report failed. - %s" % str(e))
         return False
 
 

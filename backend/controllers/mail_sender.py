@@ -77,8 +77,6 @@ def send_cron_email(to_list, subject, content):
         smtp_port = mail_sender.get('SMTPPort')
         status, msg = send_email(smtp_server, smtp_port, from_email, password, to_list, subject, content)
         if status:
-            with app.app_context():
-                current_app.logger.info("send_cron_mail to %s" % str(to_list))
             return {'status': 'ok', 'data': '邮件发送成功'}
         else:
             with app.app_context():
