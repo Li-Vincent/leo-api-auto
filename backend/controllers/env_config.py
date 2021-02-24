@@ -2,7 +2,7 @@ from datetime import datetime
 
 from bson import ObjectId
 from flask import jsonify, request, current_app
-from flask_security import login_required, roles_required
+from flask_security import login_required, roles_required, current_user
 
 from app import app
 from models.env_config import EnvConfig
@@ -34,10 +34,11 @@ def add_env_config():
         request_data['createAt'] = datetime.utcnow()
         filtered_data = EnvConfig.filter_field(request_data, use_set_default=True)
         EnvConfig.insert(filtered_data)
-        current_app.logger.info("add env config successfully. ENV: %s" % str(filtered_data['name']))
+        current_app.logger.info(
+            "add env config successfully. ENV:{}, User:{}".format(str(filtered_data['name']), current_user.email))
         return jsonify({'status': 'ok', 'data': '新建成功'})
     except BaseException as e:
-        current_app.logger.error("add env config failed. - %s" % str(e))
+        current_app.logger.error("add env config failed. User:{}, Error:{}".format(current_user.email, str(e)))
         return jsonify({'status': 'failed', 'data': '新建失败 %s' % e})
 
 
@@ -52,10 +53,11 @@ def update_env_config(test_env_id):
         update_response = EnvConfig.update({'_id': ObjectId(test_env_id)}, {'$set': filtered_data})
         if update_response['n'] == 0:
             return jsonify({'status': 'failed', 'data': '未找到相应的更新数据！'})
-        current_app.logger.info("update env config successfully. ENV ID: %s" % str(test_env_id))
+        current_app.logger.info(
+            "update env config successfully. ENV ID:{}, User:{}".format(str(test_env_id), current_user.email))
         return jsonify({'status': 'ok', 'data': '更新成功'})
     except BaseException as e:
-        current_app.logger.error("update_env_config failed. - %s" % str(e))
+        current_app.logger.error("update_env_config failed. User:{}, Error:{}".format(current_user.email, str(e)))
         return jsonify({'status': 'failed', 'data': '更新失败 %s' % e})
 
 
