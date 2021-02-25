@@ -86,7 +86,7 @@ def register():
         return jsonify({'status': 'failed', 'data': 'register failed %s' % e})
 
 
-@app.route('/api/logout', methods=['POST'])
+@app.route('/api/logout', methods=['GET', 'POST'])
 def logout():
     try:
         logout_user()
