@@ -201,6 +201,9 @@ FIX BUG  Add app_context for LOGGER, Add User to some logs
 FIX BUG  删除TestSuite,同时删除TestSuite下的TestCase
 FIX BUG  删除Project,同时删除Project下的TestSuites和TestCases
 
+### 2021-02-25
+增加接口Mock模块
+
 ### TODO V3
 测试报告增加筛选功能（成功/失败）
 多语言，支持中英文

@@ -360,6 +360,29 @@ export const asyncRoutes = [
         }
       },
       {
+        path: '/mock',
+        component: () => import('@/components/mock/Mock'),
+        name: 'Mock',
+        redirect: '/mocks',
+        meta: {
+          menu: '/mock',
+          title: 'Mock数据',
+          icon: 'fa fa-maxcdn',
+          roles: ['admin', 'project'] // you can set roles in root nav
+        },
+        children: [
+          {
+            path: '/mocks',
+            component: () => import('@/components/mock/MockList'),
+            name: 'MockList',
+            nav: 'mockList',
+            meta: {
+              menu: '/mock',
+              title: 'Mock列表'
+            }
+          }]
+      },
+      {
         path: '/user/register',
         component: () => import('@/components/user/Register'),
         name: 'Register',
