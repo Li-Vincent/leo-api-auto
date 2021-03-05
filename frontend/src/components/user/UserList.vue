@@ -85,19 +85,29 @@
             <el-checkbox :label="role.name">{{role.description}}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
+        <el-form-item label="项目权限" prop='userProjects'>
+          <el-checkbox-group v-for="project in projectsOption" v-model="editForm.userProjects" :key="project._id">
+            <el-checkbox :label="project._id">{{project.name}}</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <span>初始密码: {{initPassword}}</span>
         <el-button type="primary" @click.native="resetPwd">重置密码</el-button>
+        <br>
+        <br>
+        <el-button type="primary" @click.native="changeProjects" :loading="editLoading">修改项目权限</el-button>
+        <el-button type="primary" @click.native="changeUserRoles" :loading="editLoading">修改角色</el-button>
         <el-button @click.native="editFormVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="changeUserRoles" :loading="editLoading">修改权限</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-    import {getUserList, updateUserStatus, changeRoles, resetPassword, deleteUser} from "../../api/user";
+    import {getUserList, updateUserStatus, changeRoles, resetPassword, deleteUser, changeUserProjects} from "../../api/user";
+    import {getProjects} from "../../api/project";
+
 
     export default {
         name: "UserList",
@@ -117,6 +127,7 @@
                     {'name': 'project', 'description': '项目管理员'},
                     {'name': 'user', 'description': '普通用户'}
                 ],
+                projectsOption:[],
                 size: 10,
                 skip: 0,
                 sortBy: 'createAt',
@@ -137,7 +148,8 @@
                 editForm: {
                     email: '',
                     password: '',
-                    roleNames: []
+                    roleNames: [],
+                    userProjects:[]
                 },
                 initPassword: 'leo-api-test'
             }
@@ -272,6 +284,7 @@
             },
             handleEdit: function (index, row) {
                 this.editFormVisible = true;
+                console.log(row)
                 this.editForm = Object.assign({}, this.editForm, row);
             },
             changeUserRoles() {
@@ -372,10 +385,58 @@
                         self.getUsers()
                     });
                 })
-            }
+            },
+            getAllProjects(){
+                let params = {};
+                let header = {};
+                getProjects(params, header).then((res) => {
+                    let {status, data} = res;
+                    if (status === "ok") {
+                        this.projectsOption = data.rows
+                    } else {
+                        this.$message.error({
+                            message: data,
+                            center: true
+                        })
+                    }
+                }).catch((err) => {
+                    this.$message.err({
+                        message: '项目获取失败，请稍后刷新重试哦~',
+                        center: true
+                    });
+                })
+            },
+            changeProjects() {
+                this.$confirm('确认提交吗？', '提示', {}).then(() => {
+                    let header = {};
+                    let params = {
+                        email: this.editForm.email,
+                        userProjects: this.editForm.userProjects
+                    }
+                    this.editLoading = true;
+                    changeUserProjects(this.editForm.email, params, header).then((res) => {
+                        this.editLoading = false;
+                        if (res.status === 'ok') {
+                            this.$message({
+                                message: res.data,
+                                center: true,
+                            })
+                        } else {
+                            this.$message.error({
+                                message: res.data,
+                                center: true,
+                            })
+                        }
+                        this.$refs['editForm'].resetFields();
+                        this.editFormVisible = false;
+                        this.getUsers()
+                    });
+                });
+            },
         },
         created() {
             this.getUsers()
+            this.getAllProjects()
         }
     }
 

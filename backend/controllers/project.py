@@ -5,6 +5,7 @@ from flask import jsonify, request, current_app
 from flask_security import login_required, roles_accepted, current_user
 
 from app import app
+from controllers.user import query_user
 from models.project import Project
 from models.test_suite import TestSuite
 from models.test_case import TestCase
@@ -15,7 +16,21 @@ from utils import common
 @login_required
 def project_list():
     total_num, projects = common.get_total_num_and_arranged_data(Project, request.args, fuzzy_fields=['name'])
+    total_num, projects = filter_projects_by_user(current_user, total_num, projects)
     return jsonify({'status': 'ok', 'data': {'totalNum': total_num, 'rows': projects}})
+
+
+def filter_projects_by_user(user, total_num, projects):
+    role_names = list(map(lambda user_role: user_role.name, user.roles))
+    if 'admin' in role_names:
+        return total_num, projects
+    else:
+        user_detail = query_user(user.email)
+        if 'userProjects' not in user_detail:
+            return 0, []
+        user_projects = user_detail['userProjects']
+        filter_projects = list(filter(lambda project: project["_id"] in user_projects, projects))
+        return len(filter_projects), filter_projects
 
 
 @app.route('/api/project/<project_id>', methods=['GET'])

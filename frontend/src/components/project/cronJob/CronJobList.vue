@@ -866,11 +866,11 @@
     border-top: 0px solid transparent;
   }
 
-  .form-item-short > > > .el-form-item__content {
+  .form-item-short > .el-form-item__content {
     margin-left: 100px !important;
   }
 
-  .form-item-short > > > .el-input {
+  .form-item-short > .el-input {
     margin: 0 10px;
   }
 

@@ -14,6 +14,7 @@ class LeoUser(Model):
     active = BooleanField(field_name='active')
     roles = ListField()
     createAt = DateField()
+    userProjects = ListField()
 
     def __str__(self):
         return "email:{} - password:{} -  roleIds:{}".format(self.email, self.password, self.roleIds)

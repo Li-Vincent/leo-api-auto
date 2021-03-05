@@ -237,3 +237,26 @@ def delete_users():
     except BaseException as e:
         current_app.logger.error("delete_users failed. - %s" % str(e))
         return jsonify({'status': 'failed', 'data': '删除用户失败! %s' % e})
+
+
+@app.route('/api/user/<email>/changeProjects', methods=['POST'])
+@login_required
+@roles_required('admin')
+def change_projects(email):
+    try:
+        data = request.get_json()
+        if "userProjects" not in data:
+            return jsonify({'status': 'failed', 'data': '请输入用户Projects！'})
+        email = data['email'] if data['email'] else email
+        user = user_data_store.find_user(email=email)
+        if user is not None:
+            filtered_data = LeoUser.filter_field(data)
+            update_response = LeoUser.update({'email': email}, {'$set': filtered_data})
+            if update_response['n'] == 0:
+                return jsonify({'status': 'failed', 'data': '未找到要修改的用户！'})
+            return jsonify({'status': 'ok', 'data': '变更用户项目成功: %s' % email})
+        else:
+            return jsonify({'status': 'failed', 'data': '未找到要修改的用户！'})
+    except BaseException as e:
+        current_app.logger.error("change_roles failed. - %s" % str(e))
+        return jsonify({'status': 'failed', 'data': '变更用户项目失败! %s' % e})

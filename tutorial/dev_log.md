@@ -174,12 +174,12 @@ FIX BUG  嵌套路由，导航 对应Menu没有高亮显示
 3. FIX BUG   Json正则校验  选取字典列表中指定条件的字典中的某个字段进行判断
 
 ### 2021-01-05
-FIX BUG   planReport 项目报告没有展示接口用例详情
-添加功能  为Plan增加 curl Script, 间接实现CI
+1. FIX BUG   planReport 项目报告没有展示接口用例详情
+2. 添加功能  为Plan增加 curl Script, 间接实现CI
 
 ### 2021-02-07
-添加功能  删除指定日期之前的report
-为Plan 模块 增加操作教程
+1. 添加功能  删除指定日期之前的report
+2. 为Plan 模块 增加操作教程
 
 ### 2021-02-19
 FIX BUG  邮件模板支持中文
@@ -188,22 +188,26 @@ FIX BUG  邮件模板支持中文
 添加功能  删除用户
 
 ### 2021-02-22
-FIX BUG   定时任务：当用例全部PASS触发邮件失败
-完善邮件模板
-添加功能  测试计划、定时任务，支持 企业微信通知
+1. FIX BUG   定时任务：当用例全部PASS触发邮件失败
+2. 完善邮件模板
+3. 添加功能  测试计划、定时任务，支持 企业微信通知
 
 ### 2021-02-23
-添加功能  测试计划、定时任务，支持 钉钉通知
-FIX BUG  用例导入时用例组为空导入失败
+1. 添加功能  测试计划、定时任务，支持 钉钉通知
+2. FIX BUG  用例导入时用例组为空导入失败
 
 ### 2021-02-24
-FIX BUG  Add app_context for LOGGER, Add User to some logs
-FIX BUG  删除TestSuite,同时删除TestSuite下的TestCase
-FIX BUG  删除Project,同时删除Project下的TestSuites和TestCases
+1. FIX BUG  Add app_context for LOGGER, Add User to some logs
+2. FIX BUG  删除TestSuite,同时删除TestSuite下的TestCase
+3. FIX BUG  删除Project,同时删除Project下的TestSuites和TestCases
 
 ### 2021-02-25
 增加接口Mock模块
 
+### 2021-03-05
+修改用户权限: 增加项目隔离
+
 ### TODO V3
+完善教程
 测试报告增加筛选功能（成功/失败）
 多语言，支持中英文
