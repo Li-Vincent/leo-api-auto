@@ -176,7 +176,7 @@
         <div>请求所用时间 : {{result.spendTimeInSec}}s</div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">数据初始化:</div>
-        <div v-for="item in result.dataInitResult">
+        <div v-for="(item,index) in result.dataInitResult" :key="index">
           <pre>{{item}}</pre>
         </div>
         <div v-if="!result.dataInitResult || result.dataInitResult && Object.keys(result.dataInitResult).length <= 0">
@@ -184,13 +184,13 @@
         </div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">请求头部:</div>
-        <div v-for="(value, key) in result.headers" :key="key">{{key}}:&nbsp&nbsp{{value}}</div>
+        <div v-for="(value, key) in result.headers" :key="key">{{key}}:&nbsp;&nbsp;{{value}}</div>
         <div v-if="!result.headers || result.headers && Object.keys(result.headers).length <= 0">
           (无任何header)
         </div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">Cookies:</div>
-        <div v-for="item in result.cookies">{{item.name}} = {{item.value}}</div>
+        <div v-for="(item,index) in result.cookies" :key="index">{{item.name}} = {{item.value}}</div>
         <div v-if="!result.cookies || result.cookies && result.cookies.length <= 0 ">(无任何Cookie)
         </div>
         <div class="divider-line"></div>
@@ -220,7 +220,7 @@
         <div v-show="!result.responseData" class="resultStyle resultData">(无返回内容)</div>
         <div class="divider-line"></div>
         <div style="font-size: 25px">测试结论:</div>
-        <div v-for="item in result.testConclusion" v-show="result.testConclusion"
+        <div v-for="(item,index) in result.testConclusion" v-show="result.testConclusion" :key="index"
              style="overflow:auto;overflow-x:hidden;border: 1px solid #e6e6e6;padding: 10px;width: 88%;
                     word-break: break-all;line-height:25px">
           结论：{{item.resultType}} <br/>

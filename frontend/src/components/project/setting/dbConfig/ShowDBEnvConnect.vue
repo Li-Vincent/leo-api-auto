@@ -24,7 +24,7 @@
       <el-table-column prop="testEnvName" label="环境名称" min-width="15%" show-overflow-tooltip>
       </el-table-column>
       <el-table-column prop="dbType" label="DB Type" min-width="20%" show-overflow-tooltip>
-        <template slot-scope="scope">
+        <template>
           <span v-if="dbConfig.dbType">{{dbConfig.dbType}}</span>
         </template>
       </el-table-column>
