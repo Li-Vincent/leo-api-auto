@@ -207,6 +207,9 @@ FIX BUG  邮件模板支持中文
 ### 2021-03-05
 修改用户权限: 增加项目隔离
 
+### 2021-03-22
+FIX BUG  EditTestCase页面不应该默认显示CheckResponseBody Tab
+
 ### TODO V3
 完善教程
 测试报告增加筛选功能（成功/失败）

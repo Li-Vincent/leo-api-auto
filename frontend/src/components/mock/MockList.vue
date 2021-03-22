@@ -37,8 +37,8 @@
       </el-table-column>
       <el-table-column prop="lastUpdateTime" label="更新时间" min-width="10%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
-      <el-table-column prop="lastUpdateUser" label="更新者" min-width="10%" sortable='custom' show-overflow-tooltip>
-      </el-table-column>
+      <!-- <el-table-column prop="lastUpdateUser" label="更新者" min-width="10%" sortable='custom' show-overflow-tooltip>
+      </el-table-column> -->
       <el-table-column prop="status" label="状态" min-width="10%" sortable>
         <template slot-scope="scope">
           <img v-show="scope.row.status" src="../../assets/imgs/icon-yes.svg"/>

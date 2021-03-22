@@ -805,9 +805,9 @@
                             if (data.checkResponseCode != null) {
                                 self.form.checkResponse = 'checkResponseCode';
                             }
-                            if (data.checkResponseBody === null || data.checkResponseBody === undefined) {
+                            if (data.checkResponseBody === null || data.checkResponseBody === undefined || data.checkResponseBody[0].regex === "") {
                                 self.form.checkResponseBody = [{regex: "", query: []}]
-                            } else {
+                            } else if(data.checkResponseBody[0].query.length > 0) {
                                 self.form.checkResponse = 'checkResponseBody';
                                 // 加后缀
                                 data.checkResponseBody.forEach((data) => {
@@ -815,7 +815,7 @@
                                 });
                                 self.form.checkResponseBody = data.checkResponseBody;
                             }
-                            if (data.checkResponseNumber === null || data.checkResponseNumber === undefined) {
+                            if (data.checkResponseNumber === null || data.checkResponseNumber === undefined || data.checkResponseNumber[0].expressions.firstArg === "") {
                                 self.form.checkResponseNumber = [{
                                     expressions: {
                                         'firstArg': '',
@@ -826,6 +826,7 @@
                                     }
                                 }]
                             } else {
+                                self.form.checkResponse = 'checkResponseNumber';
                                 self.form.checkResponseNumber = data.checkResponseNumber
                             }
                         } else {
@@ -919,10 +920,23 @@
                                 )
                                 params["dataInitializes"] = self.form.dataInitializes;
                             }
-                            if (self.form.checkResponseCode) {
+                            if (self.form.checkResponseCode){
                                 params["checkResponseCode"] = self.form.checkResponseCode
                             } else {
                                 params["checkResponseCode"] = null
+                            }
+                            if (self.form.checkResponse == "noCheck"){
+                                params["checkResponseCode"] = null
+                                params["checkResponseBody"] = [{regex: "", query: []}]
+                                params["checkResponseNumber"] = [{
+                                    expressions: {
+                                        'firstArg': '',
+                                        'operator': '',
+                                        'secondArg': '',
+                                        'judgeCharacter': '',
+                                        'expectResult': ''
+                                    }
+                                }]
                             }
                             if (flag) {
                                 let header = {};
