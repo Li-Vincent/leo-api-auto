@@ -1,3 +1,4 @@
+import time
 from flask import request, jsonify, make_response
 
 from app import app
@@ -12,6 +13,8 @@ def mock_call(path):
         method = request.method
         mock_data = get_mock_data(method, path)
         if mock_data:
+            if 'delaySeconds' in mock_data and mock_data.get('delaySeconds') > 0:
+                time.sleep(mock_data.get('delaySeconds'))
             return make_response(jsonify(mock_data.get('responseBody')), mock_data.get('responseCode'))
         else:
             return make_response(jsonify({

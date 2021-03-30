@@ -14,6 +14,7 @@ class MockData(Model):
     path = StringField()
     responseCode = StringField()
     responseBody = DictField()
+    delaySeconds = FloatField(field_name='delaySeconds', default=0.0)
     description = StringField()
     status = BooleanField(field_name='status', default=False)
     isDeleted = BooleanField(field_name='isDeleted', default=False)

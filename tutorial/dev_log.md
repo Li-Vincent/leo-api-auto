@@ -210,6 +210,9 @@ FIX BUG  邮件模板支持中文
 ### 2021-03-22
 FIX BUG  EditTestCase页面不应该默认显示CheckResponseBody Tab
 
+### 2021-03-30
+添加功能  为接口Mock增加延迟功能
+
 ### TODO V3
 完善教程
 测试报告增加筛选功能（成功/失败）
