@@ -102,6 +102,10 @@
           <el-input type="textarea" :rows="8" placeholder="请输入返回体，Json格式，如{'username': 'test'}"
                     v-model.trim="form.responseBody"></el-input>
         </el-form-item>
+        </el-form-item>
+        <el-form-item label="延迟（秒）" prop="delaySeconds">
+          <el-input type="number" v-model="form.delaySeconds" auto-complete="off"></el-input>
+        </el-form-item>
         <el-form-item label="描述" prop='description'>
           <el-input type="textarea" :rows="4" v-model="form.description"></el-input>
         </el-form-item>
@@ -124,6 +128,7 @@
         <div>Mock分类 : {{mockDetail.category}}</div>
         <div>请求地址 : {{mockDetail.url}}</div>
         <div>请求方式 : {{mockDetail.requestMethod}}</div>
+        <div>请求延迟 : {{mockDetail.delaySeconds}} 秒</div>
         <div class="divider-line"></div>
         <div>返回状态码 : {{mockDetail.responseCode}}</div>
         <div>返回体:</div>
@@ -238,6 +243,7 @@
                     path: '/',
                     responseCode: '200',
                     responseBody: '',
+                    delaySeconds: 0.0,
                     description: ''
                 },
                 initForm: {
@@ -247,6 +253,7 @@
                     path: '/',
                     responseCode: '200',
                     responseBody: '',
+                    delaySeconds: 0.0,
                     description: ''
                 }
             }
@@ -436,6 +443,7 @@
                                     path: self.form.path.trim(),
                                     responseCode: self.form.responseCode.trim(),
                                     responseBody: self.form.responseBody.trim(),
+                                    delaySeconds: parseFloat(self.form.delaySeconds),
                                     description: self.form.description.trim(),
                                 });
                                 addMockAPI(params, header).then(res => {
@@ -468,6 +476,7 @@
                                     path: self.form.path.trim(),
                                     responseCode: self.form.responseCode.trim(),
                                     responseBody: self.form.responseBody.trim(),
+                                    delaySeconds: parseFloat(self.form.delaySeconds),
                                     description: self.form.description.trim(),
                                 };
                                 updateMockAPI(self.form._id, params, header).then(res => {

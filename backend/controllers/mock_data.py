@@ -49,6 +49,7 @@ def add_mock_api():
         request_data['responseBody'] = json.loads(request_data['responseBody'])
         if not isinstance(request_data['responseBody'], dict):
             raise TypeError('responseBody should be a json!')
+        request_data['delaySeconds'] = float(request_data['delaySeconds'])
         request_data["status"] = False
         request_data["isDeleted"] = False
         request_data["createAt"] = datetime.utcnow()
@@ -84,6 +85,8 @@ def update_mock_api(mock_api_id):
             request_data['responseBody'] = json.loads(request_data['responseBody'])
             if not isinstance(request_data['responseBody'], dict):
                 raise TypeError('responseBody should be a json!')
+        if 'delaySeconds' in request_data:
+            request_data['delaySeconds'] = float(request_data['delaySeconds'])
         update_data.update(request_data)
         update_data["lastUpdateTime"] = datetime.utcnow()
         update_data["lastUpdateUser"] = current_user.email
