@@ -1,6 +1,5 @@
 import ast
 import json
-import pytz
 import re
 import ssl
 import time
@@ -8,12 +7,13 @@ from datetime import datetime
 from multiprocessing import Pool
 from threading import Thread
 
+import pytz
 import requests
 from bson import ObjectId
+from flask import current_app
 from requests.cookies import RequestsCookieJar
 
 from app import app
-from flask import current_app
 from config import Config
 from controllers.mail import get_mails_by_group
 from controllers.mail_sender import send_cron_email
