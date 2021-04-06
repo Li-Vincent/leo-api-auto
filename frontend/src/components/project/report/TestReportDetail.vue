@@ -147,7 +147,9 @@
         <div>请求地址 : {{result.url}}</div>
         <div>请求方式 : {{result.requestMethod}}</div>
         <div>请求开始时间 : {{result.testStartTime}}</div>
-        <div>请求所用时间 : {{result.spendTimeInSec}}s</div>
+        <div>延迟调用时间 : {{result.delaySeconds}}s</div> 
+        <div>请求所用时间 : {{result.elapsedSeconds}}s</div> 
+        <div>用例执行时间 : {{result.spendTimeInSec}}s</div>
         <div class="divider-line"></div>
         <div style="font-size: 25px">测试结论:</div>
         <div v-for="(item,index) in result.testConclusion" v-show="result.testConclusion" :key="index"
@@ -162,7 +164,7 @@
         </div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">数据初始化:</div>
-        <div v-for="(item,index) in result.dataInitResult" :key="index">
+        <div v-for="(item,index) in result.dataInitResult">
           <pre>{{item}}</pre>
         </div>
         <div v-if="!result.dataInitResult || result.dataInitResult && Object.keys(result.dataInitResult).length <= 0">
@@ -176,7 +178,7 @@
         </div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">Cookies:</div>
-        <div v-for="(item,index) in result.cookies" :key="index">{{item.name}} = {{item.value}}</div>
+        <div v-for="(item,index) in result.cookies">{{item.name}} = {{item.value}}</div>
         <div v-if="!result.cookies || result.cookies && result.cookies.length <= 0 ">(无任何Cookie)
         </div>
         <div class="divider-line"></div>
@@ -188,6 +190,7 @@
         <div class="divider-line"></div>
         <div style="font-size: 25px;">预期结果:</div>
         <div>HTTP状态码: {{result.checkResponseCode}}</div>
+        <div>请求耗时: {{result.checkSpendSeconds}}</div>
         <div>JSON正则校验:
           <pre>{{result.checkResponseBody}}</pre>
           <span v-show="!result.checkResponseBody">(无)</span>
@@ -195,6 +198,7 @@
         <div class="divider-line"></div>
         <div style="font-size: 25px;">实际结果:</div>
         <div>HTTP状态码: {{result.responseStatusCode}}</div>
+        <div>请求耗时: {{result.elapsedSeconds}}s</div>
         <div>实际返回内容:</div>
         <div v-show="result.responseData" class="resultStyle resultData">
           <pre>{{result.responseData}}</pre>
@@ -301,6 +305,7 @@
                 self.result["name"] = detail.name;
                 self.result["url"] = detail.testCaseDetail.url;
                 self.result["requestMethod"] = detail.testCaseDetail.requestMethod;
+                self.result["delaySeconds"] = detail.testCaseDetail.delaySeconds;
                 if (detail.dataInitResult && detail.dataInitResult.length > 0) {
                     detail.dataInitResult.forEach(item => {
                         try {
@@ -325,6 +330,11 @@
                 } else {
                     self.result["checkResponseCode"] = '无'
                 }
+                if (detail.checkSpendSeconds) {
+                    self.result["checkSpendSeconds"] = detail.checkSpendSeconds + " s";
+                } else {
+                    self.result["checkSpendSeconds"] = '无'
+                }
                 if (detail.checkResponseBody && !(detail.checkResponseBody === 1 && detail.checkResponseBody[0]['regex'].trim() == '')) {
                     self.result["checkResponseBody"] = detail.checkResponseBody;
                 } else {
@@ -342,6 +352,7 @@
                 self.result["testConclusion"] = detail.testConclusion;
                 self.result["testStartTime"] = moment(detail.testStartTime).format("YYYY年MM月DD日HH时mm分ss秒");
                 self.result["spendTimeInSec"] = detail.spendTimeInSec;
+                self.result["elapsedSeconds"] = detail.elapsedSeconds;
                 self.showDetailDialog = true;
             },
         },

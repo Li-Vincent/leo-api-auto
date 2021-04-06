@@ -36,20 +36,15 @@
         <!--基本信息-->
         <div style="border: 1px solid #e6e6e6;margin-bottom: 10px;padding:15px">
           <el-row :gutter="10">
-            <el-col :span="18">
-              <el-form-item label="接口名称:" label-width="83px" prop="name">
+            <el-col :span="22">
+              <el-form-item label="接口名称:" label-width="100px" prop="name">
                 <el-input v-model="form.name" placeholder="名称" auto-complete></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="6">
-              <el-form-item label="Service:" label-width="83px" prop="service">
-                <el-input v-model.trim="form.service" placeholder="所属Service" auto-complete></el-input>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row :gutter="10">
             <el-col :span="4">
-              <el-form-item label="URL:" label-width="83px">
+              <el-form-item label="请求URL:" label-width="100px">
                 <el-select v-model="form.requestMethod" placeholder="请求方式" @change="checkRequestMethod">
                   <el-option v-for="(item,index) in MethodOptions" :key="index+''" :label="item.label"
                              :value="item.value"></el-option>
@@ -69,24 +64,38 @@
                 <el-input v-model.trim="form.domain" placeholder="请输入访问域名(优先级最高)" auto-complete></el-input>
               </el-form-item>
             </el-col>
-            <el-col :span='8'>
+            <el-col :span='9'>
               <el-form-item prop="route">
                 <el-input v-model.trim="form.route" placeholder="请输入接口路由" auto-complete></el-input>
               </el-form-item>
             </el-col>
-            <el-col :span='3' style="float: right">
-              <el-checkbox label='请求前是否清除Cookie' v-model.trim="form.isClearCookie">
-              </el-checkbox>
+          </el-row>
+          <el-row :gutter="10">
+            <el-col :span="6">
+              <el-form-item label="Service:" label-width="100px" prop="service">
+                <el-input v-model.trim="form.service" placeholder="所属Service" auto-complete></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="请求延迟（秒）:" label-width="130px" prop="delaySeconds">
+                <el-input v-model.number="form.delaySeconds" placeholder="请求延迟（秒）"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span='6'>
+              <el-form-item label="请求前是否清除Cookie:" label-width="180px" prop="isClearCookie">
+                <el-checkbox v-model.trim="form.isClearCookie"></el-checkbox>
+              </el-form-item>
             </el-col>
           </el-row>
           <el-row :gutter="10">
-            <el-form-item prop="description">
-              <el-input type="textarea" :rows="5" v-model="form.description" placeholder="请输入用例描述"
-                        auto-complete></el-input>
-            </el-form-item>
+            <el-col :span='22'>
+              <el-form-item  label="接口描述:" label-width="100px"  prop="description">
+                <el-input type="textarea" :rows="5" v-model="form.description" placeholder="请输入用例描述"
+                          auto-complete></el-input>
+              </el-form-item>
+            </el-col>
           </el-row>
         </div>
-
         <el-row :span="24">
           <el-collapse v-model="activeNames" @change="handleChange">
 
@@ -217,40 +226,6 @@
                   </el-form-item>
                 </template>
               </div>
-              <!--<el-table :data="form.parameter" highlight-current-row :class="ParameterType? 'parameter-a': 'parameter-b'">-->
-              <!--<el-table-column prop="name" label="参数名" min-width="28%" sortable>-->
-              <!--<template slot-scope="scope">-->
-              <!--<el-input v-model.trim="scope.row.name" :value="scope.row.name" placeholder="请输入参数值"></el-input>-->
-              <!--</template>-->
-              <!--</el-table-column>-->
-              <!--<el-table-column prop="value" label="参数值" min-width="40%" sortable>-->
-              <!--<template slot-scope="scope">-->
-              <!--<el-input v-model.trim="scope.row.value" :value="scope.row.value" placeholder="请输入参数值"></el-input>-->
-              <!--</template>-->
-              <!--</el-table-column>-->
-              <!--<el-table-column prop="interrelate" label="是否关联" min-width="13%" sortable>-->
-              <!--<template slot-scope="scope">-->
-              <!--<el-switch v-model="scope.row.interrelate">-->
-              <!--</el-switch>-->
-              <!--</template>-->
-              <!--</el-table-column>-->
-              <!--<el-table-column min-width="7%">-->
-              <!--<template slot-scope="scope">-->
-              <!--<el-button type="primary" size="mini" style="margin-bottom: 5px" v-show="scope.row.interrelate" @click="handleCorrelation(scope.$index, scope.row)">关联</el-button>-->
-              <!--</template>-->
-              <!--</el-table-column>-->
-              <!--<el-table-column label="操作" min-width="7%">-->
-              <!--<template slot-scope="scope">-->
-              <!--<i class="el-icon-delete" style="font-size:30px;cursor:pointer;" @click="delParameter(scope.$index)"></i>-->
-              <!--</template>-->
-              <!--</el-table-column>-->
-              <!--<el-table-column label="" min-width="5%">-->
-              <!--<template slot-scope="scope">-->
-              <!--<el-button v-if="scope.$index===(form.parameter.length-1)" size="mini" class="el-icon-plus" @click="addParameter"></el-button>-->
-              <!--</template>-->
-              <!--</el-table-column>-->
-              <!--</el-table>-->
-
             </el-collapse-item>
 
             <el-collapse-item title="返回结果设置全局变量(Suite级别)" name="4">
@@ -293,6 +268,9 @@
                     <el-radio-button label="checkResponseCode">
                       <div>HTTP状态校验</div>
                     </el-radio-button>
+                    <el-radio-button label="checkSpendSeconds">
+                      <div>接口耗时校验</div>
+                    </el-radio-button>
                     <el-radio-button label="checkResponseBody">
                       <div>JSON正则校验</div>
                     </el-radio-button>
@@ -308,8 +286,13 @@
                                :value="item.value"></el-option>
                   </el-select>
                 </div>
+                <div v-show="showSpendSecondsCheck">
+                  <el-form-item label="接口耗时小于（秒）:" label-width="200px"  prop="checkSpendSeconds" >
+                    <el-input v-model.number="form.checkSpendSeconds" placeholder="接口耗时小于（秒）" style="width:30%"></el-input>
+                  </el-form-item>
+                </div>
                 <div v-show="showResponseBodyCheck">
-                  <el-collapse-item title="JSON正则校验" name="4">
+                  <el-collapse-item title="JSON正则校验" name="5">
                     <el-table :data="form.checkResponseBody" highlight-current-row>
                       <el-table-column prop="regex" label="正则语句" min-width="20%">
                         <template slot-scope="scope">
@@ -541,6 +524,7 @@
                 form: {
                     name: '',
                     service: '',
+                    delaySeconds: 0,
                     requestMethod: 'GET',
                     requestProtocol: '',
                     route: '',
@@ -564,6 +548,7 @@
                     setGlobalVars: [{name: "", query: []}],
                     checkResponse: "noCheck",
                     checkResponseCode: "",
+                    checkSpendSeconds: 0,
                     checkResponseBody: [{regex: "", query: []}],
                     checkResponseNumber: [{
                         expressions: {
@@ -587,16 +572,26 @@
                     requestMethod: [
                         {required: true, message: '请选择请求方法', trigger: 'blur'}
                     ],
-                    route: [{required: true, message: '请输入接口路由', trigger: 'blur'},
+                    route: [
+                        {required: true, message: '请输入接口路由', trigger: 'blur'},
                         {validator: checkRoute, trigger: 'blur'}],
+                    delaySeconds: [
+                        {required: true, message: '请输入请求延迟（秒）', trigger: 'blur'},
+                        {pattern: /^\d+$/, message: '请输入非负整数', trigger: 'blur'}
+                    ],
                     service: [
                         {required: false, message: '请输入服务名', trigger: 'blur'}
                     ],
                     parameterRaw: [{required: false, message: '请输入名称', trigger: 'blur'},
                         {validator: checkJson, trigger: 'blur'}],
-                    checkResponseBody: [{required: false, message: '请输入名称', trigger: 'blur'}]
+                    checkResponseBody: [{required: false, message: '请输入名称', trigger: 'blur'}],
+                    checkSpendSeconds: [
+                        {required: true, message: '请输入耗时校验（秒）', trigger: 'blur'},
+                        {pattern: /^\d+$/, message: '请输入非负整数', trigger: 'blur'}
+                    ],
                 },
                 showResponseCodeCheck: false,
+                showSpendSecondsCheck: false,
                 showResponseBodyCheck: false,
                 showResponseNumCheck: false
             }
@@ -764,6 +759,11 @@
                         if (status === 'ok') {
                             self.form.name = data.name;
                             self.form.service = data.service;
+                            if (data.hasOwnProperty('delaySeconds')){
+                              self.form.delaySeconds = data.delaySeconds;
+                            } else{
+                              self.form.delaySeconds = 0;
+                            }
                             self.form.requestMethod = data.requestMethod;
                             self.form.requestProtocol = data.requestProtocol;
                             self.form.route = data.route;
@@ -804,6 +804,15 @@
                             self.form.checkResponseCode = data.checkResponseCode;
                             if (data.checkResponseCode != null) {
                                 self.form.checkResponse = 'checkResponseCode';
+                            }
+                            if (data.hasOwnProperty('checkSpendSeconds')){
+                              self.form.checkSpendSeconds = data.checkSpendSeconds;
+                            } else{
+                              self.form.checkSpendSeconds = 0;
+                            }
+                            
+                            if (self.form.checkSpendSeconds > 0) {
+                                self.form.checkResponse = 'checkSpendSeconds';
                             }
                             if (data.checkResponseBody === null || data.checkResponseBody === undefined || data.checkResponseBody[0].regex === "") {
                                 self.form.checkResponseBody = [{regex: "", query: []}]
@@ -871,6 +880,7 @@
                             });
                             let params = {
                                 name: self.form.name.trim(),
+                                delaySeconds: self.form.delaySeconds,
                                 service: self.form.service,
                                 requestMethod: self.form.requestMethod,
                                 requestProtocol: self.form.requestProtocol,
@@ -925,8 +935,14 @@
                             } else {
                                 params["checkResponseCode"] = null
                             }
+                            if (self.form.checkSpendSeconds){
+                                params["checkSpendSeconds"] = self.form.checkSpendSeconds
+                            } else {
+                                params["checkSpendSeconds"] = 0
+                            }
                             if (self.form.checkResponse == "noCheck"){
                                 params["checkResponseCode"] = null
+                                params["checkSpendSeconds"] = 0
                                 params["checkResponseBody"] = [{regex: "", query: []}]
                                 params["checkResponseNumber"] = [{
                                     expressions: {
@@ -976,18 +992,27 @@
                 handler(curVal, oldVal) {
                     if (curVal.checkResponse === 'noCheck') {
                         this.showResponseCodeCheck = false
+                        this.showSpendSecondsCheck = false
                         this.showResponseBodyCheck = false
                         this.showResponseNumCheck = false
                     } else if (curVal.checkResponse === 'checkResponseCode') {
                         this.showResponseCodeCheck = true
+                        this.showSpendSecondsCheck = false
+                        this.showResponseBodyCheck = false
+                        this.showResponseNumCheck = false
+                    } else if (curVal.checkResponse === 'checkSpendSeconds') {
+                        this.showResponseCodeCheck = false
+                        this.showSpendSecondsCheck = true
                         this.showResponseBodyCheck = false
                         this.showResponseNumCheck = false
                     } else if (curVal.checkResponse === 'checkResponseBody') {
                         this.showResponseCodeCheck = false
+                        this.showSpendSecondsCheck = false
                         this.showResponseBodyCheck = true
                         this.showResponseNumCheck = false
                     } else if (curVal.checkResponse === 'checkResponseNumber') {
                         this.showResponseCodeCheck = false
+                        this.showSpendSecondsCheck = false
                         this.showResponseBodyCheck = false
                         this.showResponseNumCheck = true
                     }

@@ -12,7 +12,7 @@ def execute_data_init(test_env_id, data, global_vars):
             db_connect_config = get_db_connect(data['dbConfigId'], test_env_id)
             if db_connect_config:
                 if not (db_connect_config['dbHost'] and db_connect_config['dbPort'] and db_connect_config['dbName']):
-                    return {'status': 'failed', result: 'db config 不完整'}
+                    return {'status': 'failed', 'result': 'db config 不完整'}
                 if db_connect_config['dbType'] == 'MongoDB':
                     if 'dbUser' in db_connect_config and 'dbPassword' in db_connect_config:
                         connection = get_mongo_connection(host=db_connect_config['dbHost'],
@@ -86,7 +86,7 @@ def execute_data_init(test_env_id, data, global_vars):
                                     'document': document_str}
                 elif db_connect_config['dbType'] == 'MySQL':
                     if not db_connect_config['dbUser']:
-                        return {'status': 'failed', result: 'dbUser is empty'}
+                        return {'status': 'failed', 'result': 'dbUser is empty'}
                     connection = get_mysql_connection(host=db_connect_config['dbHost'],
                                                       port=db_connect_config['dbPort'],
                                                       user=db_connect_config['dbUser'],
@@ -102,7 +102,7 @@ def execute_data_init(test_env_id, data, global_vars):
                     else:
                         return {'status': 'failed', 'reason': result, 'sql': sql}
                 else:
-                    return {'status': 'failed', result: 'not support other than MongoDB/MySQL yet'}
+                    return {'status': 'failed', 'result': 'not support other than MongoDB/MySQL yet'}
             else:
                 return {'status': 'failed', 'reason': 'db_connect_config is None'}
     except BaseException as e:
