@@ -28,6 +28,7 @@ class TestCase(Model):
     requestMethod = StringField()
     domain = StringField()
     route = StringField()
+    delaySeconds = IntField(field_name='delaySeconds', default=0)
     # 数据初始化
     dataInitializes = ListField(field_name='dataInitializes',
                                 default=[{'dbConfigId': '', 'dbType': '', 'mongoCrud': '', 'collection': '',
@@ -151,7 +152,7 @@ class TestCase(Model):
                                             }
                                         }]
                                     })
-
+    checkSpendSeconds = IntField(field_name='checkSpendSeconds', default=0)
     testStatus = BooleanField(field_name='testStatus', default=False)  # 测试状态， true代表测试进行中
     lastManualResult = DictField(field_name='lastManualResult', default={})
 

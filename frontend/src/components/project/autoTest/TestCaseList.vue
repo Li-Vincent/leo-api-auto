@@ -173,10 +173,12 @@
         <div>请求地址 : {{result.url}}</div>
         <div>请求方式 : {{result.requestMethod}}</div>
         <div>请求开始时间 : {{result.testStartTime}}</div>
-        <div>请求所用时间 : {{result.spendTimeInSec}}s</div>
+        <div>延迟调用时间 : {{result.delaySeconds}}s</div> 
+        <div>请求所用时间 : {{result.elapsedSeconds}}s</div> 
+        <div>用例执行时间 : {{result.spendTimeInSec}}s</div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">数据初始化:</div>
-        <div v-for="(item,index) in result.dataInitResult" :key="index">
+        <div v-for="(item,index) in result.dataInitResult">
           <pre>{{item}}</pre>
         </div>
         <div v-if="!result.dataInitResult || result.dataInitResult && Object.keys(result.dataInitResult).length <= 0">
@@ -190,7 +192,7 @@
         </div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">Cookies:</div>
-        <div v-for="(item,index) in result.cookies" :key="index">{{item.name}} = {{item.value}}</div>
+        <div v-for="(item,index) in result.cookies">{{item.name}} = {{item.value}}</div>
         <div v-if="!result.cookies || result.cookies && result.cookies.length <= 0 ">(无任何Cookie)
         </div>
         <div class="divider-line"></div>
@@ -202,6 +204,7 @@
         <div class="divider-line"></div>
         <div style="font-size: 25px;">预期结果:</div>
         <div>HTTP状态码: {{result.checkResponseCode}}</div>
+        <div>请求耗时: {{result.checkSpendSeconds}}</div>
         <div>JSON正则校验:
           <pre>{{result.checkResponseBody}}</pre>
           <span v-show="!result.checkResponseBody">(无)</span>
@@ -213,6 +216,7 @@
         <div class="divider-line"></div>
         <div style="font-size: 25px;">实际结果:</div>
         <div>HTTP状态码: {{result.responseStatusCode}}</div>
+        <div>请求耗时: {{result.elapsedSeconds}}s</div>
         <div>实际返回内容:</div>
         <div v-show="result.responseData" class="resultStyle resultData">
           <pre>{{result.responseData}}</pre>
@@ -688,6 +692,7 @@
                 self.result["env"] = testResult.env;
                 self.result["url"] = testResult.testCaseDetail.url;
                 self.result["requestMethod"] = testResult.testCaseDetail.requestMethod;
+                self.result["delaySeconds"] = testResult.testCaseDetail.delaySeconds;
                 if (testResult.dataInitResult && testResult.dataInitResult.length > 0) {
                     testResult.dataInitResult.forEach(item => {
                         try {
@@ -711,6 +716,11 @@
                 } else {
                     self.result["checkResponseCode"] = '无'
                 }
+                if (testResult.checkSpendSeconds) {
+                    self.result["checkSpendSeconds"] = testResult.checkSpendSeconds + " s";
+                } else {
+                    self.result["checkSpendSeconds"] = '无'
+                }
                 if (testResult.checkResponseBody && !(testResult.checkResponseBody.length === 1 && testResult.checkResponseBody[0]['regex'].trim() === '')) {
                     self.result["checkResponseBody"] = testResult.checkResponseBody;
                 } else {
@@ -733,6 +743,7 @@
                 self.result["testConclusion"] = testResult.testConclusion;
                 self.result["testStartTime"] = moment(testResult.testStartTime).format("YYYY年MM月DD日HH时mm分ss秒");
                 self.result["spendTimeInSec"] = testResult.spendTimeInSec;
+                self.result["elapsedSeconds"] = testResult.elapsedSeconds;
                 self.testResultStatus = true;
             },
             copyCase(index, row) {

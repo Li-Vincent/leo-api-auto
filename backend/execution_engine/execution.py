@@ -30,6 +30,7 @@ from models.test_suite import TestSuite
 from utils import common
 from utils import send_notify
 
+# useless
 ssl._create_default_https_context = ssl._create_unverified_context
 requests.packages.urllib3.disable_warnings()
 
@@ -136,6 +137,7 @@ class ExecutionEngine:
         request_headers = dict()
         request_body = None
         check_response_code = None
+        check_spend_seconds = None
         check_response_body = None
         check_response_number = None
         set_global_vars = None  # for example {'user': 'user1'}
@@ -259,12 +261,18 @@ class ExecutionEngine:
                     cookie_jar.set(cookie['name'], cookie['value'])
                 session.cookies.update(cookie_jar)
         try:
+            if 'delaySeconds' in test_case and test_case['delaySeconds'] > 0:
+                time.sleep(test_case['delaySeconds'])
+                returned_data['testCaseDetail']['delaySeconds'] = test_case['delaySeconds']
+            else:
+                returned_data['testCaseDetail']['delaySeconds'] = 0
             if 'parameterType' in test_case and test_case["parameterType"] == "form":
                 response = session.request(url=request_url, method=request_method, data=request_body,
                                            headers=request_headers, verify=False)
             else:
                 response = session.request(url=request_url, method=request_method, json=request_body,
                                            headers=request_headers, verify=False)
+            returned_data['elapsedSeconds'] = round(response.elapsed.total_seconds(), 3)
             if is_debug:
                 # 保存的临时 cookies  for 调试用例
                 response_cookies = []
@@ -290,6 +298,11 @@ class ExecutionEngine:
         if 'checkResponseCode' in test_case and test_case['checkResponseCode'] not in ["", None]:
             check_response_code = test_case['checkResponseCode']
             returned_data['checkResponseCode'] = check_response_code
+
+        # checkSpendSeconds 校验处理
+        if 'checkSpendSeconds' in test_case and test_case['checkSpendSeconds'] > 0:
+            check_spend_seconds = test_case['checkSpendSeconds']
+            returned_data['checkSpendSeconds'] = check_spend_seconds
 
         try:
             response_json = json.loads(response.text) if isinstance(response.text,
@@ -319,6 +332,14 @@ class ExecutionEngine:
                 returned_data["testConclusion"].append(
                     {'resultType': test_conclusion.get(1),
                      'reason': '响应状态码错误, 期待值: <%s>, 实际值: <%s>。\t' % (check_response_code, response_status_code)})
+                return returned_data
+
+            if check_spend_seconds and check_spend_seconds < returned_data['elapsedSeconds']:
+                returned_data["status"] = 'failed'
+                returned_data["testConclusion"].append(
+                    {'resultType': test_conclusion.get(1),
+                     'reason': '请求超时, 期待耗时: %s s, 实际耗时: %s s。\t' % (
+                         check_spend_seconds, returned_data['elapsedSeconds'])})
                 return returned_data
 
             # check response number
@@ -406,7 +427,7 @@ class ExecutionEngine:
             check_response_body = test_case['checkResponseBody']
             returned_data['checkResponseBody'] = check_response_body
 
-        # checkResponseNumber
+        # checkResponseNumber 校验处理
         if 'checkResponseNumber' in test_case and not test_case['checkResponseNumber'] in [[], {}, "", None]:
             if not isinstance(test_case['checkResponseNumber'], list):
                 raise TypeError('checkResponseNumber must be list！')
@@ -438,6 +459,15 @@ class ExecutionEngine:
             returned_data["testConclusion"].append(
                 {'resultType': test_conclusion.get(1),
                  'reason': '响应状态码错误, 期待值: <%s>, 实际值: <%s>。\t' % (check_response_code, response_status_code)})
+
+        if check_spend_seconds and check_spend_seconds < returned_data['elapsedSeconds']:
+            returned_data["status"] = 'failed'
+            returned_data["testConclusion"].append(
+                {'resultType': test_conclusion.get(1),
+                 'reason': '请求超时, 期待耗时: %s s, 实际耗时: %s s。\t' % (
+                     check_spend_seconds, returned_data['elapsedSeconds'])})
+            return returned_data
+
         if check_response_body:
             try:
                 for check_item in check_response_body:

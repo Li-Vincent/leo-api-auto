@@ -101,20 +101,20 @@
             type="success"
             size="small"
             @click="checkDetail(scope.$index, scope.row)"
-            >查看详情</el-button
-          >
+            >查看详情
+          </el-button>
           <el-button
             type="primary"
             size="small"
             @click="handleEdit(scope.$index, scope.row)"
-            >编辑</el-button
-          >
+            >编辑
+          </el-button>
           <el-button
             type="danger"
             size="small"
             @click="handleDel(scope.$index, scope.row)"
-            >删除</el-button
-          >
+            >删除
+          </el-button>
           <el-button
             type="info"
             size="small"
@@ -593,7 +593,7 @@ export default {
                 }
               });
             } else if (this.dialogStatus == "edit") {
-                console.log(self.form.delaySeconds)
+              console.log(self.form.delaySeconds);
               let params = {
                 name: self.form.name.trim(),
                 category: self.form.category.trim(),
