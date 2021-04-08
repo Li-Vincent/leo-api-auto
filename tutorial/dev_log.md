@@ -217,7 +217,11 @@ FIX BUG  EditTestCase页面不应该默认显示CheckResponseBody Tab
 1. 添加功能  为接口用例增加延迟调用功能
 2. 添加功能  为接口用例增加 耗时校验， 耗时超过指定时间 标记为Fail
 
+### 2021-04-08
+添加功能 为接口用例列表添加批量测试功能
+
 ### TODO V3
+FIX BUG Excel导入导出用例 - DelaySeconds, checkSpendSeconds 字段 相关问题
 完善教程
 测试报告增加筛选功能（成功/失败）
 多语言，支持中英文
