@@ -54,22 +54,28 @@
         <el-form-item style="margin-left: 30px">
           <el-button class="el-icon-plus" type="primary" @click="handleAdd"> 新建接口用例</el-button>
         </el-form-item>
-        <el-form-item style="float: right;  margin-right: 100px">
-          <el-select v-model="testEnv" style="margin-right: 20px" @visible-change='checkActiveTestEnv' clearable
-                     placeholder="测试环境">
-            <el-option
-              v-for="(item,index) in testEnvs"
-              :key="index+''"
-              :label="item.name"
-              :value="item._id">
-            </el-option>
-          </el-select>
-          <el-form-item>
+        <el-form-item style="margin-left: 30px">
             <el-input v-model.trim="filters.name" placeholder="名称" @keyup.enter.native="getTestCaseList"></el-input>
-          </el-form-item>
-          <el-form-item>
+        </el-form-item>
+        <el-form-item >
             <el-button type="primary" class="el-icon-search" @click="getTestCaseList"> 查询</el-button>
-          </el-form-item>
+        </el-form-item>
+        <el-form-item style="float: right;  margin-right: 100px">
+            <el-select v-model="testEnv" style="margin-right: 20px" @visible-change='checkActiveTestEnv' clearable
+                     placeholder="测试环境">
+                <el-option
+                v-for="(item,index) in testEnvs"
+                :key="index+''"
+                :label="item.name"
+                :value="item._id">
+                </el-option>
+            </el-select>
+            <el-tooltip placement="top">
+                <div slot="content">
+                　  <span>执行顺序：批量测试完全按照勾选顺序执行</span>
+                </div>
+                <el-button type="primary" class="el-icon-search" :disabled="!hasSelected" @click="batchTest()"> 批量测试</el-button>
+            </el-tooltip>
         </el-form-item>
       </el-form>
     </el-col>
@@ -676,6 +682,46 @@
                 } else {
                     this.$message({
                         message: '请选择测试环境, 在测试按钮上方哦~',
+                        center: true,
+                        type: 'warning'
+                    })
+                }
+            },
+            batchTest(){
+                if (this.testEnv) {
+                    let self = this;
+                    self.testLoading = true;
+                    let testCaseIdList = self.selects.map(item => item._id);
+                    let headers = {"Content-Type": "application/json"};
+                    let params = {
+                        testCaseIdList: testCaseIdList,
+                        testEnvId: self.testEnv,
+                        executionUser: self.$store.getters.email,
+                        executionMode: 'manual'
+                    };
+                    startAPITestByCase(params, headers).then((res) => {
+                        self.testLoading = false;
+                        let {status, data} = res;
+                        if (status === 'ok') {
+                            self.getTestCaseList()
+                        } else {
+                            self.$message.warning({
+                                message: data,
+                                center: true,
+                            })
+                        }
+                        self.getTestCaseList()
+                    }).catch((error) => {
+                        self.$message.error({
+                            message: '接口用例执行异常/超时，请稍后重试哦~',
+                            center: true,
+                        });
+                        self.testLoading = false;
+                        self.getTestCaseList()
+                    })
+                } else {
+                    this.$message({
+                        message: '请选择测试环境, 在「批量测试」左侧哦~',
                         center: true,
                         type: 'warning'
                     })
