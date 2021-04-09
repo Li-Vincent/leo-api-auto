@@ -216,6 +216,24 @@ def is_slice_expression(expression):
         return False
 
 
+def resolve_int_var(init_int_str, int_var_regex='\'?<int>([0-9]+)</int>\'?'):
+    """
+    将需要是 int 类型的变量的 引号去除
+    用法： 将需要 保持 int 类型的变量 用<int></int>包围
+
+    :param init_int_str: 准备进行解析的变量<str>
+    :param int_var_regex: int型参数 正则表达式<str>
+    :return: 解析后的变量<str>
+    """
+    re_int_var = re.compile(int_var_regex)
+
+    def int_var_repl(match_obj):
+        return match_obj.group(1) if match_obj.group(1) else match_obj.group()
+
+    resolved_var = re.sub(pattern=re_int_var, string=init_int_str, repl=int_var_repl)
+    return resolved_var
+
+
 def replace_global_var_for_str(init_var_str, global_var_dic, global_var_regex='\${.*?}',
                                match2key_sub_string_start_index=2, match2key_sub_string_end_index=-1):
     """
