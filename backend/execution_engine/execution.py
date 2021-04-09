@@ -29,6 +29,7 @@ from models.test_case import TestCase
 from models.test_suite import TestSuite
 from utils import common
 from utils import send_notify
+from utils import fake
 
 # useless
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -206,15 +207,19 @@ class ExecutionEngine:
                 for key, value in test_case['requestBody'][0].items():
                     if value is not None:
                         request_url += '%s=%s&' % (key, value)
+                        request_url = fake.resolve_faker_var(init_faker_var=request_url)
                         request_url = common.replace_global_var_for_str(init_var_str=request_url,
                                                                         global_var_dic=self.global_vars)
+                request_url = common.resolve_int_var(init_int_str=request_url)
                 request_url = request_url[0:(len(request_url) - 1)]
                 returned_data['testCaseDetail']['url'] = request_url
             else:
                 # list 先转 str，方便全局变量替换
                 test_case['requestBody'] = str(test_case['requestBody'])
+                # 替换faker变量
+                request_body_str = fake.resolve_faker_var(init_faker_var=test_case['requestBody'])
                 # 全局替换
-                request_body_str = common.replace_global_var_for_str(init_var_str=test_case['requestBody'],
+                request_body_str = common.replace_global_var_for_str(init_var_str=request_body_str,
                                                                      global_var_dic=self.global_vars)
                 # 替换requestBody中的Number类型(去除引号)
                 request_body_str = common.replace_global_var_for_str(init_var_str=request_body_str,
@@ -223,6 +228,8 @@ class ExecutionEngine:
                                                                      match2key_sub_string_start_index=6,
                                                                      match2key_sub_string_end_index=-2
                                                                      )
+                # 替换 需要去除引号的 int变量
+                request_body_str = common.resolve_int_var(init_int_str=request_body_str)
                 if 'isJsonArray' not in test_case or not test_case['isJsonArray']:
                     request_body_str = request_body_str[1:-1]
                 # 转回 dict or list
