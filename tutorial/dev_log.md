@@ -281,6 +281,10 @@ FIX BUG EditTestCase页面不应该默认显示CheckResponseBody Tab
 
 添加功能 接口请求参数支持 faker 随机函数引用替换
 
+### 2021-04-13
+
+FIX BUG： 返回值不是json格式, 存在强制正则校验
+
 ### TODO V3
 
 FIX BUG Excel导入导出用例 - DelaySeconds, checkSpendSeconds 字段 相关问题
