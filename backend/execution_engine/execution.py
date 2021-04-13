@@ -363,19 +363,23 @@ class ExecutionEngine:
             if 'checkResponseBody' in test_case and test_case['checkResponseBody'] not in [[], {}, "", None]:
                 if not isinstance(test_case['checkResponseBody'], list):
                     raise TypeError('checkResponseBody must be list！')
+                need_check_response_body = False
                 for index, check_item in enumerate(test_case['checkResponseBody']):
                     if not isinstance(check_item, dict) or 'regex' not in check_item or 'query' not in check_item or \
                             not isinstance(check_item['regex'], str) or not isinstance(check_item['query'], list):
                         raise TypeError('checkResponseBody is not valid!')
                     # 对校验结果进行全局替换
-                    test_case['checkResponseBody'][index]['regex'] = common.replace_global_var_for_str(
-                        init_var_str=check_item['regex'], global_var_dic=self.global_vars) if check_item.get(
-                        'regex') and isinstance(check_item.get('regex'), str) else ''  # 警告！python判断空字符串为False
-                    if check_item.get('query') and isinstance(check_item.get('query'), list):
-                        test_case['checkResponseBody'][index]['query'] = common.replace_global_var_for_list(
-                            init_var_list=check_item['query'], global_var_dic=self.global_vars)
-                check_response_body = test_case['checkResponseBody']
-                returned_data['checkResponseBody'] = check_response_body
+                    if len(check_item['regex']) > 0:
+                        need_check_response_body = True
+                        test_case['checkResponseBody'][index]['regex'] = common.replace_global_var_for_str(
+                            init_var_str=check_item['regex'], global_var_dic=self.global_vars) if check_item.get(
+                            'regex') and isinstance(check_item.get('regex'), str) else ''  # 警告！python判断空字符串为False
+                        if check_item.get('query') and isinstance(check_item.get('query'), list):
+                            test_case['checkResponseBody'][index]['query'] = common.replace_global_var_for_list(
+                                init_var_list=check_item['query'], global_var_dic=self.global_vars)
+                if need_check_response_body:
+                    check_response_body = test_case['checkResponseBody']
+                    returned_data['checkResponseBody'] = check_response_body
 
             if check_response_body:
                 for check_item in check_response_body:
@@ -419,20 +423,23 @@ class ExecutionEngine:
         if 'checkResponseBody' in test_case and test_case['checkResponseBody'] not in [[], {}, "", None]:
             if not isinstance(test_case['checkResponseBody'], list):
                 raise TypeError('checkResponseBody must be list！')
+            need_check_response_body = False
             for index, check_item in enumerate(test_case['checkResponseBody']):
                 if not isinstance(check_item, dict) or 'regex' not in check_item or 'query' not in check_item or \
                         not isinstance(check_item['regex'], str) or not isinstance(check_item['query'], list):
                     raise TypeError('checkResponseBody is not valid!')
-                # TODO 可开启/关闭 全局替换
                 # 对校验结果进行全局替换
-                test_case['checkResponseBody'][index]['regex'] = common.replace_global_var_for_str(
-                    init_var_str=check_item['regex'], global_var_dic=self.global_vars) if check_item.get(
-                    'regex') and isinstance(check_item.get('regex'), str) else ''  # 警告！python判断空字符串为False
-                if check_item.get('query') and isinstance(check_item.get('query'), list):
-                    test_case['checkResponseBody'][index]['query'] = common.replace_global_var_for_list(
-                        init_var_list=check_item['query'], global_var_dic=self.global_vars)
-            check_response_body = test_case['checkResponseBody']
-            returned_data['checkResponseBody'] = check_response_body
+                if len(check_item['regex']) > 0:
+                    need_check_response_body = True
+                    test_case['checkResponseBody'][index]['regex'] = common.replace_global_var_for_str(
+                        init_var_str=check_item['regex'], global_var_dic=self.global_vars) if check_item.get(
+                        'regex') and isinstance(check_item.get('regex'), str) else ''  # 警告！python判断空字符串为False
+                    if check_item.get('query') and isinstance(check_item.get('query'), list):
+                        test_case['checkResponseBody'][index]['query'] = common.replace_global_var_for_list(
+                            init_var_list=check_item['query'], global_var_dic=self.global_vars)
+            if need_check_response_body:
+                check_response_body = test_case['checkResponseBody']
+                returned_data['checkResponseBody'] = check_response_body
 
         # checkResponseNumber 校验处理
         if 'checkResponseNumber' in test_case and not test_case['checkResponseNumber'] in [[], {}, "", None]:

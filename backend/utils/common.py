@@ -348,7 +348,7 @@ def dict_get(dic, locators, default=None):
                 # 如果不满足切片规则，就直接进行正则匹配
                 match_obj = re.search(locators[0], dic)
                 return match_obj.group() if match_obj else None
-        return default
+        return dic
 
     if dic == {} or len(locators) < 1:
         return str(dic)  # 用于后续 re.search
