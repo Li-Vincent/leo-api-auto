@@ -131,7 +131,13 @@ ${PLATFORM_HOST}:${PLATFORM_PORT}/login
     > db.createUser({user:"${USERNAME}",pwd:"${PASSWORD}",roles:["root","readWriteAnyDatabase"]})
 
     Successfully added user: { "user" : ${USERNAME}, "roles" : [ "root", "readWriteAnyDatabase" ] }
-  
+
+    > use leo-api-platform-db
+
+    db.createUser({ user: "${USERNAME}", pwd: "${PASSWORD}",roles: [ { role: "readWrite", db: "leo-api-platform-db"},{ role: "userAdmin", db: "leo-api-platform-db" }] })
+
+    Successfully added user: ......
+
 2.3 数据库内存扩容(建议)
 
     > db.adminCommand({setParameter:1, internalQueryExecMaxBlockingSortBytes:104857600})
@@ -184,7 +190,11 @@ LEO_API_PLATFORM_MONGO_DBNAME 为默认的数据库DB名（如不填默认为：
 在项目根目录下执行部署文件,预计需要等待几分钟（取决于网速和机器性能），即可部署完成
 
     sh DeployService
-  
+
+**踩坑记录**
+> 如果账号没有root权限，需要加 sudo的话， 记得加 sudo -E sh DeployService， 不然无法获取全局变量
+
+
 #### 5. 访问项目
 
 浏览器访问${PLATFORM_HOST}:${PLATFORM_PORT}即可

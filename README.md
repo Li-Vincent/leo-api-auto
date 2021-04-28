@@ -15,12 +15,22 @@
 **推荐使用 Chrome 最新浏览器体验**
 
 ## Ⅱ. LEO API测试平台功能结构
- 
+
 ![平台结构图](tutorial/images/readme/introduction.png "平台结构图.png")
 
-## Ⅲ .LEO API测试平台操作教程
+## Ⅲ. LEO API测试平台操作教程
 
 [点击进入操作教程](tutorial/tutorial.md)
 
-## IV . LEO API测试平台部署
+## IV. LEO API测试平台部署
+
 [点击进入部署教程](tutorial/deploy.md)
+
+## V. LEO 平台交流
+
+QQ群号： 617352502
+
+[点击链接或扫描下方二维码添加QQ群](https://qm.qq.com/cgi-bin/qm/qr?k=SB0KIsQN7F4gGKl5UTdiedOztjtOlLqo&jump_from=webapi)
+
+![加群二维码](tutorial/images/qq_group.png)
+
