@@ -169,7 +169,8 @@ class ExecutionEngine:
                 and not test_case["service"].strip() == '':
             domain = common.replace_global_var_for_str(init_var_str=domain,
                                                        global_var_dic={'service': test_case["service"]})
-
+        domain = common.replace_global_var_for_str(init_var_str=domain,
+                                                   global_var_dic=self.global_vars)
         # 处理url  protocol+domain+route
         route = common.replace_global_var_for_str(init_var_str=test_case['route'], global_var_dic=self.global_vars) \
             if isinstance(test_case['route'], str) else test_case['route']
