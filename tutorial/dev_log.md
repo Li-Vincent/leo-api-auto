@@ -285,6 +285,10 @@ FIX BUG EditTestCase页面不应该默认显示CheckResponseBody Tab
 
 FIX BUG： 返回值不是json格式, 存在强制正则校验
 
+### 2021-04-30
+
+FIX BUG: 当case中未设置数据初始化时，query和set 会自动添加 转义字符\
+
 ### TODO V3
 
 FIX BUG Excel导入导出用例 - DelaySeconds, checkSpendSeconds 字段 相关问题

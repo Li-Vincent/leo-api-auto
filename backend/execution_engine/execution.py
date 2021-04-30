@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import ast
 import json
 import re
@@ -28,8 +30,8 @@ from models.plan import Plan
 from models.test_case import TestCase
 from models.test_suite import TestSuite
 from utils import common
-from utils import send_notify
 from utils import fake
+from utils import send_notify
 
 # useless
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -169,6 +171,7 @@ class ExecutionEngine:
                 and not test_case["service"].strip() == '':
             domain = common.replace_global_var_for_str(init_var_str=domain,
                                                        global_var_dic={'service': test_case["service"]})
+        # domain支持参数替换， 用于同一个用例组中调用不同domain的接口（不同环境的相同接口domain不同）
         domain = common.replace_global_var_for_str(init_var_str=domain,
                                                    global_var_dic=self.global_vars)
         # 处理url  protocol+domain+route

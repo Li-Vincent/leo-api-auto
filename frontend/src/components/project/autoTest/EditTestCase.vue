@@ -769,8 +769,12 @@
                             self.form.route = data.route;
                             if (data.dataInitializes && data.dataInitializes.length > 0) {
                                 data.dataInitializes.forEach(item => {
-                                    item.set = JSON.stringify(item.set, undefined, 4);
-                                    item.query = JSON.stringify(item.query, undefined, 4);
+                                    if(item.set) {
+                                        item.set = JSON.stringify(item.set, undefined, 4);
+                                    }
+                                    if(item.query) {
+                                        item.query = JSON.stringify(item.query, undefined, 4);
+                                    }
                                 })
                                 self.form.dataInitializes = data.dataInitializes;
                             }
