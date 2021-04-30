@@ -769,11 +769,8 @@
                             self.form.route = data.route;
                             if (data.dataInitializes && data.dataInitializes.length > 0) {
                                 data.dataInitializes.forEach(item => {
-                                    if(item.set) {
+                                    if(item.dbType == "MongoDB" && item.set && item.query) {
                                         item.set = JSON.stringify(item.set, undefined, 4);
-                                    }
-                                    if(item.query) {
-                                        item.query = JSON.stringify(item.query, undefined, 4);
                                     }
                                 })
                                 self.form.dataInitializes = data.dataInitializes;
