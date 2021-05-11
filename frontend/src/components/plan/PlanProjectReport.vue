@@ -183,6 +183,7 @@
         </div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">请求参数:</div>
+        <div v-show="result.filePath">FilePath:  {{result.filePath}}</div>
         <div v-show="result.requestBody" class="resultStyle resultData">
           <pre>{{result.requestBody}}</pre>
         </div>
@@ -329,6 +330,9 @@
                 self.result["headers"] = detail.headers;
                 self.result["cookies"] = detail.testCaseDetail.cookies;
                 self.result["requestBody"] = detail.testCaseDetail.requestBody;
+                if (detail.testCaseDetail.filePath) {
+                    self.result["filePath"] = detail.testCaseDetail.filePath; 
+                }
                 if (detail.checkResponseCode) {
                     self.result["checkResponseCode"] = detail.checkResponseCode;
                 } else {

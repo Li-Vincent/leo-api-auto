@@ -75,7 +75,8 @@ class TestCase(Model):
                                 }
                             ]
                         })
-    parameterType = StringField(field_name='service', default='json')  # json or form
+    parameterType = StringField(field_name='service', default='json')  # json or form or file
+    filePath = StringField()  # if parameterType = file, enable filePath
     requestBody = ListField(field_name='requestBody', default=[{}],
                             expected_structure={
                                 'expectedTypeRange': [list],
