@@ -210,16 +210,20 @@
 
             <el-collapse-item title="请求参数" name="3">
               <div style="margin: 5px">
-                <el-row :span="24">
-                  <el-col v-if="showRequestBody" :span="6">
+                <el-row :span="24" style="margin-bottom:10px">
+                  <el-col v-if="showRequestBody" :span="18">
                     <el-radio v-model="form.parameterType" label="json">源数据(raw) —— 支持json数组</el-radio>
-                    <el-radio v-model="form.parameterType" label="form">Form Data</el-radio>
+                    <el-radio v-model="form.parameterType" label="form">Form Data（Content-Type=application/x-www-form-urlencoded)</el-radio>
+                    <el-radio v-model="form.parameterType" label="file">File Upload（Content-Type=multipart/form-data)</el-radio>
                   </el-col>
                   <el-col :span='3' style="float: right" v-if="form.parameterType == 'json'">
                     <el-checkbox label='是否 json数组' v-model.trim="form.isJsonArray"></el-checkbox>
                   </el-col>
                 </el-row>
                 <template>
+                  <el-form-item label="" prop="filePath" v-if="form.parameterType == 'file'">
+                    <el-input  v-model.trim="form.filePath" placeholder="请输入文件绝对路径"></el-input>
+                  </el-form-item>
                   <el-form-item label="" prop="parameterRaw">
                     <el-input type="textarea" :rows="8" placeholder="请输入参数内容({'username': 'test'})"
                               v-model.trim="form.parameterRaw"></el-input>
@@ -542,9 +546,9 @@
                     }],
                     headers: [{name: "", value: ""}],
                     parameterType: 'json',
+                    filePath: "",
                     parameterRaw: "",
                     isJsonArray: false,
-                    parameterForm: [{name: "", value: ""}, {name: "", value: ""}],
                     setGlobalVars: [{name: "", query: []}],
                     checkResponse: "noCheck",
                     checkResponseCode: "",
@@ -790,6 +794,7 @@
                                 setGlobalVar.query = this.addSuffix(setGlobalVar.query)
                             });
                             self.form.setGlobalVars = data.setGlobalVars;
+                            self.form.filePath = data.filePath;
                             try {
                                 self.form.parameterRaw = JSON.stringify(data.requestBody, undefined, 4);
                                 self.form.parameterRaw = self.form.parameterRaw.replace(/'/g, "\"").replace(/None/g, "null").replace(/True/g, "true").replace(/False/g, "false");
@@ -901,6 +906,10 @@
                             // reset isJsonArray
                             if (self.form.parameterType == 'form') {
                                 params["isJsonArray"] = false;
+                            }
+                            if (self.form.parameterType == 'file') {
+                                params["isJsonArray"] = false;
+                                params["filePath"] = self.form.filePath;
                             }
                             // check dataInitializes
                             if (self.form.dataInitializes && self.form.dataInitializes.length > 0) {

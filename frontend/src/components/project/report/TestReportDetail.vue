@@ -183,6 +183,7 @@
         </div>
         <div class="divider-line"></div>
         <div style="font-size: 25px;">请求参数:</div>
+        <div v-show="result.filePath">FilePath:  {{result.filePath}}</div>
         <div v-show="result.requestBody" class="resultStyle resultData">
           <pre>{{result.requestBody}}</pre>
         </div>
@@ -306,6 +307,9 @@
                 self.result["url"] = detail.testCaseDetail.url;
                 self.result["requestMethod"] = detail.testCaseDetail.requestMethod;
                 self.result["delaySeconds"] = detail.testCaseDetail.delaySeconds;
+                if (detail.testCaseDetail.filePath){
+                    self.result["filePath"] = detail.testCaseDetail.filePath;
+                }
                 if (detail.dataInitResult && detail.dataInitResult.length > 0) {
                     detail.dataInitResult.forEach(item => {
                         try {

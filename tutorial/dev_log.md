@@ -289,7 +289,13 @@ FIX BUG： 返回值不是json格式, 存在强制正则校验
 
 FIX BUG: 当case中未设置数据初始化时，query和set 会自动添加 转义字符\
 
+### 2021-05-11
+
+添加功能  支持文件上传接口测试
+
 ### TODO V3
+
+完善教程  文件上传接口测试
 
 FIX BUG Excel导入导出用例 - DelaySeconds, checkSpendSeconds 字段 相关问题
 
