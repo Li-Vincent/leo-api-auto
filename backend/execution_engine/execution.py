@@ -31,6 +31,7 @@ from models.test_case import TestCase
 from models.test_suite import TestSuite
 from utils import common
 from utils import fake
+from utils import func_var
 from utils import send_notify
 
 # useless
@@ -212,6 +213,7 @@ class ExecutionEngine:
                     if value is not None:
                         request_url += '%s=%s&' % (key, value)
                         request_url = fake.resolve_faker_var(init_faker_var=request_url)
+                        request_url = func_var.resolve_func_var(init_func_var=request_url)
                         request_url = common.replace_global_var_for_str(init_var_str=request_url,
                                                                         global_var_dic=self.global_vars)
                 request_url = common.resolve_int_var(init_int_str=request_url)
@@ -222,6 +224,8 @@ class ExecutionEngine:
                 test_case['requestBody'] = str(test_case['requestBody'])
                 # 替换faker变量
                 request_body_str = fake.resolve_faker_var(init_faker_var=test_case['requestBody'])
+                # 替换自定义函数function变量
+                request_body_str = func_var.resolve_func_var(init_func_var=test_case['requestBody'])
                 # 全局替换
                 request_body_str = common.replace_global_var_for_str(init_var_str=request_body_str,
                                                                      global_var_dic=self.global_vars)
