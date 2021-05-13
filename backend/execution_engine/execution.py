@@ -281,10 +281,7 @@ class ExecutionEngine:
                 returned_data['testCaseDetail']['delaySeconds'] = test_case['delaySeconds']
             else:
                 returned_data['testCaseDetail']['delaySeconds'] = 0
-            if 'parameterType' in test_case and test_case["parameterType"] == "json":
-                response = session.request(url=request_url, method=request_method, json=request_body,
-                                           headers=request_headers, verify=False)
-            elif 'parameterType' in test_case and test_case["parameterType"] == "form":
+            if 'parameterType' in test_case and test_case["parameterType"] == "form":
                 response = session.request(url=request_url, method=request_method, data=request_body,
                                            headers=request_headers, verify=False)
             elif 'parameterType' in test_case and test_case["parameterType"] == "file":
@@ -294,7 +291,8 @@ class ExecutionEngine:
                 response = session.request(url=request_url, method=request_method, files=files,
                                            headers=request_headers, data=request_body, verify=False)
             else:
-                raise TypeError('ParameterType not supported')
+                response = session.request(url=request_url, method=request_method, json=request_body,
+                                           headers=request_headers, verify=False)
             returned_data['elapsedSeconds'] = round(response.elapsed.total_seconds(), 3)
             if is_debug:
                 # 保存的临时 cookies  for 调试用例

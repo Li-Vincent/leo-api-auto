@@ -128,13 +128,17 @@ ${PLATFORM_HOST}:${PLATFORM_PORT}/login
 
     switched to db admin
 
+    # 创建root账号
     > db.createUser({user:"${USERNAME}",pwd:"${PASSWORD}",roles:["root","readWriteAnyDatabase"]})
 
     Successfully added user: { "user" : ${USERNAME}, "roles" : [ "root", "readWriteAnyDatabase" ] }
 
     > use leo-api-platform-db
 
-    db.createUser({ user: "${USERNAME}", pwd: "${PASSWORD}",roles: [ { role: "readWrite", db: "leo-api-platform-db"},{ role: "userAdmin", db: "leo-api-platform-db" }] })
+    switched to db leo-api-platform-db
+
+    # 为root账号增加leo-api-platform-db的 readWrite权限
+    > db.createUser({ user:"${USERNAME}",pwd:"${PASSWORD}",roles:[{role:"readWrite",db:"leo-api-platform-db"}]})
 
     Successfully added user: ......
 

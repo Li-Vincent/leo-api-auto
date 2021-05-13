@@ -61,7 +61,7 @@ export function updateUserStatus(params, header) {
 
 export function changeUserProjects(email, params, header) {
   return request({
-    url: `/api/user/<email>/changeProjects`,
+    url: `/api/user/${email}/changeProjects`,
     headers: header,
     method: 'POST',
     data: params
