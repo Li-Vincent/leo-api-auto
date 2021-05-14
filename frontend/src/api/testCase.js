@@ -9,6 +9,13 @@ export function getTestCases(project_id, test_suite_id, params, header) {
   })
 }
 
+export function getCaseLastResult(test_case_id) {
+  return request({
+    url: `/api/testCaseLastManualResult/${test_case_id}`,
+    method: 'GET',
+  })
+}
+
 export function addTestCase(project_id, test_suite_id, params, header) {
   return request({
     url: `/api/project/${project_id}/testSuite/${test_suite_id}/addCase`,
