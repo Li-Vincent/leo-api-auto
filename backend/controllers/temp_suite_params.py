@@ -1,7 +1,10 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import datetime
 
 from bson import ObjectId
-from flask import current_app
+from flask import current_app, jsonify
+from flask_security import login_required, current_user
 
 from app import app
 from models.temp_suite_params import TempSuiteParams
@@ -31,6 +34,32 @@ def get_temp_params_by_suite(test_suite_id):
         with app.app_context():
             current_app.logger.error("get temp params by suite failed. - %s" % str(e))
         return {}
+
+
+@app.route('/api/getTestSuiteTempParams/<test_suite_id>', methods=['GET'])
+@login_required
+def get_suite_temp_params(test_suite_id):
+    try:
+        if not test_suite_id:
+            raise ValueError("test suite id is required.")
+        res = TempSuiteParams.find_one({'testSuiteId': ObjectId(test_suite_id)})
+        if res and isinstance(res["params"], dict) and len(res["params"]) > 0:
+            expires_time = res["expiresTime"]
+            param_list = []
+            for k, v in res["params"].items():
+                param_list.append({"name": k, "value": v})
+            return jsonify({'status': 'ok', 'data': {
+                "expires_time": expires_time,
+                "params": param_list
+            }})
+        else:
+            return jsonify({'status': 'ok', 'data': {
+                "params": None
+            }})
+    except BaseException as e:
+        with app.app_context():
+            current_app.logger.error("get temp params by suite failed. - %s" % str(e))
+        return jsonify({'status': 'failed', 'data': "获取临时变量失败: " % str(e)})
 
 
 def save_temp_params_for_suite(test_suite_id, params):
