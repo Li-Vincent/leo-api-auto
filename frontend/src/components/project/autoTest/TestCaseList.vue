@@ -1,7 +1,7 @@
 <template>
   <section>
     <strong class="title">{{$route.meta.title}} <span v-if="testSuiteName"> - Suite: {{testSuiteName}}</span> </strong>
-    <!--新增界面-->
+    <!--新增用例 弹框-->
     <el-dialog width=80% title="新增" :visible.sync="addFormVisible" :close-on-click-modal="false"
                style="width:75%; left: 12.5%">
       <el-form :model="addForm" label-width="80px" :rules="addFormRules" ref="addForm">
@@ -42,6 +42,17 @@
       </div>
     </el-dialog>
 
+    <!--临时变量 弹框-->
+    <el-dialog  title="临时变量" :visible.sync="tempParamVisible" :close-on-click-modal="false">
+        <el-tag type="warning">变量失效时间：{{tempParams.expiresTime}}</el-tag>
+        <el-table :data="tempParams.params">
+            <el-table-column prop="name" label="参数名" min-width="30%" sortable='custom' show-overflow-tooltip>
+            </el-table-column>
+            <el-table-column prop="value" label="参数值"  sortable='custom' show-overflow-tooltip>
+            </el-table-column>
+        </el-table>
+    </el-dialog>
+
     <!--工具条-->
     <el-col :span="24" class="toolbar" style="padding-bottom: 0px">
       <el-form :inline="true">
@@ -60,7 +71,10 @@
         <el-form-item >
             <el-button type="primary" class="el-icon-search" @click="getTestCaseList"> 查询</el-button>
         </el-form-item>
-        <el-form-item style="float: right;  margin-right: 100px">
+        <el-form-item style="margin-left: 30px;">
+          <el-button type="primary" class="el-icon-search" @click="showTempParams">查看临时变量</el-button>
+        </el-form-item>
+        <el-form-item style="float: right;  margin-right: 50px">
             <el-select v-model="testEnv" style="margin-right: 20px" @visible-change='checkActiveTestEnv' clearable
                      placeholder="测试环境">
                 <el-option
@@ -74,7 +88,7 @@
                 <div slot="content">
                 　  <span>执行顺序：批量测试完全按照勾选顺序执行</span>
                 </div>
-                <el-button type="primary" class="el-icon-search" :disabled="!hasSelected" @click="batchTest()"> 批量测试</el-button>
+                <el-button type="primary" class="el-icon-caret-right" :disabled="!hasSelected" @click="batchTest()"> 批量测试</el-button>
             </el-tooltip>
         </el-form-item>
       </el-form>
@@ -114,14 +128,8 @@
                     @keyup.enter.native="updateSequence(scope.$index, scope.row)" style="width: 70px"></el-input>
         </template>
       </el-table-column>
-      <el-table-column prop="createAt" label="创建时间" min-width="25%" sortable='custom' show-overflow-tooltip>
+      <el-table-column prop="lastUpdateTime" label="更新时间" min-width="25%" sortable='custom' show-overflow-tooltip>
       </el-table-column>
-      <!--      <el-table-column prop="createUser" label="Creator" min-width="30px" sortable='custom' show-overflow-tooltip>-->
-      <!--      </el-table-column>-->
-      <!--      <el-table-column prop="lastUpdateTime" label="UpdateTime" min-width="35px" sortable='custom' show-overflow-tooltip>-->
-      <!--      </el-table-column>-->
-      <!--      <el-table-column prop="lastUpdateUser" label="Updater" min-width="30px" sortable='custom' show-overflow-tooltip>-->
-      <!--      </el-table-column>-->
       <el-table-column prop="result" label="测试结果" min-width="25%" sortable='custom' show-overflow-tooltip>
         <template slot-scope="scope">
           <span
@@ -248,6 +256,7 @@
 
 <script>
     import {getTestCases, updateTestCase, addTestCase, copyTestCase} from "../../../api/testCase";
+    import {getSuiteTempParams} from "../../../api/tempSuiteParam";
     import {getTestSuiteInfo} from "../../../api/testSuite";
     import {getEnvConfigs} from "../../../api/envConfig";
     import {startAPITestByCase} from "../../../api/execution";
@@ -297,12 +306,15 @@
                 testEnv: '',
                 testEnvs: [],
 
+                tempParams:{},
+
                 hasSelected: false,
                 selects: [],//列表选中列
 
                 testResultStatus: false,
                 result: {},
 
+                tempParamVisible: false,
                 addFormVisible: false,
                 activeIndex: "",
 
@@ -378,6 +390,36 @@
                     projectId: self.$route.params.project_id, testSuiteId: self.$route.params.test_suite_id
                 };
                 this.queryTestCases(params);
+            },
+            showTempParams() {
+                let self = this;
+                getSuiteTempParams(self.$route.params.test_suite_id).then((res) => {
+                    let {status, data} = res;
+                    if (status === 'ok') {
+                        if (data.params) {
+                            self.tempParams.params = data.params;
+                            self.tempParams.expiresTime = moment(data.expires_time).format("YYYY-MM-DD HH:mm:ss");
+                            this.tempParamVisible = true;
+                        } else {
+                            self.$message.warning({
+                                message: "当前用例组还没有设置临时变量",
+                                center: true,
+                            })
+                        }
+                    } else {
+                        self.$message.error({
+                            message: data,
+                            center: true,
+                        })
+                    }
+                }).catch((error) => {
+                    console.log(error)
+                    self.$message.error({
+                        message: '用例组临时变量获取失败，请稍后重试哦~',
+                        center: true,
+                    });
+                })
+                
             },
             handleChangeStatus: function (index, row) {
                 let self = this;
