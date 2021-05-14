@@ -23,8 +23,25 @@ from utils import common
 @app.route('/api/project/<project_id>/testSuite/<test_suite_id>/testCaseList', methods=['GET'])
 @login_required
 def case_list(project_id, test_suite_id):
-    total_num, test_cases = common.get_total_num_and_arranged_data(TestCase, request.args, fuzzy_fields=['name'])
-    return jsonify({'status': 'ok', 'data': {'totalNum': total_num, 'rows': test_cases}})
+    try:
+        total_num, test_cases = common.get_total_num_and_arranged_data(TestCase, request.args, fuzzy_fields=['name'])
+        for test_case in test_cases:
+            if "lastManualResult" in test_case and "status" in test_case['lastManualResult']:
+                test_case['lastManualResult'] = {"status": test_case['lastManualResult']["status"]}
+        return jsonify({'status': 'ok', 'data': {'totalNum': total_num, 'rows': test_cases}})
+    except BaseException as e:
+        current_app.logger.error("get case list failed. - %s" % str(e))
+        return jsonify({'status': 'failed', 'data': 'get case list failed %s' % str(e)})
+
+
+@app.route('/api/testCaseLastManualResult/<test_case_id>', methods=['GET'])
+@login_required
+def test_case_last_manual_result(test_case_id):
+    res = TestCase.find_one({'_id': ObjectId(test_case_id)})
+    test_case = common.format_response_in_dic(res)
+    return jsonify(
+        {'status': 'ok', 'data': test_case['lastManualResult']}) if test_case and 'lastManualResult' in test_case else \
+        jsonify({'status': 'failed', 'data': '未找到用例或当前用例没有执行结果'})
 
 
 @app.route('/api/project/<project_id>/testSuite/<test_suite_id>/addCase', methods=['POST'])

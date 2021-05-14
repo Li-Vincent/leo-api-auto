@@ -255,7 +255,7 @@
 </template>
 
 <script>
-    import {getTestCases, updateTestCase, addTestCase, copyTestCase} from "../../../api/testCase";
+    import {getTestCases, getCaseLastResult, updateTestCase, addTestCase, copyTestCase} from "../../../api/testCase";
     import {getSuiteTempParams} from "../../../api/tempSuiteParam";
     import {getTestSuiteInfo} from "../../../api/testSuite";
     import {getEnvConfigs} from "../../../api/envConfig";
@@ -773,70 +773,85 @@
             showResult(row) {
                 this.listLoading = true;
                 this.result["name"] = row.name;
-                this.getResult(row.lastManualResult);
+                this.getResult(row._id);
             },
-            getResult(testResult) {
+            getResult(test_case_id) {
                 let self = this;
-                this.listLoading = false;
-                self.result["env"] = testResult.env;
-                self.result["url"] = testResult.testCaseDetail.url;
-                self.result["requestMethod"] = testResult.testCaseDetail.requestMethod;
-                self.result["delaySeconds"] = testResult.testCaseDetail.delaySeconds;
-                if (testResult.testCaseDetail.filePath) {
-                    self.result["filePath"] = testResult.testCaseDetail.filePath;
-                }
-                if (testResult.dataInitResult && testResult.dataInitResult.length > 0) {
-                    testResult.dataInitResult.forEach(item => {
-                        try {
-                            if (item.query && typeof (item.query) == "string") {
-                                item.query = JSON.parse(item.query);
-                            }
-                            if (item.set && typeof (item.set) == "string") {
-                                item.set = JSON.parse(item.set);
-                            }
-                        } catch (e) {
-                            console.log(e)
+                getCaseLastResult(test_case_id).then((res) => {
+                    if (res.status === 'ok') {
+                        this.listLoading = false;
+                        let testResult = res.data;
+                        self.result["env"] = testResult.env;
+                        self.result["url"] = testResult.testCaseDetail.url;
+                        self.result["requestMethod"] = testResult.testCaseDetail.requestMethod;
+                        self.result["delaySeconds"] = testResult.testCaseDetail.delaySeconds;
+                        if (testResult.testCaseDetail.filePath) {
+                            self.result["filePath"] = testResult.testCaseDetail.filePath;
                         }
-                    })
-                }
-                self.result["dataInitResult"] = testResult.dataInitResult;
-                self.result["headers"] = testResult.headers;
-                self.result["cookies"] = testResult.testCaseDetail.cookies;
-                self.result["requestBody"] = testResult.testCaseDetail.requestBody;
-                if (testResult.checkResponseCode) {
-                    self.result["checkResponseCode"] = testResult.checkResponseCode;
-                } else {
-                    self.result["checkResponseCode"] = '无'
-                }
-                if (testResult.checkSpendSeconds) {
-                    self.result["checkSpendSeconds"] = testResult.checkSpendSeconds + " s";
-                } else {
-                    self.result["checkSpendSeconds"] = '无'
-                }
-                if (testResult.checkResponseBody && !(testResult.checkResponseBody.length === 1 && testResult.checkResponseBody[0]['regex'].trim() === '')) {
-                    self.result["checkResponseBody"] = testResult.checkResponseBody;
-                } else {
-                    self.result["checkResponseBody"] = '无'
-                }
-                if (testResult.checkResponseNumber && !(testResult.checkResponseNumber.length === 1 && testResult.checkResponseNumber[0]['expression'].trim() === '')) {
-                    self.result["checkResponseNumber"] = testResult.checkResponseNumber;
-                } else {
-                    self.result["checkResponseNumber"] = '无'
-                }
-                self.result["result"] = testResult.status;
-                self.result["responseStatusCode"] = testResult.responseStatusCode;
-                try {
-                    self.result["responseData"] = JSON.parse(testResult.responseData);
-                    //self.result["responseData"] = JSON.parse(testResult.responseData.replace(/'/g, "\"")
-                    // .replace(/None/g, "null").replace(/True/g, "true").replace(/False/g, "false"));
-                } catch (error) {
-                    self.result["responseData"] = testResult.responseData;
-                }
-                self.result["testConclusion"] = testResult.testConclusion;
-                self.result["testStartTime"] = moment(testResult.testStartTime).format("YYYY年MM月DD日HH时mm分ss秒");
-                self.result["spendTimeInSec"] = testResult.spendTimeInSec;
-                self.result["elapsedSeconds"] = testResult.elapsedSeconds;
-                self.testResultStatus = true;
+                        if (testResult.dataInitResult && testResult.dataInitResult.length > 0) {
+                            testResult.dataInitResult.forEach(item => {
+                                try {
+                                    if (item.query && typeof (item.query) == "string") {
+                                        item.query = JSON.parse(item.query);
+                                    }
+                                    if (item.set && typeof (item.set) == "string") {
+                                        item.set = JSON.parse(item.set);
+                                    }
+                                } catch (e) {
+                                    console.log(e)
+                                }
+                            })
+                        }
+                        self.result["dataInitResult"] = testResult.dataInitResult;
+                        self.result["headers"] = testResult.headers;
+                        self.result["cookies"] = testResult.testCaseDetail.cookies;
+                        self.result["requestBody"] = testResult.testCaseDetail.requestBody;
+                        if (testResult.checkResponseCode) {
+                            self.result["checkResponseCode"] = testResult.checkResponseCode;
+                        } else {
+                            self.result["checkResponseCode"] = '无'
+                        }
+                        if (testResult.checkSpendSeconds) {
+                            self.result["checkSpendSeconds"] = testResult.checkSpendSeconds + " s";
+                        } else {
+                            self.result["checkSpendSeconds"] = '无'
+                        }
+                        if (testResult.checkResponseBody && !(testResult.checkResponseBody.length === 1 && testResult.checkResponseBody[0]['regex'].trim() === '')) {
+                            self.result["checkResponseBody"] = testResult.checkResponseBody;
+                        } else {
+                            self.result["checkResponseBody"] = '无'
+                        }
+                        if (testResult.checkResponseNumber && !(testResult.checkResponseNumber.length === 1 && testResult.checkResponseNumber[0]['expression'].trim() === '')) {
+                            self.result["checkResponseNumber"] = testResult.checkResponseNumber;
+                        } else {
+                            self.result["checkResponseNumber"] = '无'
+                        }
+                        self.result["result"] = testResult.status;
+                        self.result["responseStatusCode"] = testResult.responseStatusCode;
+                        try {
+                            self.result["responseData"] = JSON.parse(testResult.responseData);
+                            //self.result["responseData"] = JSON.parse(testResult.responseData.replace(/'/g, "\"")
+                            // .replace(/None/g, "null").replace(/True/g, "true").replace(/False/g, "false"));
+                        } catch (error) {
+                            self.result["responseData"] = testResult.responseData;
+                        }
+                        self.result["testConclusion"] = testResult.testConclusion;
+                        self.result["testStartTime"] = moment(testResult.testStartTime).format("YYYY年MM月DD日HH时mm分ss秒");
+                        self.result["spendTimeInSec"] = testResult.spendTimeInSec;
+                        self.result["elapsedSeconds"] = testResult.elapsedSeconds;
+                        self.testResultStatus = true;
+                    } else {
+                        self.$message.warning({
+                            message: res.data,
+                            center: true,
+                        })
+                    }
+                }).catch((error) => {
+                    self.$message.error({
+                        message: '用例执行结果获取失败，请稍后重试哦~',
+                        center: true,
+                    });
+                });
             },
             copyCase(index, row) {
                 let self = this;
