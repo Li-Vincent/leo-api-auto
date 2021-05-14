@@ -190,6 +190,8 @@ class ExecutionEngine:
             if isinstance(test_case['headers'], list):
                 for header in test_case['headers']:
                     if not header['name'].strip() == '':
+                        header['value'] = func_var.resolve_func_var(init_func_var=header['value']) \
+                            if isinstance(header['value'], str) else header['value']
                         request_headers[header['name']] = common.replace_global_var_for_str(
                             init_var_str=header['value'],
                             global_var_dic=self.global_vars) \
@@ -339,6 +341,7 @@ class ExecutionEngine:
                         if query and isinstance(query, list):
                             query = common.replace_global_var_for_list(init_var_list=query,
                                                                        global_var_dic=self.global_vars)
+                            print(query)
                         value = common.dict_get(response.text, query)
                         self.global_vars[name] = str(value) if value else value
                         if is_debug:
