@@ -27,7 +27,7 @@ pymongo==3.9.0
 pymysql==0.9.3
 python-dateutil==2.8.1
 pytz==2019.3
-pywin32==227
+pywin32==301
 requests==2.22.0
 six==1.13.0
 speaklater==1.3
